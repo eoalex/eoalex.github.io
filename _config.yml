@@ -3,9 +3,9 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Alex Wu's blog
-subtitle:
-description:
+title:  Alex Wu's blog
+subtitle: THINK BIG, START SMALL, DELIVER VALUE TO THE BUSINESS
+description:  ss
 author: yaodataking.com
 language: zh-CN
 timezone:
@@ -69,7 +69,9 @@ theme: BlueLake
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
-  type:
+  type: git
+  repo: 
+      github: git@github-eoalex:eoalex/eoalex.github.io.git,master
 
 
 #Local search
