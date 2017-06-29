@@ -27,6 +27,54 @@
 
     
   <url>
+    <loc>http://blog.yaodataking.com/2016/01/16/docker-container-network-ovs/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>Docker 容器网络机制初探(2)-Open vSwitch</title>
+        <pubTime>2016-01-16T08:30:52.000Z</pubTime>
+        
+        <tag>Container</tag>
+         
+        <tag>Docker</tag>
+         
+        <tag>open vswitch</tag>
+         
+         
+           
+             
+              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/10/15/data-lake-intro/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>数据湖：提供大数据解决方案的架构</title>
+        <pubTime>2016-10-15T04:50:02.000Z</pubTime>
+        
+        <tag>big data</tag>
+         
+        <tag>data lake</tag>
+         
+        <tag>数据湖</tag>
+         
+         
+           
+             
+              <breadCrumb title="大数据" url="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://blog.yaodataking.com/2015/11/28/centos-6-5-postgresql-eclipse/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
@@ -60,54 +108,6 @@
            
              
               <breadCrumb title="商业智能" url="http://blog.yaodataking.com/categories/%E5%95%86%E4%B8%9A%E6%99%BA%E8%83%BD/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/10/15/data-lake-intro/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>数据湖：提供大数据解决方案的架构</title>
-        <pubTime>2016-10-15T04:50:02.000Z</pubTime>
-        
-        <tag>big data</tag>
-         
-        <tag>data lake</tag>
-         
-        <tag>数据湖</tag>
-         
-         
-           
-             
-              <breadCrumb title="大数据" url="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/01/16/docker-container-network-ovs/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>Docker 容器网络机制初探(2)-Open vSwitch</title>
-        <pubTime>2016-01-16T08:30:52.000Z</pubTime>
-        
-        <tag>Container</tag>
-         
-        <tag>Docker</tag>
-         
-        <tag>open vswitch</tag>
-         
-         
-           
-             
-              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
           
         </display>
     </data>
@@ -223,6 +223,24 @@
 
     
   <url>
+    <loc>http://blog.yaodataking.com/2016/09/28/growthhacker/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>《增长黑客》思维导图</title>
+        <pubTime>2016-09-28T12:37:26.000Z</pubTime>
+        
+         
+           
+             
+              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://blog.yaodataking.com/2016/01/31/docker-registry/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
@@ -309,24 +327,6 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/09/28/growthhacker/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>《增长黑客》思维导图</title>
-        <pubTime>2016-09-28T12:37:26.000Z</pubTime>
-        
-         
-           
-             
-              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>http://blog.yaodataking.com/2015/10/27/hadoop-2-7-1-ha/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
@@ -371,14 +371,14 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2015/10/27/hadoop2-7-1/</loc>
+    <loc>http://blog.yaodataking.com/2015/11/06/hbase/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>Hadoop 2.7.1 完全分布式安装部署</title>
-        <pubTime>2015-10-27T00:01:51.000Z</pubTime>
+        <title>Hbase完全分布式安装</title>
+        <pubTime>2015-11-06T03:17:16.000Z</pubTime>
         
-        <tag>hadoop</tag>
+        <tag>Hbase</tag>
          
          
            
@@ -391,14 +391,14 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2015/11/06/hbase/</loc>
+    <loc>http://blog.yaodataking.com/2015/10/27/hadoop2-7-1/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>Hbase完全分布式安装</title>
-        <pubTime>2015-11-06T03:17:16.000Z</pubTime>
+        <title>Hadoop 2.7.1 完全分布式安装部署</title>
+        <pubTime>2015-10-27T00:01:51.000Z</pubTime>
         
-        <tag>Hbase</tag>
+        <tag>hadoop</tag>
          
          
            
@@ -475,31 +475,6 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/04/03/jconsole-remote-mycat/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>JConsole远程监控Mycat示列</title>
-        <pubTime>2016-04-03T07:24:40.000Z</pubTime>
-        
-        <tag>JConsole</tag>
-         
-        <tag>Mycat</tag>
-         
-         
-           
-             
-              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
-          
-             
-              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/%E8%BF%90%E7%BB%B4/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>http://blog.yaodataking.com/2016/09/25/kafka-1/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
@@ -518,6 +493,31 @@
           
              
               <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/%E8%BF%90%E7%BB%B4/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/04/03/jconsole-remote-mycat/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>JConsole远程监控Mycat示列</title>
+        <pubTime>2016-04-03T07:24:40.000Z</pubTime>
+        
+        <tag>JConsole</tag>
+         
+        <tag>Mycat</tag>
+         
+         
+           
+             
+              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+          
+             
+              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/%E8%BF%90%E7%BB%B4/"/>
           
         </display>
     </data>
@@ -596,14 +596,20 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/10/16/kafka-2/</loc>
+    <loc>http://blog.yaodataking.com/2016/10/30/kafka-4/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>Kafka入门之二:Producer分发策略</title>
-        <pubTime>2016-10-16T04:41:11.000Z</pubTime>
+        <title>Kafka入门之四:Kafka如何使用zookeeper</title>
+        <pubTime>2016-10-30T15:43:20.000Z</pubTime>
         
+        <tag>Docker</tag>
+         
+        <tag>zookeeper</tag>
+         
         <tag>Kafka</tag>
+         
+        <tag>docker-compose</tag>
          
          
            
@@ -619,15 +625,13 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/11/12/kafka-5/</loc>
+    <loc>http://blog.yaodataking.com/2016/10/16/kafka-2/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>Kafka入门之五:Kafka的Leader Election</title>
-        <pubTime>2016-11-12T15:21:16.000Z</pubTime>
+        <title>Kafka入门之二:Producer分发策略</title>
+        <pubTime>2016-10-16T04:41:11.000Z</pubTime>
         
-        <tag>zookeeper</tag>
-         
         <tag>Kafka</tag>
          
          
@@ -669,13 +673,15 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/11/13/kafka-6/</loc>
+    <loc>http://blog.yaodataking.com/2016/11/12/kafka-5/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>Kafka入门之六:Kafka的Consumer</title>
-        <pubTime>2016-11-13T01:46:44.000Z</pubTime>
+        <title>Kafka入门之五:Kafka的Leader Election</title>
+        <pubTime>2016-11-12T15:21:16.000Z</pubTime>
         
+        <tag>zookeeper</tag>
+         
         <tag>Kafka</tag>
          
          
@@ -692,20 +698,14 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/10/30/kafka-4/</loc>
+    <loc>http://blog.yaodataking.com/2016/11/13/kafka-6/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>Kafka入门之四:Kafka如何使用zookeeper</title>
-        <pubTime>2016-10-30T15:43:20.000Z</pubTime>
+        <title>Kafka入门之六:Kafka的Consumer</title>
+        <pubTime>2016-11-13T01:46:44.000Z</pubTime>
         
-        <tag>Docker</tag>
-         
-        <tag>zookeeper</tag>
-         
         <tag>Kafka</tag>
-         
-        <tag>docker-compose</tag>
          
          
            
@@ -767,29 +767,6 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/12/09/kafka-9/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>Kafka入门之九:Kafka Streams</title>
-        <pubTime>2016-12-09T15:12:43.000Z</pubTime>
-        
-        <tag>Kafka</tag>
-         
-         
-           
-             
-              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
-          
-             
-              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/%E8%BF%90%E7%BB%B4/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>http://blog.yaodataking.com/2015/12/06/keepalived-lvs/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
@@ -819,9 +796,9 @@
         <title>Kettle数据同步初探</title>
         <pubTime>2016-03-10T12:09:45.000Z</pubTime>
         
-        <tag>postgresql</tag>
-         
         <tag>Docker</tag>
+         
+        <tag>postgresql</tag>
          
         <tag>ETL</tag>
          
@@ -834,6 +811,29 @@
           
              
               <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E5%95%86%E4%B8%9A%E6%99%BA%E8%83%BD/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/12/09/kafka-9/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>Kafka入门之九:Kafka Streams</title>
+        <pubTime>2016-12-09T15:12:43.000Z</pubTime>
+        
+        <tag>Kafka</tag>
+         
+         
+           
+             
+              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+          
+             
+              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/%E8%BF%90%E7%BB%B4/"/>
           
         </display>
     </data>
@@ -865,16 +865,16 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/03/13/kubernetes-cluster-quagga/</loc>
+    <loc>http://blog.yaodataking.com/2016/03/13/kubernetes-cluster-flannel/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>Kubernetes入门实战(4)：Kubernetes 集群网络之直接路由方案</title>
-        <pubTime>2016-03-13T06:15:30.000Z</pubTime>
+        <title>Kubernetes入门实战(5)：Kubernetes集群网络之flannel网络方案</title>
+        <pubTime>2016-03-13T11:24:58.000Z</pubTime>
         
         <tag>Kubernetes</tag>
          
-        <tag>Quagga</tag>
+        <tag>flannel</tag>
          
          
            
@@ -890,16 +890,16 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/04/10/kubernetes-ku8eye/</loc>
+    <loc>http://blog.yaodataking.com/2016/03/13/kubernetes-cluster-quagga/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>Kubernetes入门实战(6)：使用ku8eye快速构建Kubernetes集群</title>
-        <pubTime>2016-04-10T05:44:59.000Z</pubTime>
+        <title>Kubernetes入门实战(4)：Kubernetes 集群网络之直接路由方案</title>
+        <pubTime>2016-03-13T06:15:30.000Z</pubTime>
         
         <tag>Kubernetes</tag>
          
-        <tag>ku8eye</tag>
+        <tag>Quagga</tag>
          
          
            
@@ -939,39 +939,16 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/03/13/kubernetes-cluster-flannel/</loc>
+    <loc>http://blog.yaodataking.com/2016/04/10/kubernetes-ku8eye/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>Kubernetes入门实战(5)：Kubernetes集群网络之flannel网络方案</title>
-        <pubTime>2016-03-13T11:24:58.000Z</pubTime>
+        <title>Kubernetes入门实战(6)：使用ku8eye快速构建Kubernetes集群</title>
+        <pubTime>2016-04-10T05:44:59.000Z</pubTime>
         
         <tag>Kubernetes</tag>
          
-        <tag>flannel</tag>
-         
-         
-           
-             
-              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
-          
-             
-              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/%E8%BF%90%E7%BB%B4/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/03/05/kubernetes-ops1/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>Kubernetes入门实战(3)：运维之扩容与升级</title>
-        <pubTime>2016-03-05T01:07:04.000Z</pubTime>
-        
-        <tag>Kubernetes</tag>
+        <tag>ku8eye</tag>
          
          
            
@@ -1029,19 +1006,22 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2017/02/28/machine-learning-2/</loc>
+    <loc>http://blog.yaodataking.com/2016/03/05/kubernetes-ops1/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>机器学习之二：回归分析</title>
-        <pubTime>2017-02-28T13:11:13.000Z</pubTime>
+        <title>Kubernetes入门实战(3)：运维之扩容与升级</title>
+        <pubTime>2016-03-05T01:07:04.000Z</pubTime>
         
-        <tag>机器学习</tag>
+        <tag>Kubernetes</tag>
          
          
            
              
-              <breadCrumb title="商业智能" url="http://blog.yaodataking.com/categories/%E5%95%86%E4%B8%9A%E6%99%BA%E8%83%BD/"/>
+              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+          
+             
+              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/%E8%BF%90%E7%BB%B4/"/>
           
         </display>
     </data>
@@ -1049,12 +1029,12 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2017/03/26/machine-learning-3/</loc>
+    <loc>http://blog.yaodataking.com/2017/02/28/machine-learning-2/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>机器学习之三：降维技术</title>
-        <pubTime>2017-03-26T15:10:42.000Z</pubTime>
+        <title>机器学习之二：回归分析</title>
+        <pubTime>2017-02-28T13:11:13.000Z</pubTime>
         
         <tag>机器学习</tag>
          
@@ -1098,6 +1078,26 @@
 
     
   <url>
+    <loc>http://blog.yaodataking.com/2017/03/26/machine-learning-3/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>机器学习之三：降维技术</title>
+        <pubTime>2017-03-26T15:10:42.000Z</pubTime>
+        
+        <tag>机器学习</tag>
+         
+         
+           
+             
+              <breadCrumb title="商业智能" url="http://blog.yaodataking.com/categories/%E5%95%86%E4%B8%9A%E6%99%BA%E8%83%BD/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://blog.yaodataking.com/2017/01/17/blockchain-1/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
@@ -1118,45 +1118,14 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/01/17/mycat-mysql-docker-sample1/</loc>
+    <loc>http://blog.yaodataking.com/2016/03/20/mycat-mysql-data-sync/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>基于Mycat的MySQL主从读写分离及自动切换的docker实现(1)</title>
-        <pubTime>2016-01-17T08:32:21.000Z</pubTime>
+        <title>Mycat环境下的mysql数据迁移实验</title>
+        <pubTime>2016-03-19T16:36:49.000Z</pubTime>
         
-        <tag>Docker</tag>
-         
         <tag>Mycat</tag>
-         
-        <tag>Mysql</tag>
-         
-         
-           
-             
-              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
-          
-             
-              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/%E8%BF%90%E7%BB%B4/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/03/27/mycat-oracle-to-mysql/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>基于Mycat的Oracle数据迁移至Mysql方案</title>
-        <pubTime>2016-03-27T06:58:16.000Z</pubTime>
-        
-        <tag>Oracle</tag>
-         
-        <tag>Mycat</tag>
-         
-        <tag>Kettle</tag>
          
         <tag>Mysql</tag>
          
@@ -1198,19 +1167,28 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/04/23/mycat-sourcecode-backend-response/</loc>
+    <loc>http://blog.yaodataking.com/2016/03/27/mycat-oracle-to-mysql/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>Mycat源码分析之后端连接处理</title>
-        <pubTime>2016-04-23T09:18:23.000Z</pubTime>
+        <title>基于Mycat的Oracle数据迁移至Mysql方案</title>
+        <pubTime>2016-03-27T06:58:16.000Z</pubTime>
         
+        <tag>Oracle</tag>
+         
         <tag>Mycat</tag>
+         
+        <tag>Kettle</tag>
+         
+        <tag>Mysql</tag>
          
          
            
              
               <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+          
+             
+              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/%E8%BF%90%E7%BB%B4/"/>
           
         </display>
     </data>
@@ -1228,6 +1206,26 @@
         <tag>Mycat</tag>
          
         <tag>catlet</tag>
+         
+         
+           
+             
+              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/04/23/mycat-sourcecode-backend-response/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>Mycat源码分析之后端连接处理</title>
+        <pubTime>2016-04-23T09:18:23.000Z</pubTime>
+        
+        <tag>Mycat</tag>
          
          
            
@@ -1282,6 +1280,26 @@
 
     
   <url>
+    <loc>http://blog.yaodataking.com/2016/06/11/openstack-kilo-centos/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>OpenStack入门之三:Kilo版本centos 7平台搭建</title>
+        <pubTime>2016-06-11T15:14:22.000Z</pubTime>
+        
+        <tag>openstack</tag>
+         
+         
+           
+             
+              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://blog.yaodataking.com/2016/05/08/openstack-introduce/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
@@ -1308,26 +1326,6 @@
         <display>
         <title>OpenStack入门之七:基于NFS共享存储的在线迁移</title>
         <pubTime>2016-06-21T01:14:22.000Z</pubTime>
-        
-        <tag>openstack</tag>
-         
-         
-           
-             
-              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/06/11/openstack-kilo-centos/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>OpenStack入门之三:Kilo版本centos 7平台搭建</title>
-        <pubTime>2016-06-11T15:14:22.000Z</pubTime>
         
         <tag>openstack</tag>
          
@@ -1486,6 +1484,28 @@
 
     
   <url>
+    <loc>http://blog.yaodataking.com/2016/02/11/postgresql-pgbench/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>PostgreSQL压力测试工具pgbench入门</title>
+        <pubTime>2016-02-11T07:35:55.000Z</pubTime>
+        
+        <tag>postgresql</tag>
+         
+        <tag>pgbench</tag>
+         
+         
+           
+             
+              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://blog.yaodataking.com/2016/03/04/postgresql-pgcluu/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
@@ -1530,28 +1550,6 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/02/11/postgresql-pgbench/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>PostgreSQL压力测试工具pgbench入门</title>
-        <pubTime>2016-02-11T07:35:55.000Z</pubTime>
-        
-        <tag>postgresql</tag>
-         
-        <tag>pgbench</tag>
-         
-         
-           
-             
-              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>http://blog.yaodataking.com/2016/01/01/postgresql-uuid/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
@@ -1567,26 +1565,6 @@
            
              
               <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/02/06/reading-2015/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>2015 阅读书单</title>
-        <pubTime>2016-02-06T14:47:58.000Z</pubTime>
-        
-        <tag>阅读书单</tag>
-         
-         
-           
-             
-              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
           
         </display>
     </data>
@@ -1667,6 +1645,26 @@
         <pubTime>2016-04-17T15:55:22.000Z</pubTime>
         
         <tag>罗马</tag>
+         
+         
+           
+             
+              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/02/06/reading-2015/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>2015 阅读书单</title>
+        <pubTime>2016-02-06T14:47:58.000Z</pubTime>
+        
+        <tag>阅读书单</tag>
          
          
            
@@ -1799,26 +1797,6 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/05/14/rome-story-3/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>《罗马人的故事3:胜者的迷思》读书笔记</title>
-        <pubTime>2016-05-14T15:59:20.000Z</pubTime>
-        
-        <tag>罗马</tag>
-         
-         
-           
-             
-              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>http://blog.yaodataking.com/2016/06/05/rome-story-4/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
@@ -1845,6 +1823,26 @@
         <display>
         <title>《罗马人的故事5:凯撒时代（下）》读书笔记</title>
         <pubTime>2016-07-03T12:41:13.000Z</pubTime>
+        
+        <tag>罗马</tag>
+         
+         
+           
+             
+              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/05/14/rome-story-3/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>《罗马人的故事3:胜者的迷思》读书笔记</title>
+        <pubTime>2016-05-14T15:59:20.000Z</pubTime>
         
         <tag>罗马</tag>
          
@@ -1957,25 +1955,22 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2015/11/14/sqoop-mysql-hdfs-hive/</loc>
+    <loc>http://blog.yaodataking.com/2017/03/07/storm-2/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>使用Sqoop实现Mysql与HDFS及HIVE互转</title>
-        <pubTime>2015-11-14T05:22:15.000Z</pubTime>
+        <title>Storm的基本概念和组件</title>
+        <pubTime>2017-03-07T11:54:33.000Z</pubTime>
         
-        <tag>hadoop</tag>
-         
-        <tag>Mysql</tag>
-         
-        <tag>Hive</tag>
-         
-        <tag>sqoop</tag>
+        <tag>Storm</tag>
          
          
            
              
               <breadCrumb title="大数据" url="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
+          
+             
+              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/%E8%BF%90%E7%BB%B4/"/>
           
         </display>
     </data>
@@ -2008,22 +2003,45 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2017/03/07/storm-2/</loc>
+    <loc>http://blog.yaodataking.com/2015/11/14/sqoop-mysql-hdfs-hive/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>Storm的基本概念和组件</title>
-        <pubTime>2017-03-07T11:54:33.000Z</pubTime>
+        <title>使用Sqoop实现Mysql与HDFS及HIVE互转</title>
+        <pubTime>2015-11-14T05:22:15.000Z</pubTime>
         
-        <tag>Storm</tag>
+        <tag>hadoop</tag>
+         
+        <tag>Mysql</tag>
+         
+        <tag>Hive</tag>
+         
+        <tag>sqoop</tag>
          
          
            
              
               <breadCrumb title="大数据" url="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
           
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2015/11/22/thrift/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>Thrift 入门:安装及示列</title>
+        <pubTime>2015-11-22T14:00:42.000Z</pubTime>
+        
+        <tag>Thrift</tag>
+         
+         
+           
              
-              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/%E8%BF%90%E7%BB%B4/"/>
+              <breadCrumb title="大数据" url="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
           
         </display>
     </data>
@@ -2098,33 +2116,15 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2015/11/22/thrift/</loc>
+    <loc>http://blog.yaodataking.com/2016/01/17/mycat-mysql-docker-sample1/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>Thrift 入门:安装及示列</title>
-        <pubTime>2015-11-22T14:00:42.000Z</pubTime>
+        <title>基于Mycat的MySQL主从读写分离及自动切换的docker实现(1)</title>
+        <pubTime>2016-01-17T08:32:21.000Z</pubTime>
         
-        <tag>Thrift</tag>
+        <tag>Docker</tag>
          
-         
-           
-             
-              <breadCrumb title="大数据" url="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/03/20/mycat-mysql-data-sync/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>Mycat环境下的mysql数据迁移实验</title>
-        <pubTime>2016-03-19T16:36:49.000Z</pubTime>
-        
         <tag>Mycat</tag>
          
         <tag>Mysql</tag>
