@@ -1,0 +1,246 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description"><title>Kafka入门之四:Kafka如何使用zookeeper | Alex Wu's blog</title><link rel="stylesheet" type="text/css" href="//fonts.css.network/css?family=Source+Code+Pro"><link rel="stylesheet" type="text/css" href="/css/style.css?v=2.0.1"><link rel="stylesheet" type="text/css" href="/css/highlight.css?v=2.0.1"><link rel="Shortcut Icon" href="/favicon.ico"><link rel="bookmark" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Kafka入门之四:Kafka如何使用zookeeper</h1><a id="logo" href="/.">Alex Wu's blog</a><p class="description"></p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div><div id="search-form"><div id="result-mask" class="hide"></div><label><input id="search-key" type="text" autocomplete="off" placeholder="搜索..."></label><div id="result-wrap" class="hide"><div id="search-result"></div></div><div class="hide"><template id="search-tpl"><div class="item"><a href="/{path}" title="{title}"><div class="title">{title}</div><div class="time">{date}</div><div class="tags">{tags}</div></a></div></template></div></div></div><div id="layout" class="layout-g"><div class="layout-l"><div class="content_container"><div class="post"><h1 class="post-title">Kafka入门之四:Kafka如何使用zookeeper</h1><div class="post-meta"><span class="date">Oct 30, 2016</span><span class="category"><a href="/categories/云计算及虚拟化/">云计算及虚拟化</a><a href="/categories/云计算及虚拟化/运维/">运维</a></span><span><i id="busuanzi_container_page_pv"><i id="busuanzi_value_page_pv"></i><i> Hits</i></i></span><a href="/2016/10/30/kafka-4/#comments" class="comment-count">留言</a></div><div class="post-content"><p>作为解决分布式一致性问题的工具，zookeeper应用广泛，在Hadoop集群部署时，我们已经领略过了，具体可参见博文<a href="http://blog.yaodataking.com/2015/10/hadoop-2-7-1-ha.html">Hadoop 2.7.1 实现HA集群部署</a>。今天我们在kafka之前三节课的基础上演示如何部署zookeeper集群。<br>1.docker-compose安装<br>因为要使用docker-compose这个工具来部署zookeeper和kafka容器。所以先安装docker-compose。</p>
+<pre><code>sudo -i
+curl -L &quot;https://github.com/docker/compose/releases/download/1.8.1/docker-compose-$(uname -s)-$(uname -m)&quot; &amp;gt; 
+/usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+exit`&lt;/pre&gt;
+[![2016-10-30_9-07-18](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_9-07-18.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_9-07-18.jpg)
+2.zookeeper镜像制作
+在之前的基础上增加ZOOKEEPER_ID，ZOOKEEPER_PORT，ZOOKEEPER_SERVERS参数使之动态配置。
+&lt;pre&gt;`FROM java:openjdk-8-jre-alpine
+ARG MIRROR=http://mirrors.aliyun.com/
+ARG VERSION=3.4.6
+LABEL name=&quot;zookeeper&quot; version=$VERSION
+RUN apk update &amp;amp;&amp;amp; apk add ca-certificates &amp;amp;&amp;amp; \
+    apk add tzdata &amp;amp;&amp;amp; \
+    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime &amp;amp;&amp;amp; \
+    echo &quot;Asia/Shanghai&quot; &amp;gt; /etc/timezone
+
+RUN apk add --no-cache wget bash \
+    &amp;amp;&amp;amp; mkdir /opt \
+    &amp;amp;&amp;amp; wget -q -O - $MIRROR/apache/zookeeper/zookeeper-$VERSION/zookeeper-$VERSION.tar.gz | tar -xzf - -C /opt \
+    &amp;amp;&amp;amp; mv /opt/zookeeper-$VERSION /opt/zookeeper \
+    &amp;amp;&amp;amp; cp /opt/zookeeper/conf/zoo_sample.cfg /opt/zookeeper/conf/zoo.cfg \
+    &amp;amp;&amp;amp; mkdir -p /tmp/zookeeper
+
+RUN echo &quot;[ ! -z $&quot;&quot;ZOOKEEPER_PORT&quot;&quot; ] &amp;amp;&amp;amp; sed -i &apos;s%clientPort=.*$%clientPort=&apos;$&quot;&quot;ZOOKEEPER_PORT&apos;&quot;&quot;%g&apos;  /opt/zookeeper/conf/zoo.cfg&quot; &amp;gt; /opt/zookeeper/start.sh &amp;amp;&amp;amp;\
+    echo &quot;[ ! -z $&quot;&quot;ZOOKEEPER_ID&quot;&quot; ]  &amp;amp;&amp;amp; echo $&quot;&quot;ZOOKEEPER_ID &amp;gt; /tmp/zookeeper/myid&quot; &amp;gt;&amp;gt; /opt/zookeeper/start.sh &amp;amp;&amp;amp;\
+    echo &quot;[[ ! -z $&quot;&quot;ZOOKEEPER_SERVERS&quot;&quot; ]] &amp;amp;&amp;amp; for server in $&quot;&quot;ZOOKEEPER_SERVERS&quot;&quot;; do echo $&quot;&quot;server&quot;&quot; &amp;gt;&amp;gt; /opt/zookeeper/conf/zoo.cfg; done&quot; &amp;gt;&amp;gt; /opt/zookeeper/start.sh &amp;amp;&amp;amp;\
+    echo &quot;/opt/zookeeper/bin/zkServer.sh start-foreground&quot; &amp;gt;&amp;gt; /opt/zookeeper/start.sh
+
+EXPOSE 2181
+WORKDIR /opt/zookeeper
+VOLUME [&quot;/opt/zookeeper/conf&quot;, &quot;/tmp/zookeeper&quot;]
+ENTRYPOINT [&quot;bash&quot;, &quot;/opt/zookeeper/start.sh&quot;]`&lt;/pre&gt;
+3.kafka镜像制作
+在之前的基础上增加BROKER_ID，BROKER_PORT，ADVERTISED_HOST_NAME，HOST_NAME，ZOOKEEPER_CONNECT参数使之动态配置。
+&lt;pre&gt;`FROM java:openjdk-8-jre-alpine
+ARG MIRROR=http://mirrors.aliyun.com/
+ARG SCALA_VERSION=2.11
+ARG KAFKA_VERSION=0.8.2.2
+LABEL name=&quot;kafka&quot; version=$VERSION
+RUN apk update &amp;amp;&amp;amp; apk add ca-certificates &amp;amp;&amp;amp; \
+    apk add tzdata &amp;amp;&amp;amp; \
+    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime &amp;amp;&amp;amp; \
+    echo &quot;Asia/Shanghai&quot; &amp;gt; /etc/timezone
+
+RUN apk add --no-cache wget bash \
+    &amp;amp;&amp;amp; mkdir /opt \
+    &amp;amp;&amp;amp; wget -q -O - $MIRROR/apache/kafka/$KAFKA_VERSION/kafka_$SCALA_VERSION-$KAFKA_VERSION.tgz | tar -xzf - -C /opt \
+    &amp;amp;&amp;amp; mv /opt/kafka_$SCALA_VERSION-$KAFKA_VERSION /opt/kafka \
+    &amp;amp;&amp;amp; sed -i &apos;s/num.partitions.*$/num.partitions=3/g&apos; /opt/kafka/config/server.properties
+
+RUN echo &quot;cd /opt/kafka&quot; &amp;gt; /opt/kafka/start.sh &amp;amp;&amp;amp;\
+    echo &quot;[ ! -z $&quot;&quot;ZOOKEEPER_CONNECT&quot;&quot; ] &amp;amp;&amp;amp; sed -i &apos;s%zookeeper.connect=.*$%zookeeper.connect=&apos;$&quot;&quot;ZOOKEEPER_CONNECT&apos;&quot;&quot;%g&apos;  /opt/kafka/config/server.properties&quot; &amp;gt;&amp;gt; /opt/kafka/start.sh &amp;amp;&amp;amp;\
+    echo &quot;[ ! -z $&quot;&quot;BROKER_ID&quot;&quot; ] &amp;amp;&amp;amp; sed -i &apos;s%broker.id=.*$%broker.id=&apos;$&quot;&quot;BROKER_ID&apos;&quot;&quot;%g&apos;  /opt/kafka/config/server.properties&quot; &amp;gt;&amp;gt; /opt/kafka/start.sh &amp;amp;&amp;amp;\
+    echo &quot;[ ! -z $&quot;&quot;BROKER_PORT&quot;&quot; ] &amp;amp;&amp;amp; sed -i &apos;s%port=.*$%port=&apos;$&quot;&quot;BROKER_PORT&apos;&quot;&quot;%g&apos;  /opt/kafka/config/server.properties&quot; &amp;gt;&amp;gt; /opt/kafka/start.sh &amp;amp;&amp;amp;\
+    echo &quot;[ ! -z $&quot;&quot;ADVERTISED_HOST_NAME&quot;&quot; ] &amp;amp;&amp;amp; sed -i &apos;s%#advertised.host.name=.*$%advertised.host.name=&apos;$&quot;&quot;ADVERTISED_HOST_NAME&apos;&quot;&quot;%g&apos;  /opt/kafka/config/server.properties&quot; &amp;gt;&amp;gt; /opt/kafka/start.sh &amp;amp;&amp;amp;\
+    echo &quot;[ ! -z $&quot;&quot;HOST_NAME&quot;&quot; ] &amp;amp;&amp;amp; sed -i &apos;s%#host.name=.*$%host.name=&apos;$&quot;&quot;HOST_NAME&apos;&quot;&quot;%g&apos;  /opt/kafka/config/server.properties&quot; &amp;gt;&amp;gt; /opt/kafka/start.sh &amp;amp;&amp;amp;\
+    echo &quot;delete.topic.enable=true&quot; &amp;gt;&amp;gt; /opt/kafka/config/server.properties &amp;amp;&amp;amp;\
+    echo &quot;bin/kafka-server-start.sh config/server.properties&quot; &amp;gt;&amp;gt; /opt/kafka/start.sh
+
+EXPOSE 9092
+WORKDIR /opt/kafka
+ENTRYPOINT [&quot;bash&quot;, &quot;/opt/kafka/start.sh&quot;]`&lt;/pre&gt;
+4.docker-compose文件制作
+创建3个zookeeper容器和3个kafka容器。
+&lt;pre&gt;`version: &apos;2.0&apos;
+services:
+  zookeeper0:
+    build:
+      context: .
+      dockerfile: myzookeeper.cluster.Dockerfile
+    image: alex/zookeeper_cluster:3.4.6
+    container_name: zookeeper0
+    hostname: zookeeper0
+    ports:
+      - &quot;2181:2181&quot;
+      - &quot;2888:2888&quot;
+      - &quot;3888:3888&quot;
+    expose:
+      - 2181
+      - 2888
+      - 3888
+    environment:
+      ZOOKEEPER_PORT: 2181
+      ZOOKEEPER_ID: 0
+      ZOOKEEPER_SERVERS: server.0=zookeeper0:2888:3888 server.1=zookeeper1:28881:38881 server.2=zookeeper2:28882:38882
+  zookeeper1:
+    build:
+      context: .
+      dockerfile: myzookeeper.cluster.Dockerfile
+    image: alex/zookeeper_cluster:3.4.6
+    container_name: zookeeper1
+    hostname: zookeeper1
+    ports:
+      - &quot;2182:2182&quot;
+      - &quot;28881:28881&quot;
+      - &quot;38881:38881&quot;
+    expose:
+      - 2182
+      - 2888
+      - 3888
+    environment:
+      ZOOKEEPER_PORT: 2182
+      ZOOKEEPER_ID: 1
+      ZOOKEEPER_SERVERS: server.0=zookeeper0:2888:3888 server.1=zookeeper1:28881:38881 server.2=zookeeper2:28882:38882
+  zookeeper2:
+    build:
+      context: .
+      dockerfile: myzookeeper.cluster.Dockerfile
+    image: alex/zookeeper_cluster:3.4.6
+    container_name: zookeeper2
+    hostname: zookeeper2
+    ports:
+      - &quot;2183:2183&quot;
+      - &quot;28882:28882&quot;
+      - &quot;38882:38882&quot;
+    expose:
+      - 2183
+      - 2888
+      - 3888
+    environment:
+      ZOOKEEPER_PORT: 2183
+      ZOOKEEPER_ID: 2
+      ZOOKEEPER_SERVERS: server.0=zookeeper0:2888:3888 server.1=zookeeper1:28881:38881 server.2=zookeeper2:28882:38882
+  kafka0:
+    build:
+      context: .
+      dockerfile: mykafka.cluster.Dockerfile
+    image: alex/kafka_cluster:0.8.2.2
+    container_name: kafka0
+    hostname: kafka0
+    ports:
+      - &quot;9092:9092&quot;
+    environment:
+      ZOOKEEPER_CONNECT: zookeeper0:2181,zookeeper1:2182,zookeeper2:2183/kafka
+      BROKER_ID: 0
+      BROKER_PORT: 9092
+      ADVERTISED_HOST_NAME: kafka0
+      HOST_NAME: kafka0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+        - zookeeper0
+        - zookeeper1
+        - zookeeper2
+    expose:
+      - 9092
+  kafka1:
+    build:
+      context: .
+      dockerfile: mykafka.cluster.Dockerfile
+    image: alex/kafka_cluster:0.8.2.2
+    container_name: kafka1
+    hostname: kafka1
+    ports:
+      - &quot;9093:9093&quot;
+    environment:
+      ZOOKEEPER_CONNECT: zookeeper0:2181,zookeeper1:2182,zookeeper2:2183/kafka
+      BROKER_ID: 1
+      BROKER_PORT: 9093
+      ADVERTISED_HOST_NAME: kafka1
+      HOST_NAME: kafka1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+        - zookeeper0
+        - zookeeper1
+        - zookeeper2
+    expose:
+      - 9093
+  kafka2:
+    build: .
+    build:
+      context: .
+      dockerfile: mykafka.cluster.Dockerfile
+    image: alex/kafka_cluster:0.8.2.2
+    container_name: kafka2
+    hostname: kafka2
+    ports:
+      - &quot;9094:9094&quot;
+    environment:
+      ZOOKEEPER_CONNECT: zookeeper0:2181,zookeeper1:2182,zookeeper2:2183/kafka
+      BROKER_ID: 2
+      BROKER_PORT: 9094
+      ADVERTISED_HOST_NAME: kafka2
+      HOST_NAME: kafka2
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+        - zookeeper0
+        - zookeeper1
+        - zookeeper2
+    expose:
+      - 9094`&lt;/pre&gt;
+这里要注意的是ZOOKEEPER_CONNECT参数中使用/kafka作为根目录。
+4.启动docker-compose
+&lt;pre&gt;`docker-compose -f mykafka-compose.yml up -d`&lt;/pre&gt;
+正常情况下，3个kafka容器，3个zookeeper容器启动。
+[![2016-10-30_23-23-15](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_23-23-15.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_23-23-15.jpg)
+5.验证zookeeper及目录结构
+进入一个zookeeper容器使用zkCli.sh客户端命令查看。所有broker信息在kafka目录下
+&lt;pre&gt;`docker exec -it zookeeper0 bash
+bin/zkCli.sh -server zookeeper0:2181`&lt;/pre&gt;
+[![2016-10-30_22-50-58](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_22-50-58.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_22-50-58.jpg)
+如果不设置/kakfa，一般目录结构如下。
+[![2016-10-30_22-26-55](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_22-26-55.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_22-26-55.jpg)
+6.验证kafka消息发送
+进入一个kafka容器
+&lt;pre&gt;`docker exec -it kafka0 bash`&lt;/pre&gt;
+创建一个topic，注意的是，我们之前配置的是/kafka,所以创建topic时一定要带上。
+&lt;pre&gt;`bash-4.3# bin/kafka-topics.sh --zookeeper zookeeper0:2181/kafka --topic topic1 --create --replication-factor 2 --partitions 3 
+Created topic &quot;topic1&quot;.
+bash-4.3# `&lt;/pre&gt;
+如果没有带/kafka,我们看到会直接出错。
+&lt;pre&gt;`bash-4.3# bin/kafka-topics.sh --zookeeper zookeeper0:2181 --topic topic1 --create --replication-factor 2 --partitions 3          
+Error while executing topic command org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /brokers/ids
+org.I0Itec.zkclient.exception.ZkNoNodeException: org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = 
+NoNode for /brokers/ids
+    at org.I0Itec.zkclient.exception.ZkException.create(ZkException.java:47)
+    at org.I0Itec.zkclient.ZkClient.retryUntilConnected(ZkClient.java:685)
+    at org.I0Itec.zkclient.ZkClient.getChildren(ZkClient.java:413)
+    at org.I0Itec.zkclient.ZkClient.getChildren(ZkClient.java:409)
+    at kafka.utils.ZkUtils$.getChildren(ZkUtils.scala:462)
+    at kafka.utils.ZkUtils$.getSortedBrokerList(ZkUtils.scala:78)
+    at kafka.admin.AdminUtils$.createTopic(AdminUtils.scala:170)
+    at kafka.admin.TopicCommand$.createTopic(TopicCommand.scala:93)
+    at kafka.admin.TopicCommand$.main(TopicCommand.scala:55)
+    at kafka.admin.TopicCommand.main(TopicCommand.scala)
+Caused by: org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /brokers/ids
+    at org.apache.zookeeper.KeeperException.create(KeeperException.java:111)
+    at org.apache.zookeeper.KeeperException.create(KeeperException.java:51)
+    at org.apache.zookeeper.ZooKeeper.getChildren(ZooKeeper.java:1472)
+    at org.apache.zookeeper.ZooKeeper.getChildren(ZooKeeper.java:1500)
+    at org.I0Itec.zkclient.ZkConnection.getChildren(ZkConnection.java:99)
+    at org.I0Itec.zkclient.ZkClient$2.call(ZkClient.java:416)
+    at org.I0Itec.zkclient.ZkClient$2.call(ZkClient.java:413)
+    at org.I0Itec.zkclient.ZkClient.retryUntilConnected(ZkClient.java:675)
+    ... 8 more`&lt;/pre&gt;
+启动consumer也需带/kafka
+&lt;pre&gt;`bin/kafka-console-consumer.sh --zookeeper zookeeper0:2181/kafka --topic topic1 --from-beginning`&lt;/pre&gt;
+启动producer，发送消息，consumer端可收到。
+&lt;pre&gt;`bin/kafka-console-producer.sh --broker-list kafka0:9092 --topic topic1
+</code></pre><p><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_22-55-11.jpg" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_22-55-11.jpg" alt="2016-10-30_22-55-11"></a><br>再看zookeeper的topic目录，看到有新的topic1的目录结构生成。<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_22-56-39.jpg" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_22-56-39.jpg" alt="2016-10-30_22-56-39"></a></p>
+</div><div class="tags"><a href="/tags/Docker/">Docker</a><a href="/tags/zookeeper/">zookeeper</a><a href="/tags/Kafka/">Kafka</a><a href="/tags/docker-compose/">docker-compose</a></div><div class="post-share"><div class="bdsharebuttonbox"><span style="float:left;line-height: 28px;height: 28px;font-size:16px;font-weight:blod">分享到：</span><a href="#" data-cmd="more" class="bds_more"></a><a href="#" data-cmd="mshare" title="分享到一键分享" class="bds_mshare"></a><a href="#" data-cmd="fbook" title="分享到Facebook" class="bds_fbook"></a><a href="#" data-cmd="twi" title="分享到Twitter" class="bds_twi"></a><a href="#" data-cmd="linkedin" title="分享到linkedin" class="bds_linkedin"></a><a href="#" data-cmd="youdao" title="分享到有道云笔记" class="bds_youdao"></a><a href="#" data-cmd="evernotecn" title="分享到印象笔记" class="bds_evernotecn"></a><a href="#" data-cmd="weixin" title="分享到微信" class="bds_weixin"></a><a href="#" data-cmd="qzone" title="分享到QQ空间" class="bds_qzone"></a><a href="#" data-cmd="tsina" title="分享到新浪微博" class="bds_tsina"></a></div></div><div class="post-nav"><a href="/2016/11/01/infopath-xml-ssis/" class="pre">SSIS提取InfoPath XML数据示例</a><a href="/2016/10/29/docker-oracle-xe-11g/" class="next">Docker快速搭建oracle xe 11g开发环境</a></div><div id="comments"></div></div></div></div><div class="layout-r"><div id="sidebar"><div class="search-pla"></div><div id="toc" class="widget"><div class="widget-title"><i class="fa fa-fei">文章目录</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-xie"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/05/15/storm-3/">Storm与kafka集成(上)</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/09/docker-ps/">docker ps 命令详解</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/26/machine-learning-3/">机器学习之三：降维技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/storm-2/">Storm的基本概念和组件</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/28/machine-learning-2/">机器学习之二：回归分析</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/homo-tommorrow/">《未来简史》读书笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/storm-1/">使用Docker快速安装简单Storm集群环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/machine-learning-1/">机器学习之一：什么是机器学习？</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/blockchain-1/">关于区块链的一点思考</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/reading-2016/">2016 阅读书单</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-gui"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/">云计算及虚拟化</a><span class="category-list-count">34</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/运维/">运维</a><span class="category-list-count">16</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/">商业智能</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/数据库/">数据库</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/">大数据</a><span class="category-list-count">13</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/运维/">运维</a><span class="category-list-count">3</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">18</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/运维/">运维</a><span class="category-list-count">6</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/读书笔记/">读书笔记</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/运维/">运维</a><span class="category-list-count">3</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-biao"> 标签</i></div><div class="tagcloud"><a href="/tags/docker-compose/" style="font-size: 15px;">docker-compose</a> <a href="/tags/区块链/" style="font-size: 15px;">区块链</a> <a href="/tags/BigInSights/" style="font-size: 15px;">BigInSights</a> <a href="/tags/KERBEROS/" style="font-size: 15px;">KERBEROS</a> <a href="/tags/big-data/" style="font-size: 15px;">big data</a> <a href="/tags/data-lake/" style="font-size: 15px;">data lake</a> <a href="/tags/数据湖/" style="font-size: 15px;">数据湖</a> <a href="/tags/Cognos/" style="font-size: 15px;">Cognos</a> <a href="/tags/Container/" style="font-size: 15px;">Container</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/open-vswitch/" style="font-size: 15px;">open vswitch</a> <a href="/tags/容器/" style="font-size: 15px;">容器</a> <a href="/tags/Oracle/" style="font-size: 15px;">Oracle</a> <a href="/tags/userland-proxy/" style="font-size: 15px;">userland-proxy</a> <a href="/tags/Registry/" style="font-size: 15px;">Registry</a> <a href="/tags/Shipyard/" style="font-size: 15px;">Shipyard</a> <a href="/tags/swarm/" style="font-size: 15px;">swarm</a> <a href="/tags/flume/" style="font-size: 15px;">flume</a> <a href="/tags/hadoop/" style="font-size: 15px;">hadoop</a> <a href="/tags/HA/" style="font-size: 15px;">HA</a> <a href="/tags/zookeeper/" style="font-size: 15px;">zookeeper</a> <a href="/tags/Hbase/" style="font-size: 15px;">Hbase</a> <a href="/tags/工业4-0/" style="font-size: 15px;">工业4.0</a> <a href="/tags/ETL/" style="font-size: 15px;">ETL</a> <a href="/tags/InfoPath/" style="font-size: 15px;">InfoPath</a> <a href="/tags/SSIS/" style="font-size: 15px;">SSIS</a> <a href="/tags/XML/" style="font-size: 15px;">XML</a> <a href="/tags/JConsole/" style="font-size: 15px;">JConsole</a> <a href="/tags/Mycat/" style="font-size: 15px;">Mycat</a> <a href="/tags/Kafka/" style="font-size: 15px;">Kafka</a> <a href="/tags/Kafka-Manager/" style="font-size: 15px;">Kafka Manager</a> <a href="/tags/postgresql/" style="font-size: 15px;">postgresql</a> <a href="/tags/keepalived/" style="font-size: 15px;">keepalived</a> <a href="/tags/lvs/" style="font-size: 15px;">lvs</a> <a href="/tags/Kettle/" style="font-size: 15px;">Kettle</a> <a href="/tags/flannel/" style="font-size: 15px;">flannel</a> <a href="/tags/Kubernetes/" style="font-size: 15px;">Kubernetes</a> <a href="/tags/Mysql/" style="font-size: 15px;">Mysql</a> <a href="/tags/Quagga/" style="font-size: 15px;">Quagga</a> <a href="/tags/Redis/" style="font-size: 15px;">Redis</a> <a href="/tags/ku8eye/" style="font-size: 15px;">ku8eye</a> <a href="/tags/eclipse/" style="font-size: 15px;">eclipse</a> <a href="/tags/maven/" style="font-size: 15px;">maven</a> <a href="/tags/机器学习/" style="font-size: 15px;">机器学习</a> <a href="/tags/HAproxy/" style="font-size: 15px;">HAproxy</a> <a href="/tags/catlet/" style="font-size: 15px;">catlet</a> <a href="/tags/devstack/" style="font-size: 15px;">devstack</a> <a href="/tags/openstack/" style="font-size: 15px;">openstack</a> <a href="/tags/Python/" style="font-size: 15px;">Python</a> <a href="/tags/pgbench/" style="font-size: 15px;">pgbench</a> <a href="/tags/pgCluu/" style="font-size: 15px;">pgCluu</a> <a href="/tags/trigger/" style="font-size: 15px;">trigger</a> <a href="/tags/uuid/" style="font-size: 15px;">uuid</a> <a href="/tags/阅读书单/" style="font-size: 15px;">阅读书单</a> <a href="/tags/WordPress/" style="font-size: 15px;">WordPress</a> <a href="/tags/罗马/" style="font-size: 15px;">罗马</a> <a href="/tags/Hive/" style="font-size: 15px;">Hive</a> <a href="/tags/sqoop/" style="font-size: 15px;">sqoop</a> <a href="/tags/Storm/" style="font-size: 15px;">Storm</a> <a href="/tags/Yarn/" style="font-size: 15px;">Yarn</a> <a href="/tags/Thrift/" style="font-size: 15px;">Thrift</a> <a href="/tags/必然/" style="font-size: 15px;">必然</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-archive"> 归档</i></div><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a></li></ul></div></div></div></div><a id="totop" href="#top"></a><div id="footer"><div class="footer-info"><p><a href="/baidusitemap.xml">网站地图</a> |  <a href="/atom.xml">订阅</a> |  <a href="/about/">关于</a></p><p>本站总访问量：<i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>次</p><p><span> Copyright &copy;<a href="/." rel="nofollow">yaodataking.com.</a></span><span> Theme by<a rel="nofollow" target="_blank" href="https://github.com/chaooo/hexo-theme-BlueLake"> BlueLake.</a></span><span> Count by<a href="http://busuanzi.ibruce.info/"> busuanzi.</a></span><span> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a></span></p></div></div></div><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><script type="text/javascript" src="/js/search.json.js?v=2.0.1"></script><script type="text/javascript" src="/js/toctotop.js?v=2.0.1" async></script><script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["mshare","weixin","tsina","qzone","linkedin","fbook","twi","print","renren","sqq","evernotecn","bdysc","tqq","tqf","bdxc","kaixin001","tieba","douban","bdhome","thx","ibaidu","meilishuo","mogujie","diandian","huaban","duitang","hx","fx","youdao","sdo","qingbiji","people","xinhua","mail","isohu","yaolan","wealink","ty","iguba","h163","copy"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"],"viewText":"分享到：","viewSize":"16"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script></body></html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description"><title>Kafka入门之三:Kafka集群安装及演示 | Alex Wu's blog</title><link rel="stylesheet" type="text/css" href="//fonts.css.network/css?family=Source+Code+Pro"><link rel="stylesheet" type="text/css" href="/css/style.css?v=2.0.1"><link rel="stylesheet" type="text/css" href="/css/highlight.css?v=2.0.1"><link rel="Shortcut Icon" href="/favicon.ico"><link rel="bookmark" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Kafka入门之三:Kafka集群安装及演示</h1><a id="logo" href="/.">Alex Wu's blog</a><p class="description"></p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div><div id="search-form"><div id="result-mask" class="hide"></div><label><input id="search-key" type="text" autocomplete="off" placeholder="搜索..."></label><div id="result-wrap" class="hide"><div id="search-result"></div></div><div class="hide"><template id="search-tpl"><div class="item"><a href="/{path}" title="{title}"><div class="title">{title}</div><div class="time">{date}</div><div class="tags">{tags}</div></a></div></template></div></div></div><div id="layout" class="layout-g"><div class="layout-l"><div class="content_container"><div class="post"><h1 class="post-title">Kafka入门之三:Kafka集群安装及演示</h1><div class="post-meta"><span class="date">Oct 22, 2016</span><span class="category"><a href="/categories/云计算及虚拟化/">云计算及虚拟化</a><a href="/categories/云计算及虚拟化/运维/">运维</a></span><span><i id="busuanzi_container_page_pv"><i id="busuanzi_value_page_pv"></i><i> Hits</i></i></span><a href="/2016/10/22/kafka-3/#comments" class="comment-count">留言</a></div><div class="post-content"><p>1. 简介<br>在<a href="http://blog.yaodataking.com/2016/09/kafka-1.html">Kafka入门之一:使用Docker安装Kafka和Zookeeper</a>里我们已经演示使用docker安装单节点的Kafka，也就是一个broker。但实际上kafka是天生支持多broker的。在安装之前，我们先来看几个broker参数。 更多参数参见<a href="http://kafka.apache.org/082/documentation.html#brokerconfigs" target="_blank" rel="external">官网</a></p>
+<p><table><br>     <tbody><br>         <tr><br>             <td width="300" height="">Property</td><br>             <td width="200" height="">Default</td><br>             <td width="800" height="">Description</td><br>         </tr><br>         <tr><br>             <td>broker.id</td><br>             <td>&nbsp;</td>             <td>每个broker都可以用一个唯一的非负整数id进行标识；这个id可以作为broker的&#8220;名字&#8221;，并且它的存在使得broker无须混淆consumers就可以迁移到不同的host/port上。你可以选择任意你喜欢的数字作为id，只要id是唯一的即可。</td><br>         </tr><br>         <tr><br>             <td>log.dirs</td><br>             <td>/tmp/kafka-logs</td>             <td>kafka存放数据的路径。这个路径并不是唯一的，可以是多个，路径之间只需要使用逗号分隔即可；每当创建新partition时，都会选择在包含最少partitions的路径下进行。</td><br>         </tr><br>         <tr><br>             <td>port</td><br>             <td>9092</td><br>             <td>server接受客户端连接的端口</td><br>         </tr><br>         <tr><br>             <td>zookeeper.connect</td><br>             <td>null</td><br>             <td>ZooKeeper连接字符串的格式为：hostname:port，此处hostname和port分别是ZooKeeper集群中某个节点的host和port；为了当某个host宕掉之后你能通过其他ZooKeeper节点进行连接，你可以按照一下方式制定多个hosts：hostname1:port1, hostname2:port2, hostname3:port3.<br>ZooKeeper 允许你增加一个&#8220;chroot&#8221;路径，将集群中所有kafka数据存放在特定的路径下。当多个Kafka集群或者其他应用使用相同ZooKeeper集群时，可以使用这个方式设置数据存放路径。这种方式的实现可以通过这样设置连接字符串格式，如下所示：          hostname1：port1，hostname2：port2，hostname3：port3/chroot/path</td></tr></tbody></table></p>
+<pre><code>       这样设置就将所有kafka集群数据存放在/chroot/path路径下。注意，在你启动broker之前，你必须创建这个路径，并且consumers必须使用相同的连接格式。&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;message.max.bytes&lt;/td&gt;
+       &lt;td&gt;1000000&lt;/td&gt;
+       &lt;td&gt;server可以接收的消息最大尺寸。重要的是，consumer和producer有关这个属性的设置必须同步，否则producer发布的消息对consumer来说太大。&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;num.network.threads&lt;/td&gt;
+       &lt;td&gt;3&lt;/td&gt;
+       &lt;td&gt;server用来处理网络请求的网络线程数目；一般你不需要更改这个属性。&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;num.io.threads&lt;/td&gt;
+       &lt;td&gt;8&lt;/td&gt;
+       &lt;td&gt;server用来处理请求的I/O线程的数目；这个线程数目至少要等于硬盘的个数。&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;background.threads&lt;/td&gt;
+       &lt;td&gt;4&lt;/td&gt;
+       &lt;td&gt;用于后台处理的线程数目，例如文件删除；你不需要更改这个属性。&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;queued.max.requests&lt;/td&gt;
+       &lt;td&gt;500&lt;/td&gt;
+       &lt;td&gt;在网络线程停止读取新请求之前，可以排队等待I/O线程处理的最大请求个数。&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;host.name&lt;/td&gt;
+       &lt;td&gt;null&lt;/td&gt;
+       &lt;td&gt;broker的hostname；如果hostname已经设置的话，broker将只会绑定到这个地址上；如果没有设置，它将绑定到所有接口，并发布一份到ZK&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;advertised.host.name&lt;/td&gt;
+       &lt;td&gt;null&lt;/td&gt;
+       &lt;td&gt;如果设置，则就作为broker 的hostname发往producer、consumers以及其他brokers&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;advertised.port&lt;/td&gt;
+       &lt;td&gt;null&lt;/td&gt;
+       &lt;td&gt;此端口将给与producers、consumers、以及其他brokers，它会在建立连接时用到； 它仅在实际端口和server需要绑定的端口不一样时才需要设置。&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;num.partitions&lt;/td&gt;
+       &lt;td&gt;1&lt;/td&gt;
+       &lt;td&gt;如果创建topic时没有给出划分partitions个数，这个数字将是topic下partitions数目的默认数值。&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;auto.create.topics.enable&lt;/td&gt;
+       &lt;td&gt;true&lt;/td&gt;
+       &lt;td&gt;是否允许自动创建topic。如果是真的，则produce或者fetch 不存在的topic时，会自动创建这个topic。否则需要使用命令行创建topic&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;default.replication.factor&lt;/td&gt;
+       &lt;td&gt;1&lt;/td&gt;
+       &lt;td&gt;默认备份份数，仅指自动创建的topics&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;replica.lag.time.max.ms&lt;/td&gt;
+       &lt;td&gt;10000&lt;/td&gt;
+       &lt;td&gt;如果一个follower在这个时间内没有发送fetch请求，leader将从ISR重移除这个follower，并认为这个follower已经挂了&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;replica.lag.max.messages&lt;/td&gt;
+       &lt;td&gt;4000&lt;/td&gt;
+       &lt;td&gt;如果一个replica没有备份的条数超过这个数值，则leader将移除这个follower，并认为这个follower已经挂了&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;replica.socket.timeout.ms&lt;/td&gt;
+       &lt;td&gt;30*1000&lt;/td&gt;
+       &lt;td&gt;leader 备份数据时的socket网络请求的超时时间&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;replica.socket.receive.buffer.bytes&lt;/td&gt;
+       &lt;td&gt;64*1024&lt;/td&gt;
+       &lt;td&gt;备份时向leader发送网络请求时的socket receive buffer&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;replica.fetch.max.bytes&lt;/td&gt;
+       &lt;td&gt;1024*1024&lt;/td&gt;
+       &lt;td&gt;备份时每次fetch的最大值&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;replica.fetch.min.bytes&lt;/td&gt;
+       &lt;td&gt;500&lt;/td&gt;
+       &lt;td&gt;leader发出备份请求时，数据到达leader的最长等待时间&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;replica.fetch.min.bytes&lt;/td&gt;
+       &lt;td&gt;1&lt;/td&gt;
+       &lt;td&gt;备份时每次fetch之后回应的最小尺寸&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;num.replica.fetchers&lt;/td&gt;
+       &lt;td&gt;1&lt;/td&gt;
+       &lt;td&gt;从leader备份数据的线程数&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;replica.high.watermark.checkpoint.interval.ms &lt;/td&gt;
+       &lt;td&gt;5000&lt;/td&gt;
+       &lt;td&gt;每个replica检查是否将最高水位进行固化的频率&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;zookeeper.session.timeout.ms&lt;/td&gt;
+       &lt;td&gt;6000&lt;/td&gt;
+       &lt;td&gt;zookeeper会话超时时间。&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;zookeeper.connection.timeout.ms&lt;/td&gt;
+       &lt;td&gt;6000&lt;/td&gt;
+       &lt;td&gt;客户端等待和zookeeper建立连接的最大时间&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;zookeeper.sync.time.ms&lt;/td&gt;
+       &lt;td&gt;2000&lt;/td&gt;
+       &lt;td&gt;zk follower落后于zk leader的最长时间&lt;/td&gt;
+   &lt;/tr&gt;
+    &lt;tr&gt;
+       &lt;td&gt;auto.leader.rebalance.enable&lt;/td&gt;
+       &lt;td&gt;true&lt;/td&gt;
+       &lt;td&gt;如果这是true，控制者将会自动平衡brokers对于partitions的leadership&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;leader.imbalance.per.broker.percentage&lt;/td&gt;
+       &lt;td&gt;10&lt;/td&gt;
+       &lt;td&gt;每个broker所允许的leader最大不平衡比率&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;leader.imbalance.check.interval.seconds&lt;/td&gt;
+       &lt;td&gt;300&lt;/td&gt;
+       &lt;td&gt;检查leader不平衡的频率&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;offset.metadata.max.bytes&lt;/td&gt;
+       &lt;td&gt;4096&lt;/td&gt;
+       &lt;td&gt;允许客户端保存他们offsets的最大个数&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;max.connections.per.ip&lt;/td&gt;
+       &lt;td&gt;Int.MaxValue&lt;/td&gt;
+       &lt;td&gt;每个ip地址上每个broker可以被连接的最大数目&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;max.connections.per.ip.overrides&lt;/td&gt;
+       &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+       &lt;td&gt;每个ip或者hostname默认的连接的最大覆盖&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;connections.max.idle.ms&lt;/td&gt;
+       &lt;td&gt;600000&lt;/td&gt;
+       &lt;td&gt;空连接的超时限制&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;log.roll.jitter.{ms,hours}&lt;/td&gt;
+       &lt;td&gt;0&lt;/td&gt;
+       &lt;td&gt;从logRollTimeMillis抽离的jitter最大数目&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;num.recovery.threads.per.data.dir&lt;/td&gt;
+       &lt;td&gt;1&lt;/td&gt;
+       &lt;td&gt;每个数据目录用来日志恢复的线程数目&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;unclean.leader.election.enable&lt;/td&gt;
+       &lt;td&gt;true&lt;/td&gt;
+       &lt;td&gt;指明了是否能够使不在ISR中replicas设置用来作为leader&lt;/td&gt;
+   &lt;/tr&gt;
+   &lt;tr&gt;
+       &lt;td&gt;delete.topic.enable&lt;/td&gt;
+       &lt;td&gt;false&lt;/td&gt;
+       &lt;td&gt;能够删除topic&lt;/td&gt;
+   &lt;/tr&gt;
+&lt;/tbody&gt;
+</code></pre><p><br>这些参数在你还没有了解具体用途之前，你都可以默认，今天我们将会使用几个参数。<br>2. Kafka集群<br>2.1 Dockerfile<br>我们在dockeefile中加入一些broker的参数，即在server.properites文件中设置的参数。</p>
+<pre><code>FROM java:openjdk-8-jre-alpine
+ARG MIRROR=http://mirrors.aliyun.com/
+ARG SCALA_VERSION=2.11
+ARG KAFKA_VERSION=0.8.2.2
+LABEL name=&quot;kafka&quot; version=$VERSION
+RUN apk update &amp;amp;&amp;amp; apk add ca-certificates &amp;amp;&amp;amp; \
+    apk add tzdata &amp;amp;&amp;amp; \
+    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime &amp;amp;&amp;amp; \
+    echo &quot;Asia/Shanghai&quot; &amp;gt; /etc/timezone
+RUN apk add --no-cache wget bash \
+    &amp;amp;&amp;amp; mkdir /opt \
+    &amp;amp;&amp;amp; wget -q -O - $MIRROR/apache/kafka/$KAFKA_VERSION/kafka_$SCALA_VERSION-$KAFKA_VERSION.tgz | tar -xzf - -C /opt \
+    &amp;amp;&amp;amp; mv /opt/kafka_$SCALA_VERSION-$KAFKA_VERSION /opt/kafka \
+    &amp;amp;&amp;amp; sed -i &apos;s/num.partitions.*$/num.partitions=3/g&apos; /opt/kafka/config/server.properties
+
+RUN echo &quot;cd /opt/kafka&quot; &amp;gt; /opt/kafka/start.sh &amp;amp;&amp;amp;\
+    echo &quot;sed -i &apos;s%zookeeper.connect=.*$%zookeeper.connect=zookeeper:2181%g&apos;  /opt/kafka/config/server.properties&quot; &amp;gt;&amp;gt; /opt/kafka/start.sh &amp;amp;&amp;amp;\
+    echo &quot;[ ! -z $&quot;&quot;BROKER_ID&quot;&quot; ] &amp;amp;&amp;amp; sed -i &apos;s%broker.id=.*$%broker.id=&apos;$&quot;&quot;BROKER_ID&apos;&quot;&quot;%g&apos;  /opt/kafka/config/server.properties&quot; &amp;gt;&amp;gt; /opt/kafka/start.sh &amp;amp;&amp;amp;\
+    echo &quot;[ ! -z $&quot;&quot;BROKER_PORT&quot;&quot; ] &amp;amp;&amp;amp; sed -i &apos;s%port=.*$%port=&apos;$&quot;&quot;BROKER_PORT&apos;&quot;&quot;%g&apos;  /opt/kafka/config/server.properties&quot; &amp;gt;&amp;gt; /opt/kafka/start.sh &amp;amp;&amp;amp;\
+    echo &quot;sed -i &apos;s%#advertised.host.name=.*$%advertised.host.name=&apos;$&quot;&quot;(hostname -i)&apos;&quot;&quot;%g&apos;  /opt/kafka/config/server.properties&quot; &amp;gt;&amp;gt; /opt/kafka/start.sh &amp;amp;&amp;amp;\
+    echo &quot;[ ! -z $&quot;&quot;ADVERTISED_HOST_NAME&quot;&quot; ] &amp;amp;&amp;amp; sed -i &apos;s%.*advertised.host.name=.*$%advertised.host.name=&apos;$&quot;&quot;ADVERTISED_HOST_NAME&apos;&quot;&quot;%g&apos;  /opt/kafka/config/server.properties&quot; &amp;gt;&amp;gt; /opt/kafka/start.sh &amp;amp;&amp;amp;\
+    echo &quot;sed -i &apos;s%#host.name=.*$%host.name=&apos;$&quot;&quot;(hostname -i)&apos;&quot;&quot;%g&apos;  /opt/kafka/config/server.properties&quot; &amp;gt;&amp;gt; /opt/kafka/start.sh &amp;amp;&amp;amp;\
+    echo &quot;[ ! -z $&quot;&quot;HOST_NAME&quot;&quot; ] &amp;amp;&amp;amp; sed -i &apos;s%.*host.name=.*$%host.name=&apos;$&quot;&quot;HOST_NAME&apos;&quot;&quot;%g&apos;  /opt/kafka/config/server.properties&quot; &amp;gt;&amp;gt; /opt/kafka/start.sh &amp;amp;&amp;amp;\
+    echo &quot;delete.topic.enable=true&quot; &amp;gt;&amp;gt; /opt/kafka/config/server.properties &amp;amp;&amp;amp;\
+    echo &quot;bin/kafka-server-start.sh config/server.properties&quot; &amp;gt;&amp;gt; /opt/kafka/start.sh &amp;amp;&amp;amp;\
+    chmod a+x /opt/kafka/start.sh
+
+EXPOSE 9092
+WORKDIR /opt/kafka
+ENTRYPOINT [&quot;sh&quot;, &quot;/opt/kafka/start.sh&quot;]`&lt;/pre&gt;
+2.2启动zookeeper
+为简单起见，zookeeper我们暂时使用单个容器。
+&lt;pre&gt;`sudo docker build -f zookeeper.Dockerfile -t alex/zookeeper:3.4.6 .`&lt;/pre&gt;
+2.3启动Kafka集群
+使用下面命令启动三个Kafka容器，分别是kafka0，kafka1，kafka2，我们看到启动容器时传入了BROKER_ID，BROKER_PORT等变量。这就可以很方便的启动多个容器。
+&lt;pre&gt;`docker run -itd --name kafka0 -h kafka0 -p9092:9092 -e BROKER_ID=0 -e BROKER_PORT=9092 --link zookeeper alex/kafka_cluster:0.8.2.2
+docker run -itd --name kafka1 -h kafka1 -p9093:9092 -e BROKER_ID=1 -e BROKER_PORT=9092 --link zookeeper alex/kafka_cluster:0.8.2.2
+docker run -itd --name kafka2 -h kafka2 -p9094:9092 -e BROKER_ID=2 -e BROKER_PORT=9092 --link zookeeper alex/kafka_cluster:0.8.2.2`&lt;/pre&gt;
+3.验证是否集群正常
+进入kafka0容器内, 创建topic1
+&lt;pre&gt;`docker exec -it kafka0 bash
+bin/kafka-topics.sh --zookeeper zookeeper:2181 --topic topic1 --create --replication-factor 2 --partitions 3
+bin/kafka-topics.sh --zookeeper zookeeper:2181 --topic topic1 --describe `&lt;/pre&gt;
+[![2016-10-22_21-17-05](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-17-05.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-17-05.jpg)
+启动consumer
+&lt;pre&gt;`bin/kafka-console-consumer.sh --zookeeper zookeeper:2181 --topic topic1`&lt;/pre&gt;
+进入kafka2容器内,  启动producer
+&lt;pre&gt;`bin/kafka-console-producer.sh --broker-list kafka2:9092 --topic topic1`&lt;/pre&gt;
+[![2016-10-22_21-16-06](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-16-06.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-16-06.jpg)
+发送一些消息，我看到consumer端正常接收。
+[![2016-10-22_21-16-26](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-16-26.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-16-26.jpg)
+这就说明集群配置成功。
+
+4.验证min.insync.replicas和request.required.acks的作用。
+我们创建topic2，并将min.insync.replicas设为2，partitions为1。
+&lt;pre&gt;`bin/kafka-topics.sh --zookeeper zookeeper:2181 --topic topic2 --create --config min.insync.replicas=2 --replication-factor 2 --partitions 1
+bin/kafka-topics.sh --zookeeper zookeeper:2181 --topic topic2 --describe `&lt;/pre&gt;
+[![2016-10-22_23-26-17](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_23-26-17.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_23-26-17.jpg)
+我们看到topic2分配在了kafka2上，并且kafka0是备份，ISR是0和2,现在我们将kafka1和kafka2的broker关闭。我们看到leader已自动转为broker0。然后启动consumer
+&lt;pre&gt;`bin/kafka-console-consumer.sh --zookeeper zookeeper:2181 --topic topic2`&lt;/pre&gt;
+在另一个终端上启动producer,并将request-required-acks设置为-1&lt;pre&gt;`bin/kafka-console-producer.sh --broker-list kafka0:9092 --topic topic2 --request-required-acks -1
+</code></pre><p><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_23-35-05.jpg" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_23-35-05.jpg" alt="2016-10-22_23-35-05"></a><br>我们看到此时发送消息，kafka出现错误。原因是我们在producer发送时设置了检查replicas是否都收到数据的确认，但是因为我们已经关闭broker2, 所以尝试发送3次未果后，producer返回错误。<br>显然，我们将producer以默认设置发送消息时，consumer马上收到消息了。<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_22-02-59.jpg" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_22-02-59.jpg" alt="2016-10-22_22-02-59"></a></p>
+</div><div class="tags"><a href="/tags/Docker/">Docker</a><a href="/tags/Kafka/">Kafka</a></div><div class="post-share"><div class="bdsharebuttonbox"><span style="float:left;line-height: 28px;height: 28px;font-size:16px;font-weight:blod">分享到：</span><a href="#" data-cmd="more" class="bds_more"></a><a href="#" data-cmd="mshare" title="分享到一键分享" class="bds_mshare"></a><a href="#" data-cmd="fbook" title="分享到Facebook" class="bds_fbook"></a><a href="#" data-cmd="twi" title="分享到Twitter" class="bds_twi"></a><a href="#" data-cmd="linkedin" title="分享到linkedin" class="bds_linkedin"></a><a href="#" data-cmd="youdao" title="分享到有道云笔记" class="bds_youdao"></a><a href="#" data-cmd="evernotecn" title="分享到印象笔记" class="bds_evernotecn"></a><a href="#" data-cmd="weixin" title="分享到微信" class="bds_weixin"></a><a href="#" data-cmd="qzone" title="分享到QQ空间" class="bds_qzone"></a><a href="#" data-cmd="tsina" title="分享到新浪微博" class="bds_tsina"></a></div></div><div class="post-nav"><a href="/2016/10/28/rome-story-13/" class="pre">《罗马人的故事13:最后一搏》读书笔记</a><a href="/2016/10/16/kafka-2/" class="next">Kafka入门之二:Producer分发策略</a></div><div id="comments"></div></div></div></div><div class="layout-r"><div id="sidebar"><div class="search-pla"></div><div id="toc" class="widget"><div class="widget-title"><i class="fa fa-fei">文章目录</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-xie"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/05/15/storm-3/">Storm与kafka集成(上)</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/09/docker-ps/">docker ps 命令详解</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/26/machine-learning-3/">机器学习之三：降维技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/storm-2/">Storm的基本概念和组件</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/28/machine-learning-2/">机器学习之二：回归分析</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/homo-tommorrow/">《未来简史》读书笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/storm-1/">使用Docker快速安装简单Storm集群环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/machine-learning-1/">机器学习之一：什么是机器学习？</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/blockchain-1/">关于区块链的一点思考</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/reading-2016/">2016 阅读书单</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-gui"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/">云计算及虚拟化</a><span class="category-list-count">34</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/运维/">运维</a><span class="category-list-count">16</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/">商业智能</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/数据库/">数据库</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/">大数据</a><span class="category-list-count">13</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/运维/">运维</a><span class="category-list-count">3</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">18</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/运维/">运维</a><span class="category-list-count">6</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/读书笔记/">读书笔记</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/运维/">运维</a><span class="category-list-count">3</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-biao"> 标签</i></div><div class="tagcloud"><a href="/tags/docker-compose/" style="font-size: 15px;">docker-compose</a> <a href="/tags/区块链/" style="font-size: 15px;">区块链</a> <a href="/tags/BigInSights/" style="font-size: 15px;">BigInSights</a> <a href="/tags/KERBEROS/" style="font-size: 15px;">KERBEROS</a> <a href="/tags/big-data/" style="font-size: 15px;">big data</a> <a href="/tags/data-lake/" style="font-size: 15px;">data lake</a> <a href="/tags/数据湖/" style="font-size: 15px;">数据湖</a> <a href="/tags/Cognos/" style="font-size: 15px;">Cognos</a> <a href="/tags/Container/" style="font-size: 15px;">Container</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/open-vswitch/" style="font-size: 15px;">open vswitch</a> <a href="/tags/容器/" style="font-size: 15px;">容器</a> <a href="/tags/Oracle/" style="font-size: 15px;">Oracle</a> <a href="/tags/userland-proxy/" style="font-size: 15px;">userland-proxy</a> <a href="/tags/Registry/" style="font-size: 15px;">Registry</a> <a href="/tags/Shipyard/" style="font-size: 15px;">Shipyard</a> <a href="/tags/swarm/" style="font-size: 15px;">swarm</a> <a href="/tags/flume/" style="font-size: 15px;">flume</a> <a href="/tags/hadoop/" style="font-size: 15px;">hadoop</a> <a href="/tags/HA/" style="font-size: 15px;">HA</a> <a href="/tags/zookeeper/" style="font-size: 15px;">zookeeper</a> <a href="/tags/Hbase/" style="font-size: 15px;">Hbase</a> <a href="/tags/工业4-0/" style="font-size: 15px;">工业4.0</a> <a href="/tags/ETL/" style="font-size: 15px;">ETL</a> <a href="/tags/InfoPath/" style="font-size: 15px;">InfoPath</a> <a href="/tags/SSIS/" style="font-size: 15px;">SSIS</a> <a href="/tags/XML/" style="font-size: 15px;">XML</a> <a href="/tags/JConsole/" style="font-size: 15px;">JConsole</a> <a href="/tags/Mycat/" style="font-size: 15px;">Mycat</a> <a href="/tags/Kafka/" style="font-size: 15px;">Kafka</a> <a href="/tags/Kafka-Manager/" style="font-size: 15px;">Kafka Manager</a> <a href="/tags/postgresql/" style="font-size: 15px;">postgresql</a> <a href="/tags/keepalived/" style="font-size: 15px;">keepalived</a> <a href="/tags/lvs/" style="font-size: 15px;">lvs</a> <a href="/tags/Kettle/" style="font-size: 15px;">Kettle</a> <a href="/tags/flannel/" style="font-size: 15px;">flannel</a> <a href="/tags/Kubernetes/" style="font-size: 15px;">Kubernetes</a> <a href="/tags/Mysql/" style="font-size: 15px;">Mysql</a> <a href="/tags/Quagga/" style="font-size: 15px;">Quagga</a> <a href="/tags/Redis/" style="font-size: 15px;">Redis</a> <a href="/tags/ku8eye/" style="font-size: 15px;">ku8eye</a> <a href="/tags/eclipse/" style="font-size: 15px;">eclipse</a> <a href="/tags/maven/" style="font-size: 15px;">maven</a> <a href="/tags/机器学习/" style="font-size: 15px;">机器学习</a> <a href="/tags/HAproxy/" style="font-size: 15px;">HAproxy</a> <a href="/tags/catlet/" style="font-size: 15px;">catlet</a> <a href="/tags/devstack/" style="font-size: 15px;">devstack</a> <a href="/tags/openstack/" style="font-size: 15px;">openstack</a> <a href="/tags/Python/" style="font-size: 15px;">Python</a> <a href="/tags/pgbench/" style="font-size: 15px;">pgbench</a> <a href="/tags/pgCluu/" style="font-size: 15px;">pgCluu</a> <a href="/tags/trigger/" style="font-size: 15px;">trigger</a> <a href="/tags/uuid/" style="font-size: 15px;">uuid</a> <a href="/tags/阅读书单/" style="font-size: 15px;">阅读书单</a> <a href="/tags/WordPress/" style="font-size: 15px;">WordPress</a> <a href="/tags/罗马/" style="font-size: 15px;">罗马</a> <a href="/tags/Hive/" style="font-size: 15px;">Hive</a> <a href="/tags/sqoop/" style="font-size: 15px;">sqoop</a> <a href="/tags/Storm/" style="font-size: 15px;">Storm</a> <a href="/tags/Yarn/" style="font-size: 15px;">Yarn</a> <a href="/tags/Thrift/" style="font-size: 15px;">Thrift</a> <a href="/tags/必然/" style="font-size: 15px;">必然</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-archive"> 归档</i></div><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a></li></ul></div></div></div></div><a id="totop" href="#top"></a><div id="footer"><div class="footer-info"><p><a href="/baidusitemap.xml">网站地图</a> |  <a href="/atom.xml">订阅</a> |  <a href="/about/">关于</a></p><p>本站总访问量：<i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>次</p><p><span> Copyright &copy;<a href="/." rel="nofollow">yaodataking.com.</a></span><span> Theme by<a rel="nofollow" target="_blank" href="https://github.com/chaooo/hexo-theme-BlueLake"> BlueLake.</a></span><span> Count by<a href="http://busuanzi.ibruce.info/"> busuanzi.</a></span><span> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a></span></p></div></div></div><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><script type="text/javascript" src="/js/search.json.js?v=2.0.1"></script><script type="text/javascript" src="/js/toctotop.js?v=2.0.1" async></script><script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["mshare","weixin","tsina","qzone","linkedin","fbook","twi","print","renren","sqq","evernotecn","bdysc","tqq","tqf","bdxc","kaixin001","tieba","douban","bdhome","thx","ibaidu","meilishuo","mogujie","diandian","huaban","duitang","hx","fx","youdao","sdo","qingbiji","people","xinhua","mail","isohu","yaolan","wealink","ty","iguba","h163","copy"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"],"viewText":"分享到：","viewSize":"16"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script></body></html>

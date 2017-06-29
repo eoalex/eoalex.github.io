@@ -1,0 +1,177 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description"><title>基于Mycat的Oracle数据迁移至Mysql方案 | Alex Wu's blog</title><link rel="stylesheet" type="text/css" href="//fonts.css.network/css?family=Source+Code+Pro"><link rel="stylesheet" type="text/css" href="/css/style.css?v=2.0.1"><link rel="stylesheet" type="text/css" href="/css/highlight.css?v=2.0.1"><link rel="Shortcut Icon" href="/favicon.ico"><link rel="bookmark" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">基于Mycat的Oracle数据迁移至Mysql方案</h1><a id="logo" href="/.">Alex Wu's blog</a><p class="description"></p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div><div id="search-form"><div id="result-mask" class="hide"></div><label><input id="search-key" type="text" autocomplete="off" placeholder="搜索..."></label><div id="result-wrap" class="hide"><div id="search-result"></div></div><div class="hide"><template id="search-tpl"><div class="item"><a href="/{path}" title="{title}"><div class="title">{title}</div><div class="time">{date}</div><div class="tags">{tags}</div></a></div></template></div></div></div><div id="layout" class="layout-g"><div class="layout-l"><div class="content_container"><div class="post"><h1 class="post-title">基于Mycat的Oracle数据迁移至Mysql方案</h1><div class="post-meta"><span class="date">Mar 27, 2016</span><span class="category"><a href="/categories/数据库/">数据库</a><a href="/categories/数据库/运维/">运维</a></span><span><i id="busuanzi_container_page_pv"><i id="busuanzi_value_page_pv"></i><i> Hits</i></i></span><a href="/2016/03/27/mycat-oracle-to-mysql/#comments" class="comment-count">留言</a></div><div class="post-content"><p>我们知道由于各种各样的原因，一些数据库比如oracle不得不迁移至其他数据库而又不能中断业务时，下面的这些问题常常困扰着技术人员，哪些表和库要迁移,哪些暂时不能动,迁移后数据如何同步,一般靠谱的方案是从影响最小的模块和数据表开始改造,逐步上线。那么何种解决方案可以实现这样的改造？本文我们就基于mycat来实现下面的一个场景，用户表与订单表的数据迁移到MySQL，转账记录表则还保留在oracle。<br>改造前结构是这样的：<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_13-32-40.jpg" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_13-32-40.jpg" alt="2016-03-27_13-32-40"></a><br>改造后：<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_13-30-56.jpg" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_13-30-56.jpg" alt="2016-03-27_13-30-56"></a><br>1.准备工作<br>在具体测试前，我们先做一些准备工作。<br>1.1 准备oracle数据库，这里我们用docker实现<br>简单起见，我们直接从网上下载oracle的express版本。</p>
+<pre><code>docker create --name oraclexe11g01  -p 8080:8080 -p 1521:1521 martinsthiago/oraclexe-11g-fig
+docker start oraclexe11g01
+`&lt;/pre&gt;
+注意如果要使用GBK字符集，需要在客户端，服务器端做一些设置。
+客户端
+export NLS_LANG=AMERICAN_AMERICA.ZHS16GBK
+服务器端
+ALTER DATABASE CHARACTER SET ZHS16GBK;
+
+1.2 创建表
+创建用户表，订单表，转账记录表
+&lt;pre&gt;`create table Z_USER
+(
+  userid INTEGER
+, uname   VARCHAR2(50)
+);
+CREATE TABLE Z_ORDERS
+(
+  USERID INTEGER
+, productId INTEGER
+, unitprice NUMBER(12, 5)
+, qty INTEGER
+, orderDate DATE
+, orderLineNr INTEGER
+, orderNr INTEGER
+)
+;
+create table Z_PAY
+(
+  payid   INTEGER
+, orderNr INTEGER
+, paydate DATE
+, payamt  NUMBER(15,2)
+, userid INTEGER
+);
+`&lt;/pre&gt;
+1.3 生成测试数据
+这里我们通过ETL工具kettle来生成用户表，订单表，转账记录表的测试数据，具体过程略，以下就展示结果。
+用户表生成10万条记录
+[![2016-03-27_10-19-16](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_10-19-16.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_10-19-16.jpg)
+订单表生成1万条记录
+[![2016-03-27_9-40-56](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_9-40-56.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_9-40-56.jpg)
+转账记录表生成9914条记录
+[![2016-03-27_14-05-27](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_14-05-27.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_14-05-27.jpg)
+
+2.Mycat配置
+在假设的场景中，一共有10万用户数，所以我们根据用户ID进行分片，1到5万在第一个分片数据库，5万零1到10万在第二个分片数据库。
+2.1配置schema.xml
+[![2016-03-27_13-21-38](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_13-21-38.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_13-21-38.jpg)
+2.2配置rule.xml
+[![2016-03-27_14-08-32](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_14-08-32.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_14-08-32.jpg)
+2.3配置autopartition-long-userid.txt
+&lt;pre&gt;`[root@localhost ~]# vi autopartition-long-userid.txt
+# range start-end ,data node index
+# K=1000,M=10000.
+0-50000=0
+50001-100000=1
+`&lt;/pre&gt;
+
+配置完成，启动mysql数据库容器，mycat容器。
+
+3.转移测试
+3.1转账记录表
+根据设置，转账记录表还保留在oracle数据库，我们看看通过mycat数据是否可以查询及新增数据。在mycat 8066端,我们看到新增数据顺利插入至到dn3,也就是我们定义的oracle数据库。
+&lt;pre&gt;`mysql&amp;gt; insert into Z_PAY( payid,orderNr, paydate,payamt,userid ) values (9915,5000686,&apos;2016-01-31&apos;,10.2 ,7029);
+Query OK, 1 row affected (0.01 sec)
+ OK!
+
+mysql&amp;gt; explain insert into Z_PAY( payid,orderNr, paydate,payamt,userid ) values (9915,5000686,&apos;2016-01-31&apos;,10.2 ,7029);
++-----------+---------------------------------------------------------------------------------------------------------+
+| DATA_NODE | SQL                                                                                                     |
++-----------+---------------------------------------------------------------------------------------------------------+
+| dn3       | insert into Z_PAY( payid,orderNr, paydate,payamt,userid ) values (9915,5000686,&apos;2016-01-31&apos;,10.2 ,7029) |
++-----------+---------------------------------------------------------------------------------------------------------+
+1 row in set (0.01 sec)
+mysql&amp;gt;
+`&lt;/pre&gt;
+在oracle sqlplus端,我们可以查询到刚才新增的一条数据。
+&lt;pre&gt;`SQL&amp;gt; select * from z_pay where payid&amp;gt;=9910;
+
+     PAYID    ORDERNR PAYDATE          PAYAMT     USERID
+---------- ---------- ------------ ---------- ----------
+      9910    5005517 27-JAN-07         11.78      55819
+      9911    5008604 28-JAN-07         29.24      87168
+      9912    5003118 29-JAN-07         37.24      31233
+      9913    5004690 30-JAN-07          3.58      47576
+      9914    5000686 31-JAN-07           6.2       7029
+      9915    5000686 31-JAN-16          10.2       7029
+
+6 rows selected.
+
+SQL&amp;gt;
+`&lt;/pre&gt;
+3.2用户表
+用户表的转移，我们这里也通过ETL工具kettle来实现,需要说明的是kettle可以自动在mysql创建数据库表，下面是结果展示。
+[![2016-03-27_12-46-19](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_12-46-19.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_12-46-19.jpg)
+这里要注意的是，连接的mysql实际上是连接的是mycat的8066端口。
+[![2016-03-27_13-03-15](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_13-03-15.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_13-03-15.jpg)
+这样在转移的过程中，mycat就已经帮我们进行了数据分片。转移完成后，在mycat8066端，我们看到用户数据分别在dn1,dn2
+&lt;pre&gt;`mysql&amp;gt; explain select count(*) from z_user;
++-----------+-------------------------------------------------+
+| DATA_NODE | SQL                                             |
++-----------+-------------------------------------------------+
+| dn1       | SELECT COUNT(*) AS COUNT0 FROM z_user LIMIT 100 |
+| dn2       | SELECT COUNT(*) AS COUNT0 FROM z_user LIMIT 100 |
++-----------+-------------------------------------------------+
+2 rows in set (0.00 sec)
+
+mysql&amp;gt; select count(*) from z_user;
++--------+
+| COUNT0 |
++--------+
+| 100000 |
++--------+
+1 row in set (0.03 sec)
+`&lt;/pre&gt;
+进入mysql的3306，我们看到,用户数据确实根据我们预先定义的分别进入了两个数据库。
+&lt;pre&gt;`mysql&amp;gt; select count(*),min(userid),max(userid) from db1.z_user;
++----------+-------------+-------------+
+| count(*) | min(userid) | max(userid) |
++----------+-------------+-------------+
+|    50000 |           1 |       50000 |
++----------+-------------+-------------+
+1 row in set (0.05 sec)
+
+mysql&amp;gt; select count(*),min(userid),max(userid) from db2.z_user;
++----------+-------------+-------------+
+| count(*) | min(userid) | max(userid) |
++----------+-------------+-------------+
+|    50000 |       50001 |      100000 |
++----------+-------------+-------------+
+1 row in set (0.04 sec)
+
+mysql&amp;gt;
+`&lt;/pre&gt;
+
+3.3 订单表
+同样订单表的转移，我们这里也通过ETL工具kettle来实现,下面是结果展示。
+[![2016-03-27_13-08-56](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_13-08-56.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-27_13-08-56.jpg)
+&lt;pre&gt;`mysql&amp;gt; select count(*) from z_orders;
++--------+
+| COUNT0 |
++--------+
+|  10000 |
++--------+
+1 row in set (0.01 sec)
+
+mysql&amp;gt; explain select count(*) from z_orders;
++-----------+---------------------------------------------------+
+| DATA_NODE | SQL                                               |
++-----------+---------------------------------------------------+
+| dn1       | SELECT COUNT(*) AS COUNT0 FROM z_orders LIMIT 100 |
+| dn2       | SELECT COUNT(*) AS COUNT0 FROM z_orders LIMIT 100 |
++-----------+---------------------------------------------------+
+2 rows in set (0.00 sec)
+`&lt;/pre&gt;
+进入mysql的3306，我们看到,订单数据确实根据我们预先定义的分别进入了两个数据库。
+&lt;pre&gt;`mysql&amp;gt; select count(*),min(userid),max(userid) from db1.z_orders;
++----------+-------------+-------------+
+| count(*) | min(userid) | max(userid) |
++----------+-------------+-------------+
+|     4968 |           3 |       49997 |
++----------+-------------+-------------+
+1 row in set (0.01 sec)
+
+mysql&amp;gt; select count(*),min(userid),max(userid) from db2.z_orders;
++----------+-------------+-------------+
+| count(*) | min(userid) | max(userid) |
++----------+-------------+-------------+
+|     5032 |       50027 |       99989 |
++----------+-------------+-------------+
+1 row in set (0.01 sec)
+</code></pre><p>小结，通过以上实验，我们看到通过mycat这个中间件的穿针引线，我们就有可能在完全不中断业务的情况下，顺利的进行数据的迁移及分片工作，当然在实际情况下，场景比以上演示的复杂的多。我们还是可以通过逐步改造,逐步上线的方式完成整个数据的迁移工作。</p>
+<p>PS,<br>1.mycat连接oracle需要复制ojdbc14.jar到mycat的lib目录，<br>2.kettle连接oracle需要复制ojdbc14.jar到kettle的data-integration/lib目录,<br>3.kettle连接mysql同样需要复制mysql-connector-java-5.1.38-bin.jar到kettle的data-integration/lib目录。</p>
+</div><div class="tags"><a href="/tags/Oracle/">Oracle</a><a href="/tags/Mycat/">Mycat</a><a href="/tags/Kettle/">Kettle</a><a href="/tags/Mysql/">Mysql</a></div><div class="post-share"><div class="bdsharebuttonbox"><span style="float:left;line-height: 28px;height: 28px;font-size:16px;font-weight:blod">分享到：</span><a href="#" data-cmd="more" class="bds_more"></a><a href="#" data-cmd="mshare" title="分享到一键分享" class="bds_mshare"></a><a href="#" data-cmd="fbook" title="分享到Facebook" class="bds_fbook"></a><a href="#" data-cmd="twi" title="分享到Twitter" class="bds_twi"></a><a href="#" data-cmd="linkedin" title="分享到linkedin" class="bds_linkedin"></a><a href="#" data-cmd="youdao" title="分享到有道云笔记" class="bds_youdao"></a><a href="#" data-cmd="evernotecn" title="分享到印象笔记" class="bds_evernotecn"></a><a href="#" data-cmd="weixin" title="分享到微信" class="bds_weixin"></a><a href="#" data-cmd="qzone" title="分享到QQ空间" class="bds_qzone"></a><a href="#" data-cmd="tsina" title="分享到新浪微博" class="bds_tsina"></a></div></div><div class="post-nav"><a href="/2016/04/03/jconsole-remote-mycat/" class="pre">JConsole远程监控Mycat示列</a><a href="/2016/03/20/mycat-mysql-data-sync/" class="next">Mycat环境下的mysql数据迁移实验</a></div><div id="comments"></div></div></div></div><div class="layout-r"><div id="sidebar"><div class="search-pla"></div><div id="toc" class="widget"><div class="widget-title"><i class="fa fa-fei">文章目录</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-xie"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/05/15/storm-3/">Storm与kafka集成(上)</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/09/docker-ps/">docker ps 命令详解</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/26/machine-learning-3/">机器学习之三：降维技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/storm-2/">Storm的基本概念和组件</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/28/machine-learning-2/">机器学习之二：回归分析</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/homo-tommorrow/">《未来简史》读书笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/storm-1/">使用Docker快速安装简单Storm集群环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/machine-learning-1/">机器学习之一：什么是机器学习？</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/blockchain-1/">关于区块链的一点思考</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/reading-2016/">2016 阅读书单</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-gui"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/">云计算及虚拟化</a><span class="category-list-count">34</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/运维/">运维</a><span class="category-list-count">16</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/">商业智能</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/数据库/">数据库</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/">大数据</a><span class="category-list-count">13</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/运维/">运维</a><span class="category-list-count">3</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">18</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/运维/">运维</a><span class="category-list-count">6</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/读书笔记/">读书笔记</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/运维/">运维</a><span class="category-list-count">3</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-biao"> 标签</i></div><div class="tagcloud"><a href="/tags/docker-compose/" style="font-size: 15px;">docker-compose</a> <a href="/tags/区块链/" style="font-size: 15px;">区块链</a> <a href="/tags/BigInSights/" style="font-size: 15px;">BigInSights</a> <a href="/tags/KERBEROS/" style="font-size: 15px;">KERBEROS</a> <a href="/tags/big-data/" style="font-size: 15px;">big data</a> <a href="/tags/data-lake/" style="font-size: 15px;">data lake</a> <a href="/tags/数据湖/" style="font-size: 15px;">数据湖</a> <a href="/tags/Cognos/" style="font-size: 15px;">Cognos</a> <a href="/tags/Container/" style="font-size: 15px;">Container</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/open-vswitch/" style="font-size: 15px;">open vswitch</a> <a href="/tags/容器/" style="font-size: 15px;">容器</a> <a href="/tags/Oracle/" style="font-size: 15px;">Oracle</a> <a href="/tags/userland-proxy/" style="font-size: 15px;">userland-proxy</a> <a href="/tags/Registry/" style="font-size: 15px;">Registry</a> <a href="/tags/Shipyard/" style="font-size: 15px;">Shipyard</a> <a href="/tags/swarm/" style="font-size: 15px;">swarm</a> <a href="/tags/flume/" style="font-size: 15px;">flume</a> <a href="/tags/hadoop/" style="font-size: 15px;">hadoop</a> <a href="/tags/HA/" style="font-size: 15px;">HA</a> <a href="/tags/zookeeper/" style="font-size: 15px;">zookeeper</a> <a href="/tags/Hbase/" style="font-size: 15px;">Hbase</a> <a href="/tags/工业4-0/" style="font-size: 15px;">工业4.0</a> <a href="/tags/ETL/" style="font-size: 15px;">ETL</a> <a href="/tags/InfoPath/" style="font-size: 15px;">InfoPath</a> <a href="/tags/SSIS/" style="font-size: 15px;">SSIS</a> <a href="/tags/XML/" style="font-size: 15px;">XML</a> <a href="/tags/JConsole/" style="font-size: 15px;">JConsole</a> <a href="/tags/Mycat/" style="font-size: 15px;">Mycat</a> <a href="/tags/Kafka/" style="font-size: 15px;">Kafka</a> <a href="/tags/Kafka-Manager/" style="font-size: 15px;">Kafka Manager</a> <a href="/tags/postgresql/" style="font-size: 15px;">postgresql</a> <a href="/tags/keepalived/" style="font-size: 15px;">keepalived</a> <a href="/tags/lvs/" style="font-size: 15px;">lvs</a> <a href="/tags/Kettle/" style="font-size: 15px;">Kettle</a> <a href="/tags/flannel/" style="font-size: 15px;">flannel</a> <a href="/tags/Kubernetes/" style="font-size: 15px;">Kubernetes</a> <a href="/tags/Mysql/" style="font-size: 15px;">Mysql</a> <a href="/tags/Quagga/" style="font-size: 15px;">Quagga</a> <a href="/tags/Redis/" style="font-size: 15px;">Redis</a> <a href="/tags/ku8eye/" style="font-size: 15px;">ku8eye</a> <a href="/tags/eclipse/" style="font-size: 15px;">eclipse</a> <a href="/tags/maven/" style="font-size: 15px;">maven</a> <a href="/tags/机器学习/" style="font-size: 15px;">机器学习</a> <a href="/tags/HAproxy/" style="font-size: 15px;">HAproxy</a> <a href="/tags/catlet/" style="font-size: 15px;">catlet</a> <a href="/tags/devstack/" style="font-size: 15px;">devstack</a> <a href="/tags/openstack/" style="font-size: 15px;">openstack</a> <a href="/tags/Python/" style="font-size: 15px;">Python</a> <a href="/tags/pgbench/" style="font-size: 15px;">pgbench</a> <a href="/tags/pgCluu/" style="font-size: 15px;">pgCluu</a> <a href="/tags/trigger/" style="font-size: 15px;">trigger</a> <a href="/tags/uuid/" style="font-size: 15px;">uuid</a> <a href="/tags/阅读书单/" style="font-size: 15px;">阅读书单</a> <a href="/tags/WordPress/" style="font-size: 15px;">WordPress</a> <a href="/tags/罗马/" style="font-size: 15px;">罗马</a> <a href="/tags/Hive/" style="font-size: 15px;">Hive</a> <a href="/tags/sqoop/" style="font-size: 15px;">sqoop</a> <a href="/tags/Storm/" style="font-size: 15px;">Storm</a> <a href="/tags/Yarn/" style="font-size: 15px;">Yarn</a> <a href="/tags/Thrift/" style="font-size: 15px;">Thrift</a> <a href="/tags/必然/" style="font-size: 15px;">必然</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-archive"> 归档</i></div><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a></li></ul></div></div></div></div><a id="totop" href="#top"></a><div id="footer"><div class="footer-info"><p><a href="/baidusitemap.xml">网站地图</a> |  <a href="/atom.xml">订阅</a> |  <a href="/about/">关于</a></p><p>本站总访问量：<i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>次</p><p><span> Copyright &copy;<a href="/." rel="nofollow">yaodataking.com.</a></span><span> Theme by<a rel="nofollow" target="_blank" href="https://github.com/chaooo/hexo-theme-BlueLake"> BlueLake.</a></span><span> Count by<a href="http://busuanzi.ibruce.info/"> busuanzi.</a></span><span> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a></span></p></div></div></div><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><script type="text/javascript" src="/js/search.json.js?v=2.0.1"></script><script type="text/javascript" src="/js/toctotop.js?v=2.0.1" async></script><script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["mshare","weixin","tsina","qzone","linkedin","fbook","twi","print","renren","sqq","evernotecn","bdysc","tqq","tqf","bdxc","kaixin001","tieba","douban","bdhome","thx","ibaidu","meilishuo","mogujie","diandian","huaban","duitang","hx","fx","youdao","sdo","qingbiji","people","xinhua","mail","isohu","yaolan","wealink","ty","iguba","h163","copy"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"],"viewText":"分享到：","viewSize":"16"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script></body></html>

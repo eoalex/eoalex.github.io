@@ -1,0 +1,443 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description"><title>Kubernetes入门实战(2)：Kubernetes集群初探 | Alex Wu's blog</title><link rel="stylesheet" type="text/css" href="//fonts.css.network/css?family=Source+Code+Pro"><link rel="stylesheet" type="text/css" href="/css/style.css?v=2.0.1"><link rel="stylesheet" type="text/css" href="/css/highlight.css?v=2.0.1"><link rel="Shortcut Icon" href="/favicon.ico"><link rel="bookmark" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Kubernetes入门实战(2)：Kubernetes集群初探</h1><a id="logo" href="/.">Alex Wu's blog</a><p class="description"></p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div><div id="search-form"><div id="result-mask" class="hide"></div><label><input id="search-key" type="text" autocomplete="off" placeholder="搜索..."></label><div id="result-wrap" class="hide"><div id="search-result"></div></div><div class="hide"><template id="search-tpl"><div class="item"><a href="/{path}" title="{title}"><div class="title">{title}</div><div class="time">{date}</div><div class="tags">{tags}</div></a></div></template></div></div></div><div id="layout" class="layout-g"><div class="layout-l"><div class="content_container"><div class="post"><h1 class="post-title">Kubernetes入门实战(2)：Kubernetes集群初探</h1><div class="post-meta"><span class="date">Feb 27, 2016</span><span class="category"><a href="/categories/云计算及虚拟化/">云计算及虚拟化</a></span><span><i id="busuanzi_container_page_pv"><i id="busuanzi_value_page_pv"></i><i> Hits</i></i></span><a href="/2016/02/27/kubernetes-cluster-1/#comments" class="comment-count">留言</a></div><div class="post-content"><p>上文我们在一台虚机上演示了Kubernetes基于redis和docker的guestbook留言簿案例，本文我们将通过配置Kubernetes集群的方式继续深入研究。集群组件安装如下配置。</p>
+<table width="553"><br><tbody><br><tr><br><td width="109">IP</td><br><td width="156">NAME</td><br><td width="288">Component</td><br></tr><br><tr><br><td width="109">192.168.199.51</td><br><td width="156">centos-master</td><br><td width="288">etcd,kube-apiserver,kube-controller-manager,kube-scheduler</td><br></tr><br><tr><br><td width="109">192.168.199.52</td><br><td width="156">centos-minion01</td><br><td width="288">kube-proxy,kubelet,docker </td><br></tr><br><td width="109">192.168.199.53</td><br><td width="156">centos-minion02</td><br><td width="288">kube-proxy,kubelet,docker </td><br><br></tbody><br></table>
+
+<p>主机环境：centos 7，三台虚机。<br>1.准备工作<br>以下工作在每台虚机执行。<br>1.1 停止防火墙</p>
+<p>#systemctl disable firewalld</p>
+<p>#systemctl stop firewalld</p>
+<p>1.2 修改iptables<br>把icmp-host-prohibited两条注释掉</p>
+<pre><code># sample configuration for iptables service
+# you can edit this manually or use system-config-firewall
+# please do not ask us to add additional ports/services to this default configuration
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
+#-A INPUT -j REJECT --reject-with icmp-host-prohibited
+#-A FORWARD -j REJECT --reject-with icmp-host-prohibited
+COMMIT
+`&lt;/pre&gt;
+重启iptables
+#systemctl restart iptables
+
+1.3 使用阿里镜像
+#wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+
+1.4 更新主机列表
+#echo &quot;192.168.199.51 centos-master
+192.168.199.52 centos-minion01
+192.168.199.53 centos-minion02&quot; &amp;gt;&amp;gt; /etc/hosts
+
+2.安装配置kubernetes master
+2.1 在centos-master上安装
+#yum install kubernetes-master
+#yum install etcd
+
+2.2配置 Kubernetes services
+#vi /etc/kubernetes/config
+&lt;pre&gt;`###
+# kubernetes system config
+#
+# The following values are used to configure various aspects of all
+# kubernetes services, including
+#
+#   kube-apiserver.service
+#   kube-controller-manager.service
+#   kube-scheduler.service
+#   kubelet.service
+#   kube-proxy.service
+# logging to stderr means we get it in the systemd journal
+KUBE_LOGTOSTDERR=&quot;--logtostderr=true&quot;
+
+# journal message level, 0 is debug
+KUBE_LOG_LEVEL=&quot;--v=0&quot;
+
+# Should this cluster be allowed to run privileged docker containers
+KUBE_ALLOW_PRIV=&quot;--allow-privileged=false&quot;
+
+# How the controller-manager, scheduler, and proxy find the apiserver
+KUBE_MASTER=&quot;--master=http://centos-master:8080&quot;
+`&lt;/pre&gt;
+
+2.3配置Kubernetes API server
+#vi /etc/kubernetes/apiserver
+&lt;pre&gt;`###
+# kubernetes system config
+#
+# The following values are used to configure the kube-apiserver
+#
+# The address on the local server to listen to.
+KUBE_API_ADDRESS=&quot;--insecure-bind-address=0.0.0.0&quot;
+
+# The port on the local server to listen on.
+KUBE_API_PORT=&quot;--insecure-port=8080&quot;
+
+# Port minions listen on
+#KUBELET_PORT=&quot;--kubelet-port=10250&quot;
+
+# Comma separated list of nodes in the etcd cluster
+KUBE_ETCD_SERVERS=&quot;--etcd-servers=http://127.0.0.1:2379&quot;
+
+# Address range to use for services
+KUBE_SERVICE_ADDRESSES=&quot;--service-cluster-ip-range=10.254.0.0/16&quot;
+
+# default admission control policies
+KUBE_ADMISSION_CONTROL=&quot;--admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ResourceQuota&quot;
+
+# Add your own!
+KUBE_API_ARGS=&quot;&quot;
+`&lt;/pre&gt;
+
+2.4 启动服务
+&lt;pre&gt;`for SERVICES in etcd kube-apiserver kube-controller-manager kube-scheduler; do 
+    systemctl restart $SERVICES
+    systemctl enable $SERVICES
+    systemctl status $SERVICES 
+done
+`&lt;/pre&gt;
+2.5 停止服务
+&lt;pre&gt;`for SERVICES in etcd kube-apiserver kube-controller-manager kube-scheduler; do 
+    systemctl stop $SERVICES
+done
+`&lt;/pre&gt;
+
+3.安装配置kubernetes node
+3.1 在centos-minion01及centos-minion02上安装
+#yum install kubernetes-node
+#vi /etc/kubernetes/config
+&lt;pre&gt;`###
+# kubernetes system config
+#
+# The following values are used to configure various aspects of all
+# kubernetes services, including
+#
+#   kube-apiserver.service
+#   kube-controller-manager.service
+#   kube-scheduler.service
+#   kubelet.service
+#   kube-proxy.service
+# logging to stderr means we get it in the systemd journal
+KUBE_LOGTOSTDERR=&quot;--logtostderr=true&quot;
+
+# journal message level, 0 is debug
+KUBE_LOG_LEVEL=&quot;--v=0&quot;
+
+# Should this cluster be allowed to run privileged docker containers
+KUBE_ALLOW_PRIV=&quot;--allow-privileged=false&quot;
+
+# How the controller-manager, scheduler, and proxy find the apiserver
+KUBE_MASTER=&quot;--master=http://centos-master:8080&quot;
+`&lt;/pre&gt;
+3.2 配置 kubelet文件
+vi /etc/kubernetes/kubelet
+centos-minion01
+&lt;pre&gt;`###
+# kubernetes kubelet (minion) config
+
+# The address for the info server to serve on (set to 0.0.0.0 or &quot;&quot; for all interfaces)
+KUBELET_ADDRESS=&quot;--address=0.0.0.0&quot;
+
+# The port for the info server to serve on
+KUBELET_PORT=&quot;--port=10250&quot;
+
+# You may leave this blank to use the actual hostname
+KUBELET_HOSTNAME=&quot;--hostname-override=centos-minion01&quot;
+
+# location of the api-server
+KUBELET_API_SERVER=&quot;--api-servers=http://centos-master:8080&quot;
+
+# pod infrastructure container
+KUBELET_POD_INFRA_CONTAINER=&quot;--pod-infra-container-image=registry.access.redhat.com/rhel7/pod-infrastructure:latest&quot;
+
+# Add your own!
+KUBELET_ARGS=&quot;&quot;
+`&lt;/pre&gt;
+centos-minion02
+&lt;pre&gt;`
+###
+# kubernetes kubelet (minion) config
+
+# The address for the info server to serve on (set to 0.0.0.0 or &quot;&quot; for all interfaces)
+KUBELET_ADDRESS=&quot;--address=0.0.0.0&quot;
+
+# The port for the info server to serve on
+KUBELET_PORT=&quot;--port=10250&quot;
+
+# You may leave this blank to use the actual hostname
+KUBELET_HOSTNAME=&quot;--hostname-override=centos-minion02&quot;
+
+# location of the api-server
+KUBELET_API_SERVER=&quot;--api-servers=http://centos-master:8080&quot;
+
+# pod infrastructure container
+KUBELET_POD_INFRA_CONTAINER=&quot;--pod-infra-container-image=registry.access.redhat.com/rhel7/pod-infrastructure:latest&quot;
+
+# Add your own!
+KUBELET_ARGS=&quot;&quot;
+`&lt;/pre&gt;
+3.3 配置config文件
+&lt;pre&gt;`###
+# kubernetes system config
+#
+# The following values are used to configure various aspects of all
+# kubernetes services, including
+#
+#   kube-apiserver.service
+#   kube-controller-manager.service
+#   kube-scheduler.service
+#   kubelet.service
+#   kube-proxy.service
+# logging to stderr means we get it in the systemd journal
+KUBE_LOGTOSTDERR=&quot;--logtostderr=true&quot;
+
+# journal message level, 0 is debug
+KUBE_LOG_LEVEL=&quot;--v=0&quot;
+
+# Should this cluster be allowed to run privileged docker containers
+KUBE_ALLOW_PRIV=&quot;--allow-privileged=false&quot;
+
+# How the controller-manager, scheduler, and proxy find the apiserver
+KUBE_MASTER=&quot;--master=http://centos-master:8080&quot;
+`&lt;/pre&gt;
+
+3.4 启动服务
+&lt;pre&gt;`for SERVICES in kube-proxy kubelet docker; do 
+    systemctl restart $SERVICES
+    systemctl enable $SERVICES
+    systemctl status $SERVICES 
+done
+`&lt;/pre&gt;
+在centos-minion01上启动
+&lt;pre&gt;`[root@centos-minion01 ~]# for SERVICES in kube-proxy kubelet docker; do
+&amp;gt;     systemctl restart $SERVICES
+&amp;gt;     systemctl enable $SERVICES
+&amp;gt;     systemctl status $SERVICES
+&amp;gt; done
+● kube-proxy.service - Kubernetes Kube-Proxy Server
+   Loaded: loaded (/usr/lib/systemd/system/kube-proxy.service; enabled; vendor preset: disabled)
+   Active: active (running) since Sat 2016-02-27 07:35:45 CST; 227ms ago
+     Docs: https://github.com/GoogleCloudPlatform/kubernetes
+ Main PID: 3682 (kube-proxy)
+   CGroup: /system.slice/kube-proxy.service
+           └─3682 /usr/bin/kube-proxy --logtostderr=true --v=0 --master=http://centos-master:8080
+
+Feb 27 07:35:45 centos-minion01 systemd[1]: Started Kubernetes Kube-Proxy Server.
+Feb 27 07:35:45 centos-minion01 systemd[1]: Starting Kubernetes Kube-Proxy Server...
+Feb 27 07:35:45 centos-minion01 kube-proxy[3682]: E0227 07:35:45.735033    3682 proxier.go:193] Error re...ory
+Feb 27 07:35:45 centos-minion01 kube-proxy[3682]: Try `iptables -h&apos; or &apos;iptables --help&apos; for more information.
+Feb 27 07:35:45 centos-minion01 kube-proxy[3682]: E0227 07:35:45.738008    3682 proxier.go:197] Error re...ory
+Feb 27 07:35:45 centos-minion01 kube-proxy[3682]: Try `iptables -h&apos; or &apos;iptables --help&apos; for more information.
+Hint: Some lines were ellipsized, use -l to show in full.
+● kubelet.service - Kubernetes Kubelet Server
+   Loaded: loaded (/usr/lib/systemd/system/kubelet.service; enabled; vendor preset: disabled)
+   Active: active (running) since Sat 2016-02-27 07:35:46 CST; 201ms ago
+     Docs: https://github.com/GoogleCloudPlatform/kubernetes
+ Main PID: 3816 (kubelet)
+   CGroup: /system.slice/kubelet.service
+           └─3816 /usr/bin/kubelet --logtostderr=true --v=0 --api-servers=http://centos-master:8080 --addre...
+
+Feb 27 07:35:46 centos-minion01 systemd[1]: Started Kubernetes Kubelet Server.
+Feb 27 07:35:46 centos-minion01 systemd[1]: Starting Kubernetes Kubelet Server...
+● docker.service - Docker Application Container Engine
+   Loaded: loaded (/usr/lib/systemd/system/docker.service; enabled; vendor preset: disabled)
+   Active: active (running) since Sat 2016-02-27 07:35:46 CST; 188ms ago
+     Docs: http://docs.docker.com
+ Main PID: 3875 (docker)
+   CGroup: /system.slice/docker.service
+           └─3875 /usr/bin/docker daemon --selinux-enabled
+
+Feb 27 07:35:46 centos-minion01 docker[3875]: time=&quot;2016-02-27T07:35:46.806484947+08:00&quot; level=info msg...dge&quot;
+Feb 27 07:35:46 centos-minion01 docker[3875]: time=&quot;2016-02-27T07:35:46.806514467+08:00&quot; level=info msg...dge&quot;
+Feb 27 07:35:46 centos-minion01 docker[3875]: time=&quot;2016-02-27T07:35:46.815103655+08:00&quot; level=warning ...s 1&quot;
+Feb 27 07:35:46 centos-minion01 docker[3875]: time=&quot;2016-02-27T07:35:46.820513002+08:00&quot; level=info msg...lse&quot;
+Feb 27 07:35:46 centos-minion01 docker[3875]: time=&quot;2016-02-27T07:35:46.877030818+08:00&quot; level=info msg...rt.&quot;
+Feb 27 07:35:46 centos-minion01 docker[3875]: ....
+Feb 27 07:35:46 centos-minion01 docker[3875]: time=&quot;2016-02-27T07:35:46.880893846+08:00&quot; level=info msg...ne.&quot;
+Feb 27 07:35:46 centos-minion01 docker[3875]: time=&quot;2016-02-27T07:35:46.880919835+08:00&quot; level=info msg...ion&quot;
+Feb 27 07:35:46 centos-minion01 docker[3875]: time=&quot;2016-02-27T07:35:46.880937118+08:00&quot; level=info msg...ntos
+Feb 27 07:35:46 centos-minion01 systemd[1]: Started Docker Application Container Engine.
+Hint: Some lines were ellipsized, use -l to show in full.
+[root@centos-minion01 ~]#
+`&lt;/pre&gt;
+在centos-minion02上启动
+&lt;pre&gt;`[root@centos-minion02 kubernetes]# for SERVICES in kube-proxy kubelet docker; do
+&amp;gt;     systemctl restart $SERVICES
+&amp;gt;     systemctl enable $SERVICES
+&amp;gt;     systemctl status $SERVICES
+&amp;gt; done
+● kube-proxy.service - Kubernetes Kube-Proxy Server
+   Loaded: loaded (/usr/lib/systemd/system/kube-proxy.service; enabled; vendor preset: disabled)
+   Active: active (running) since Sat 2016-02-27 07:32:22 CST; 221ms ago
+     Docs: https://github.com/GoogleCloudPlatform/kubernetes
+ Main PID: 3138 (kube-proxy)
+   CGroup: /system.slice/kube-proxy.service
+           └─3138 /usr/bin/kube-proxy --logtostderr=true --v=0 --master=http://centos-master:8080
+
+Feb 27 07:32:22 centos-minion02 systemd[1]: Started Kubernetes Kube-Proxy Server.
+Feb 27 07:32:22 centos-minion02 systemd[1]: Starting Kubernetes Kube-Proxy Server...
+Feb 27 07:32:22 centos-minion02 kube-proxy[3138]: E0227 07:32:22.774533    3138 server.go:324] Not tryi...und
+Feb 27 07:32:22 centos-minion02 kube-proxy[3138]: E0227 07:32:22.857247    3138 proxier.go:193] Error r...ory
+Feb 27 07:32:22 centos-minion02 kube-proxy[3138]: Try `iptables -h&apos; or &apos;iptables --help&apos; for more infor...on.
+Feb 27 07:32:22 centos-minion02 kube-proxy[3138]: E0227 07:32:22.859129    3138 proxier.go:197] Error r...ory
+Feb 27 07:32:22 centos-minion02 kube-proxy[3138]: Try `iptables -h&apos; or &apos;iptables --help&apos; for more infor...on.
+Hint: Some lines were ellipsized, use -l to show in full.
+● kubelet.service - Kubernetes Kubelet Server
+   Loaded: loaded (/usr/lib/systemd/system/kubelet.service; enabled; vendor preset: disabled)
+   Active: active (running) since Sat 2016-02-27 07:32:23 CST; 201ms ago
+     Docs: https://github.com/GoogleCloudPlatform/kubernetes
+ Main PID: 3279 (kubelet)
+   CGroup: /system.slice/kubelet.service
+           └─3279 /usr/bin/kubelet --logtostderr=true --v=0 --api-servers=http://centos-master:8080 --addr...
+
+Feb 27 07:32:23 centos-minion02 systemd[1]: Started Kubernetes Kubelet Server.
+Feb 27 07:32:23 centos-minion02 systemd[1]: Starting Kubernetes Kubelet Server...
+● docker.service - Docker Application Container Engine
+   Loaded: loaded (/usr/lib/systemd/system/docker.service; enabled; vendor preset: disabled)
+   Active: active (running) since Sat 2016-02-27 07:32:23 CST; 186ms ago
+     Docs: http://docs.docker.com
+ Main PID: 3338 (docker)
+   CGroup: /system.slice/docker.service
+           └─3338 /usr/bin/docker daemon --selinux-enabled
+
+Feb 27 07:32:23 centos-minion02 docker[3338]: time=&quot;2016-02-27T07:32:23.772348922+08:00&quot; level=info ms...r\&quot;&quot;
+Feb 27 07:32:23 centos-minion02 docker[3338]: time=&quot;2016-02-27T07:32:23.779372746+08:00&quot; level=info ms...dge&quot;
+Feb 27 07:32:23 centos-minion02 docker[3338]: time=&quot;2016-02-27T07:32:23.779397422+08:00&quot; level=info ms...dge&quot;
+Feb 27 07:32:23 centos-minion02 docker[3338]: time=&quot;2016-02-27T07:32:23.787899136+08:00&quot; level=warning...s 1&quot;
+Feb 27 07:32:23 centos-minion02 docker[3338]: time=&quot;2016-02-27T07:32:23.791497828+08:00&quot; level=info ms...lse&quot;
+Feb 27 07:32:23 centos-minion02 docker[3338]: time=&quot;2016-02-27T07:32:23.843065746+08:00&quot; level=info ms...rt.&quot;
+Feb 27 07:32:23 centos-minion02 docker[3338]: time=&quot;2016-02-27T07:32:23.843241402+08:00&quot; level=info ms...ne.&quot;
+Feb 27 07:32:23 centos-minion02 docker[3338]: time=&quot;2016-02-27T07:32:23.843258440+08:00&quot; level=info ms...ion&quot;
+Feb 27 07:32:23 centos-minion02 docker[3338]: time=&quot;2016-02-27T07:32:23.843271897+08:00&quot; level=info ms...ntos
+Feb 27 07:32:23 centos-minion02 systemd[1]: Started Docker Application Container Engine.
+Hint: Some lines were ellipsized, use -l to show in full.
+[root@centos-minion02 kubernetes]#
+`&lt;/pre&gt;
+
+3.5 停止服务
+&lt;pre&gt;`for SERVICES in kube-proxy kubelet docker; do 
+    systemctl stop $SERVICES 
+done
+`&lt;/pre&gt;
+
+4\. 检查及确认状态
+#kubectl get nodes
+#kubectl cluster-info
+我们看到2个节点都正常启动。
+&lt;pre&gt;`[root@centos-master ~]# kubectl get nodes
+NAME              LABELS                                   STATUS    AGE
+centos-minion01   kubernetes.io/hostname=centos-minion01   Ready     1m
+centos-minion02   kubernetes.io/hostname=centos-minion02   Ready     51s
+[root@centos-master ~]# kubectl cluster-info
+Kubernetes master is running at http://localhost:8080
+[root@centos-master ~]#
+`&lt;/pre&gt;
+
+5.创建MYSQL POD
+5.1 建立工作目录并查看API版本
+在kubernetes master节点
+#mkdir mysqlpod
+#cd mysqlpod
+#kubectl api-versions
+我们看到API版本为1,所以设置文件时用v1就可以了。
+&lt;pre&gt;`
+[root@centos-master mysqlpod]# kubectl api-versions
+Available Server Api Versions: v1
+`&lt;/pre&gt;
+5.2 编写mysql的pod文件
+#vi mysqlpod.yaml
+&lt;pre&gt;`apiVersion: v1
+kind: Pod
+metadata:
+  name: mysql
+  labels:
+    name: mysql
+spec:
+  containers:
+  - name: mysql
+    image: mysql
+    env:
+    - name: MYSQL_ROOT_PASSWORD
+      value: 123456
+    ports:
+    - containerPort: 3306
+`&lt;/pre&gt;
+5.3 启动POD
+#kubectl create -f mysqlpod.yaml
+#kubectl get pods
+#kubectl describe pods mysql
+&lt;pre&gt;`Events:
+  FirstSeen     LastSeen        Count   From                            SubobjectPath                           Reason            Message
+  ─────────     ────────        ─────   ────                            ─────────────                           ──────            ───────
+  49s           49s             1       {scheduler }                                                            Scheduled Successfully assigned mysql to centos-minion02
+  49s           49s             1       {kubelet centos-minion02}       implicitly required container POD       Pulled            Container image &quot;registry.access.redhat.com/rhel7/pod-infrastructure:latest&quot; already present on machine
+  49s           49s             1       {kubelet centos-minion02}       implicitly required container POD       Created           Created with docker id 31f65f03a960
+  48s           48s             1       {kubelet centos-minion02}       implicitly required container POD       Started           Started with docker id 31f65f03a960
+  48s           48s             1       {kubelet centos-minion02}       spec.containers{mysql}                  Pulled            Container image &quot;mysql&quot; already present on machine
+  48s           48s             1       {kubelet centos-minion02}       spec.containers{mysql}                  Created           Created with docker id aa39d65008dc
+  47s           47s             1       {kubelet centos-minion02}       spec.containers{mysql}                  Started           Started with docker id aa39d65008dc
+`&lt;/pre&gt;
+我们看到这个POD启动在centos-minion02虚机上，首先它启动了一个叫pod-infrastructure的容器，然后去找本机是否有mysql镜像，没有就去下载，已有的话就直接创建一个mysql容器。
+在centos-minion02上看启动的容器。
+#docker ps
+&lt;pre&gt;`[root@centos-minion02 ~]# docker ps
+CONTAINER ID        IMAGE                                                        COMMAND                  CREATED             STATUS              PORTS               NAMES
+aa39d65008dc        mysql                                                        &quot;/entrypoint.sh mysql&quot;   About an hour ago   Up About an hour                        k8s_mysql.1431d49_mysql_default_c935d35d-dce2-11e5-9ab1-000c29beeacc_95c7a9b7
+31f65f03a960        registry.access.redhat.com/rhel7/pod-infrastructure:latest   &quot;/pod&quot;                   About an hour ago   Up About an hour                        k8s_POD.36d00adb_mysql_default_c935d35d-dce2-11e5-9ab1-000c29beeacc_1cf5c985
+`&lt;/pre&gt;
+我们看到启动两个容器，一个是mysql，一个是pod-infrastructure。
+5.4 编写mysql的服务文件
+#vi mysqlservice.yaml
+&lt;pre&gt;`apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: mysql
+  name: mysql
+spec:
+  ports:
+    - port: 3306
+  selector:
+    name: mysql
+`&lt;/pre&gt;
+5.4 启动服务
+#kubectl create -f mysqlservice.yaml
+&lt;pre&gt;`[root@centos-master mysqlpod]# kubectl get services
+NAME         CLUSTER_IP     EXTERNAL_IP   PORT(S)    SELECTOR     AGE
+kubernetes   10.254.0.1             443/TCP           18h
+mysql        10.254.62.21           3306/TCP   name=mysql   9s
+[root@centos-master mysqlpod]#
+`&lt;/pre&gt;
+5.5 mysql登录
+在centos-minion02上连接mysql的POD，我们看到连接正常。
+&lt;pre&gt;`[root@centos-minion02 ~]# mysql -uroot -p -h10.254.62.21
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 3
+Server version: 5.7.10 MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type &apos;help;&apos; or &apos;\h&apos; for help. Type &apos;\c&apos; to clear the current input statement.
+
+mysql&amp;gt; show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+4 rows in set (0.01 sec)
+
+mysql&amp;gt;
+</code></pre><p>参考：Kubernetes权威指南</p>
+</div><div class="tags"><a href="/tags/Docker/">Docker</a><a href="/tags/Kubernetes/">Kubernetes</a><a href="/tags/Mysql/">Mysql</a></div><div class="post-share"><div class="bdsharebuttonbox"><span style="float:left;line-height: 28px;height: 28px;font-size:16px;font-weight:blod">分享到：</span><a href="#" data-cmd="more" class="bds_more"></a><a href="#" data-cmd="mshare" title="分享到一键分享" class="bds_mshare"></a><a href="#" data-cmd="fbook" title="分享到Facebook" class="bds_fbook"></a><a href="#" data-cmd="twi" title="分享到Twitter" class="bds_twi"></a><a href="#" data-cmd="linkedin" title="分享到linkedin" class="bds_linkedin"></a><a href="#" data-cmd="youdao" title="分享到有道云笔记" class="bds_youdao"></a><a href="#" data-cmd="evernotecn" title="分享到印象笔记" class="bds_evernotecn"></a><a href="#" data-cmd="weixin" title="分享到微信" class="bds_weixin"></a><a href="#" data-cmd="qzone" title="分享到QQ空间" class="bds_qzone"></a><a href="#" data-cmd="tsina" title="分享到新浪微博" class="bds_tsina"></a></div></div><div class="post-nav"><a href="/2016/03/04/postgresql-pgcluu/" class="pre">PostgreSQL 集群性能审计工具pgCluu</a><a href="/2016/02/25/mycat-performance-test/" class="next">基于Docker容器的Mycat性能测试案例</a></div><div id="comments"></div></div></div></div><div class="layout-r"><div id="sidebar"><div class="search-pla"></div><div id="toc" class="widget"><div class="widget-title"><i class="fa fa-fei">文章目录</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-xie"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/05/15/storm-3/">Storm与kafka集成(上)</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/09/docker-ps/">docker ps 命令详解</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/26/machine-learning-3/">机器学习之三：降维技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/storm-2/">Storm的基本概念和组件</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/28/machine-learning-2/">机器学习之二：回归分析</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/homo-tommorrow/">《未来简史》读书笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/storm-1/">使用Docker快速安装简单Storm集群环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/machine-learning-1/">机器学习之一：什么是机器学习？</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/blockchain-1/">关于区块链的一点思考</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/reading-2016/">2016 阅读书单</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-gui"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/">云计算及虚拟化</a><span class="category-list-count">34</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/运维/">运维</a><span class="category-list-count">16</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/">商业智能</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/数据库/">数据库</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/">大数据</a><span class="category-list-count">13</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/运维/">运维</a><span class="category-list-count">3</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">18</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/运维/">运维</a><span class="category-list-count">6</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/读书笔记/">读书笔记</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/运维/">运维</a><span class="category-list-count">3</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-biao"> 标签</i></div><div class="tagcloud"><a href="/tags/docker-compose/" style="font-size: 15px;">docker-compose</a> <a href="/tags/区块链/" style="font-size: 15px;">区块链</a> <a href="/tags/BigInSights/" style="font-size: 15px;">BigInSights</a> <a href="/tags/KERBEROS/" style="font-size: 15px;">KERBEROS</a> <a href="/tags/big-data/" style="font-size: 15px;">big data</a> <a href="/tags/data-lake/" style="font-size: 15px;">data lake</a> <a href="/tags/数据湖/" style="font-size: 15px;">数据湖</a> <a href="/tags/Cognos/" style="font-size: 15px;">Cognos</a> <a href="/tags/Container/" style="font-size: 15px;">Container</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/open-vswitch/" style="font-size: 15px;">open vswitch</a> <a href="/tags/容器/" style="font-size: 15px;">容器</a> <a href="/tags/Oracle/" style="font-size: 15px;">Oracle</a> <a href="/tags/userland-proxy/" style="font-size: 15px;">userland-proxy</a> <a href="/tags/Registry/" style="font-size: 15px;">Registry</a> <a href="/tags/Shipyard/" style="font-size: 15px;">Shipyard</a> <a href="/tags/swarm/" style="font-size: 15px;">swarm</a> <a href="/tags/flume/" style="font-size: 15px;">flume</a> <a href="/tags/hadoop/" style="font-size: 15px;">hadoop</a> <a href="/tags/HA/" style="font-size: 15px;">HA</a> <a href="/tags/zookeeper/" style="font-size: 15px;">zookeeper</a> <a href="/tags/Hbase/" style="font-size: 15px;">Hbase</a> <a href="/tags/工业4-0/" style="font-size: 15px;">工业4.0</a> <a href="/tags/ETL/" style="font-size: 15px;">ETL</a> <a href="/tags/InfoPath/" style="font-size: 15px;">InfoPath</a> <a href="/tags/SSIS/" style="font-size: 15px;">SSIS</a> <a href="/tags/XML/" style="font-size: 15px;">XML</a> <a href="/tags/JConsole/" style="font-size: 15px;">JConsole</a> <a href="/tags/Mycat/" style="font-size: 15px;">Mycat</a> <a href="/tags/Kafka/" style="font-size: 15px;">Kafka</a> <a href="/tags/Kafka-Manager/" style="font-size: 15px;">Kafka Manager</a> <a href="/tags/postgresql/" style="font-size: 15px;">postgresql</a> <a href="/tags/keepalived/" style="font-size: 15px;">keepalived</a> <a href="/tags/lvs/" style="font-size: 15px;">lvs</a> <a href="/tags/Kettle/" style="font-size: 15px;">Kettle</a> <a href="/tags/flannel/" style="font-size: 15px;">flannel</a> <a href="/tags/Kubernetes/" style="font-size: 15px;">Kubernetes</a> <a href="/tags/Mysql/" style="font-size: 15px;">Mysql</a> <a href="/tags/Quagga/" style="font-size: 15px;">Quagga</a> <a href="/tags/Redis/" style="font-size: 15px;">Redis</a> <a href="/tags/ku8eye/" style="font-size: 15px;">ku8eye</a> <a href="/tags/eclipse/" style="font-size: 15px;">eclipse</a> <a href="/tags/maven/" style="font-size: 15px;">maven</a> <a href="/tags/机器学习/" style="font-size: 15px;">机器学习</a> <a href="/tags/HAproxy/" style="font-size: 15px;">HAproxy</a> <a href="/tags/catlet/" style="font-size: 15px;">catlet</a> <a href="/tags/devstack/" style="font-size: 15px;">devstack</a> <a href="/tags/openstack/" style="font-size: 15px;">openstack</a> <a href="/tags/Python/" style="font-size: 15px;">Python</a> <a href="/tags/pgbench/" style="font-size: 15px;">pgbench</a> <a href="/tags/pgCluu/" style="font-size: 15px;">pgCluu</a> <a href="/tags/trigger/" style="font-size: 15px;">trigger</a> <a href="/tags/uuid/" style="font-size: 15px;">uuid</a> <a href="/tags/阅读书单/" style="font-size: 15px;">阅读书单</a> <a href="/tags/WordPress/" style="font-size: 15px;">WordPress</a> <a href="/tags/罗马/" style="font-size: 15px;">罗马</a> <a href="/tags/Hive/" style="font-size: 15px;">Hive</a> <a href="/tags/sqoop/" style="font-size: 15px;">sqoop</a> <a href="/tags/Storm/" style="font-size: 15px;">Storm</a> <a href="/tags/Yarn/" style="font-size: 15px;">Yarn</a> <a href="/tags/Thrift/" style="font-size: 15px;">Thrift</a> <a href="/tags/必然/" style="font-size: 15px;">必然</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-archive"> 归档</i></div><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a></li></ul></div></div></div></div><a id="totop" href="#top"></a><div id="footer"><div class="footer-info"><p><a href="/baidusitemap.xml">网站地图</a> |  <a href="/atom.xml">订阅</a> |  <a href="/about/">关于</a></p><p>本站总访问量：<i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>次</p><p><span> Copyright &copy;<a href="/." rel="nofollow">yaodataking.com.</a></span><span> Theme by<a rel="nofollow" target="_blank" href="https://github.com/chaooo/hexo-theme-BlueLake"> BlueLake.</a></span><span> Count by<a href="http://busuanzi.ibruce.info/"> busuanzi.</a></span><span> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a></span></p></div></div></div><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><script type="text/javascript" src="/js/search.json.js?v=2.0.1"></script><script type="text/javascript" src="/js/toctotop.js?v=2.0.1" async></script><script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["mshare","weixin","tsina","qzone","linkedin","fbook","twi","print","renren","sqq","evernotecn","bdysc","tqq","tqf","bdxc","kaixin001","tieba","douban","bdhome","thx","ibaidu","meilishuo","mogujie","diandian","huaban","duitang","hx","fx","youdao","sdo","qingbiji","people","xinhua","mail","isohu","yaolan","wealink","ty","iguba","h163","copy"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"],"viewText":"分享到：","viewSize":"16"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script></body></html>

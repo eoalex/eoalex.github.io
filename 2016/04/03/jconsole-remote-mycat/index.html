@@ -1,0 +1,120 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description"><title>JConsole远程监控Mycat示列 | Alex Wu's blog</title><link rel="stylesheet" type="text/css" href="//fonts.css.network/css?family=Source+Code+Pro"><link rel="stylesheet" type="text/css" href="/css/style.css?v=2.0.1"><link rel="stylesheet" type="text/css" href="/css/highlight.css?v=2.0.1"><link rel="Shortcut Icon" href="/favicon.ico"><link rel="bookmark" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">JConsole远程监控Mycat示列</h1><a id="logo" href="/.">Alex Wu's blog</a><p class="description"></p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div><div id="search-form"><div id="result-mask" class="hide"></div><label><input id="search-key" type="text" autocomplete="off" placeholder="搜索..."></label><div id="result-wrap" class="hide"><div id="search-result"></div></div><div class="hide"><template id="search-tpl"><div class="item"><a href="/{path}" title="{title}"><div class="title">{title}</div><div class="time">{date}</div><div class="tags">{tags}</div></a></div></template></div></div></div><div id="layout" class="layout-g"><div class="layout-l"><div class="content_container"><div class="post"><h1 class="post-title">JConsole远程监控Mycat示列</h1><div class="post-meta"><span class="date">Apr 03, 2016</span><span class="category"><a href="/categories/数据库/">数据库</a><a href="/categories/数据库/运维/">运维</a></span><span><i id="busuanzi_container_page_pv"><i id="busuanzi_value_page_pv"></i><i> Hits</i></i></span><a href="/2016/04/03/jconsole-remote-mycat/#comments" class="comment-count">留言</a></div><div class="post-content"><p>一、简介<br>JConsole是一个基于JMX的GUI工具，用于连接正在运行的JVM。JConsole可以以三种方式连接正在运行的JVM：<br>1.Local：使用JConsole连接一个正在本地系统运行的JVM，并且执行程序的和运行JConsole的需要是同一个用户。JConsole使用文件系统的授权通过RMI连接器连接到平台的MBean服务器上。这种从本地连接的监控能力只有Sun的JDK具有。<br>2.Remote：使用下面的URL通过RMI连接器连接到一个JMX代理：hoostname:port或service:jmx:protocol:sap。JConsole为建立连接，需要在环境变量中设置jmxremote.password来指定用户名和密码从而进行授权。<br>3.Advanced:使用一个特殊的URL连接JMX代理。一般情况使用自己定制的连接器而不是RMI提供的连接器来连接JMX代理，或者是一个使用JDK实现了JMX和JMX Rmote的应用。本文我们就第二种remote方式来监控Mycat的运行情况。本文实验环境还是在docker中运行。</p>
+<p>二、配置<br>在使用JConsole监控前，我们必须对mycat的容器做一些设置，增加jmxremote.password文件至容器中，另外增加expose 1984端口。<br>具体builder文件如下：</p>
+<pre><code>from centos:7
+MAINTAINER Alex Wu
+
+#install java8
+ADD jdk-8u51-linux-x64.gz /usr/local
+RUN ln -s /usr/local/jdk1.8.0_51 /usr/local/java
+ENV JAVA_HOME /usr/local/java
+ENV PATH $PATH:$JAVA_HOME/bin
+COPY jmxremote.password /usr/local/java/jre/lib/management/
+
+#install mycat
+VOLUME /opt/mycat/conf
+ADD Mycat-server-1.5.1-RELEASE-20160328130228-linux.tar.gz /opt
+
+EXPOSE 8066 9066 1984
+
+CMD [&quot;/opt/mycat/bin/mycat&quot;,&quot;console&quot;]
+`&lt;/pre&gt;
+jmxremote.password文件配置如下，第一列是用户名，第二列是密码：
+&lt;pre&gt;`monitorRole monitor
+controlRole monitor
+`&lt;/pre&gt;
+我们还需要在Wrapper.conf文件里配置jmx端口，并指定docker宿主机的IP地址。详细配置如下：
+&lt;pre&gt;`# Java Additional Parameters
+#wrapper.java.additional.1=
+wrapper.java.additional.1=-DMYCAT_HOME=.
+wrapper.java.additional.2=-server
+wrapper.java.additional.3=-XX:MaxPermSize=64M
+wrapper.java.additional.4=-XX:+AggressiveOpts
+wrapper.java.additional.5=-XX:MaxDirectMemorySize=2G
+wrapper.java.additional.6=-Dcom.sun.management.jmxremote
+wrapper.java.additional.7=-Dcom.sun.management.jmxremote.port=1984
+wrapper.java.additional.8=-Dcom.sun.management.jmxremote.authenticate=false
+wrapper.java.additional.9=-Dcom.sun.management.jmxremote.ssl=false
+wrapper.java.additional.10=-Dcom.sun.management.jmxremote.rmi.port=1984
+wrapper.java.additional.11=-Djava.rmi.server.hostname=192.168.199.168
+wrapper.java.additional.12=-Xmx4G
+wrapper.java.additional.13=-Xms1G
+`&lt;/pre&gt;
+配置完成,启动mycat容器。（事先我们已启动mysql容器，可参见本博客以前文章，这里不再详细介绍）
+&lt;pre&gt;`docker create --name mycat101 -v /mysql/mycatconf:/opt/mycat/conf -p 8066:8066 -p 9066:9066 -p 1984:1984 mycat
+docker start mycat101
+`&lt;/pre&gt;
+我们现在可以使用JConsole来监控Mycat了，(JConsole我们这里使用Ubuntu平台),下面是连接画面。
+[![2016-04-03_14-51-13](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-03_14-51-13.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-03_14-51-13.jpg)
+下面显示已连上
+[![2016-04-02_10-30-02](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-02_10-30-02.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-02_10-30-02.jpg)
+三、测试
+接下来我们用mycat的测试工具来模拟插入200万条记录。
+&lt;pre&gt;`./test_stand_insert_perf.sh jdbc:mysql://localhost:8066/TESTDB test test 100 &quot;0-100M,100M1-200M&quot;
+`&lt;/pre&gt;
+测试数据导入过程中。
+[![2016-04-02_10-30-31](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-02_10-30-31.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-02_10-30-31.jpg)
+导入完成，我们看到tps 4818左右。
+[![2016-04-02_10-45-01](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-02_10-45-01.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-02_10-45-01.jpg)
+查看Mycat 9066端口
+&lt;pre&gt;`
+mysql&amp;gt; show @@threadpool;
++------------------+-----------+--------------+-----------------+----------------+------------+
+| NAME             | POOL_SIZE | ACTIVE_COUNT | TASK_QUEUE_SIZE | COMPLETED_TASK | TOTAL_TASK |
++------------------+-----------+--------------+-----------------+----------------+------------+
+| Timer            |         2 |            0 |               0 |           3137 |       3137 |
+| BusinessExecutor |         4 |            0 |               0 |        2001010 |    2001010 |
++------------------+-----------+--------------+-----------------+----------------+------------+
+2 rows in set (0.00 sec)
+
+mysql&amp;gt; show @@heartbeat;
++---------+-------+------------+------+---------+-------+--------+---------+--------------+---------------------+-------+
+| NAME    | TYPE  | HOST       | PORT | RS_CODE | RETRY | STATUS | TIMEOUT | EXECUTE_TIME | LAST_ACTIVE_TIME    | STOP  |
++---------+-------+------------+------+---------+-------+--------+---------+--------------+---------------------+-------+
+| host101 | mysql | 172.17.0.2 | 3306 |       1 |     0 | idle   |       0 | 6,10,10      | 2016-04-01 14:41:16 | false |
+| host102 | mysql | 172.17.0.3 | 3306 |      -1 |     0 | idle   |       0 | 0,0,0        | 2016-04-01 14:41:16 | false |
++---------+-------+------------+------+---------+-------+--------+---------+--------------+---------------------+-------+
+2 rows in set (0.00 sec)
+
+mysql&amp;gt; show @@datanode;
++------+----------------+-------+-------+--------+------+------+---------+------------+----------+---------+---------------+
+| NAME | DATHOST        | INDEX | TYPE  | ACTIVE | IDLE | SIZE | EXECUTE | TOTAL_TIME | MAX_TIME | MAX_SQL | RECOVERY_TIME |
++------+----------------+-------+-------+--------+------+------+---------+------------+----------+---------+---------------+
+| dn1  | localhost1/db1 |     0 | mysql |      0 |    9 | 1000 |   18037 |          0 |        0 |       0 |            -1 |
+| dn2  | localhost1/db2 |     0 | mysql |      0 |    0 | 1000 |      35 |          0 |        0 |       0 |            -1 |
+| dn3  | localhost1/db3 |     0 | mysql |      0 |    1 | 1000 |     205 |          0 |        0 |       0 |            -1 |
++------+----------------+-------+-------+--------+------+------+---------+------------+----------+---------+---------------+
+3 rows in set (0.00 sec)
+
+mysql&amp;gt; show @@processor;
++------------+-----------+-----------+-------------+---------+---------+-------------+--------------+------------+----------+----------+----------+
+| NAME       | NET_IN    | NET_OUT   | REACT_COUNT | R_QUEUE | W_QUEUE | FREE_BUFFER | TOTAL_BUFFER | BU_PERCENT | BU_WARNS | FC_COUNT | BC_COUNT |
++------------+-----------+-----------+-------------+---------+---------+-------------+--------------+------------+----------+----------+----------+
+| Processor0 | 257904920 | 257967902 |           0 |       0 |       0 |         884 |         1000 |         11 |      334 |        1 |       10 |
++------------+-----------+-----------+-------------+---------+---------+-------------+--------------+------------+----------+----------+----------+
+1 row in set (0.00 sec)
+
+mysql&amp;gt; show @@datasource;
++----------+---------+-------+------------+------+------+--------+------+------+---------+
+| DATANODE | NAME    | TYPE  | HOST       | PORT | W/R  | ACTIVE | IDLE | SIZE | EXECUTE |
++----------+---------+-------+------------+------+------+--------+------+------+---------+
+| dn1      | host101 | mysql | 172.17.0.2 | 3306 | W    |      0 |   10 | 1000 |   18284 |
+| dn1      | host102 | mysql | 172.17.0.3 | 3306 | R    |      0 |    0 | 1000 |       0 |
+| dn3      | host101 | mysql | 172.17.0.2 | 3306 | W    |      0 |   10 | 1000 |   18284 |
+| dn3      | host102 | mysql | 172.17.0.3 | 3306 | R    |      0 |    0 | 1000 |       0 |
+| dn2      | host101 | mysql | 172.17.0.2 | 3306 | W    |      0 |   10 | 1000 |   18284 |
+| dn2      | host102 | mysql | 172.17.0.3 | 3306 | R    |      0 |    0 | 1000 |       0 |
++----------+---------+-------+------------+------+------+--------+------+------+---------+
+6 rows in set (0.01 sec)
+
+mysql&amp;gt; show @@cache;
++-------------------------------------+-------+------+--------+------+------+---------------+---------------+
+| CACHE                               | MAX   | CUR  | ACCESS | HIT  | PUT  | LAST_ACCESS   | LAST_PUT      |
++-------------------------------------+-------+------+--------+------+------+---------------+---------------+
+| ER_SQL2PARENTID                     |  1000 |    0 |      0 |    0 |    0 |             0 |             0 |
+| SQLRouteCache                       | 10000 |    1 |      1 |    0 |    1 | 1459522244686 | 1459522244749 |
+| TableID2DataNodeCache.TESTDB_ORDERS | 50000 |    0 |      0 |    0 |    0 |             0 |             0 |
++-------------------------------------+-------+------+--------+------+------+---------------+---------------+
+3 rows in set (0.02 sec)
+</code></pre><p>我们再看看JConsole会记录什么?<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-02_10-43-39.jpg" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-02_10-43-39.jpg" alt="2016-04-02_10-43-39"></a><br>我们看到CPU基本稳定在30%左右，内存使用量基本在50M至250M波动，线程和类基本固定在一个数值。<br>所以，我们看到使用JConsole可以使我们简单快捷的进行JAVA进程的监控。</p>
+</div><div class="tags"><a href="/tags/JConsole/">JConsole</a><a href="/tags/Mycat/">Mycat</a></div><div class="post-share"><div class="bdsharebuttonbox"><span style="float:left;line-height: 28px;height: 28px;font-size:16px;font-weight:blod">分享到：</span><a href="#" data-cmd="more" class="bds_more"></a><a href="#" data-cmd="mshare" title="分享到一键分享" class="bds_mshare"></a><a href="#" data-cmd="fbook" title="分享到Facebook" class="bds_fbook"></a><a href="#" data-cmd="twi" title="分享到Twitter" class="bds_twi"></a><a href="#" data-cmd="linkedin" title="分享到linkedin" class="bds_linkedin"></a><a href="#" data-cmd="youdao" title="分享到有道云笔记" class="bds_youdao"></a><a href="#" data-cmd="evernotecn" title="分享到印象笔记" class="bds_evernotecn"></a><a href="#" data-cmd="weixin" title="分享到微信" class="bds_weixin"></a><a href="#" data-cmd="qzone" title="分享到QQ空间" class="bds_qzone"></a><a href="#" data-cmd="tsina" title="分享到新浪微博" class="bds_tsina"></a></div></div><div class="post-nav"><a href="/2016/04/10/kubernetes-ku8eye/" class="pre">Kubernetes入门实战(6)：使用ku8eye快速构建Kubernetes集群</a><a href="/2016/03/27/mycat-oracle-to-mysql/" class="next">基于Mycat的Oracle数据迁移至Mysql方案</a></div><div id="comments"></div></div></div></div><div class="layout-r"><div id="sidebar"><div class="search-pla"></div><div id="toc" class="widget"><div class="widget-title"><i class="fa fa-fei">文章目录</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-xie"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/05/15/storm-3/">Storm与kafka集成(上)</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/09/docker-ps/">docker ps 命令详解</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/26/machine-learning-3/">机器学习之三：降维技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/storm-2/">Storm的基本概念和组件</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/28/machine-learning-2/">机器学习之二：回归分析</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/homo-tommorrow/">《未来简史》读书笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/storm-1/">使用Docker快速安装简单Storm集群环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/machine-learning-1/">机器学习之一：什么是机器学习？</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/blockchain-1/">关于区块链的一点思考</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/reading-2016/">2016 阅读书单</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-gui"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/">云计算及虚拟化</a><span class="category-list-count">34</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/运维/">运维</a><span class="category-list-count">16</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/">商业智能</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/数据库/">数据库</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/">大数据</a><span class="category-list-count">13</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/运维/">运维</a><span class="category-list-count">3</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">18</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/运维/">运维</a><span class="category-list-count">6</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/读书笔记/">读书笔记</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/运维/">运维</a><span class="category-list-count">3</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-biao"> 标签</i></div><div class="tagcloud"><a href="/tags/docker-compose/" style="font-size: 15px;">docker-compose</a> <a href="/tags/区块链/" style="font-size: 15px;">区块链</a> <a href="/tags/BigInSights/" style="font-size: 15px;">BigInSights</a> <a href="/tags/KERBEROS/" style="font-size: 15px;">KERBEROS</a> <a href="/tags/big-data/" style="font-size: 15px;">big data</a> <a href="/tags/data-lake/" style="font-size: 15px;">data lake</a> <a href="/tags/数据湖/" style="font-size: 15px;">数据湖</a> <a href="/tags/Cognos/" style="font-size: 15px;">Cognos</a> <a href="/tags/Container/" style="font-size: 15px;">Container</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/open-vswitch/" style="font-size: 15px;">open vswitch</a> <a href="/tags/容器/" style="font-size: 15px;">容器</a> <a href="/tags/Oracle/" style="font-size: 15px;">Oracle</a> <a href="/tags/userland-proxy/" style="font-size: 15px;">userland-proxy</a> <a href="/tags/Registry/" style="font-size: 15px;">Registry</a> <a href="/tags/Shipyard/" style="font-size: 15px;">Shipyard</a> <a href="/tags/swarm/" style="font-size: 15px;">swarm</a> <a href="/tags/flume/" style="font-size: 15px;">flume</a> <a href="/tags/hadoop/" style="font-size: 15px;">hadoop</a> <a href="/tags/HA/" style="font-size: 15px;">HA</a> <a href="/tags/zookeeper/" style="font-size: 15px;">zookeeper</a> <a href="/tags/Hbase/" style="font-size: 15px;">Hbase</a> <a href="/tags/工业4-0/" style="font-size: 15px;">工业4.0</a> <a href="/tags/ETL/" style="font-size: 15px;">ETL</a> <a href="/tags/InfoPath/" style="font-size: 15px;">InfoPath</a> <a href="/tags/SSIS/" style="font-size: 15px;">SSIS</a> <a href="/tags/XML/" style="font-size: 15px;">XML</a> <a href="/tags/JConsole/" style="font-size: 15px;">JConsole</a> <a href="/tags/Mycat/" style="font-size: 15px;">Mycat</a> <a href="/tags/Kafka/" style="font-size: 15px;">Kafka</a> <a href="/tags/Kafka-Manager/" style="font-size: 15px;">Kafka Manager</a> <a href="/tags/postgresql/" style="font-size: 15px;">postgresql</a> <a href="/tags/keepalived/" style="font-size: 15px;">keepalived</a> <a href="/tags/lvs/" style="font-size: 15px;">lvs</a> <a href="/tags/Kettle/" style="font-size: 15px;">Kettle</a> <a href="/tags/flannel/" style="font-size: 15px;">flannel</a> <a href="/tags/Kubernetes/" style="font-size: 15px;">Kubernetes</a> <a href="/tags/Mysql/" style="font-size: 15px;">Mysql</a> <a href="/tags/Quagga/" style="font-size: 15px;">Quagga</a> <a href="/tags/Redis/" style="font-size: 15px;">Redis</a> <a href="/tags/ku8eye/" style="font-size: 15px;">ku8eye</a> <a href="/tags/eclipse/" style="font-size: 15px;">eclipse</a> <a href="/tags/maven/" style="font-size: 15px;">maven</a> <a href="/tags/机器学习/" style="font-size: 15px;">机器学习</a> <a href="/tags/HAproxy/" style="font-size: 15px;">HAproxy</a> <a href="/tags/catlet/" style="font-size: 15px;">catlet</a> <a href="/tags/devstack/" style="font-size: 15px;">devstack</a> <a href="/tags/openstack/" style="font-size: 15px;">openstack</a> <a href="/tags/Python/" style="font-size: 15px;">Python</a> <a href="/tags/pgbench/" style="font-size: 15px;">pgbench</a> <a href="/tags/pgCluu/" style="font-size: 15px;">pgCluu</a> <a href="/tags/trigger/" style="font-size: 15px;">trigger</a> <a href="/tags/uuid/" style="font-size: 15px;">uuid</a> <a href="/tags/阅读书单/" style="font-size: 15px;">阅读书单</a> <a href="/tags/WordPress/" style="font-size: 15px;">WordPress</a> <a href="/tags/罗马/" style="font-size: 15px;">罗马</a> <a href="/tags/Hive/" style="font-size: 15px;">Hive</a> <a href="/tags/sqoop/" style="font-size: 15px;">sqoop</a> <a href="/tags/Storm/" style="font-size: 15px;">Storm</a> <a href="/tags/Yarn/" style="font-size: 15px;">Yarn</a> <a href="/tags/Thrift/" style="font-size: 15px;">Thrift</a> <a href="/tags/必然/" style="font-size: 15px;">必然</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-archive"> 归档</i></div><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a></li></ul></div></div></div></div><a id="totop" href="#top"></a><div id="footer"><div class="footer-info"><p><a href="/baidusitemap.xml">网站地图</a> |  <a href="/atom.xml">订阅</a> |  <a href="/about/">关于</a></p><p>本站总访问量：<i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>次</p><p><span> Copyright &copy;<a href="/." rel="nofollow">yaodataking.com.</a></span><span> Theme by<a rel="nofollow" target="_blank" href="https://github.com/chaooo/hexo-theme-BlueLake"> BlueLake.</a></span><span> Count by<a href="http://busuanzi.ibruce.info/"> busuanzi.</a></span><span> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a></span></p></div></div></div><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><script type="text/javascript" src="/js/search.json.js?v=2.0.1"></script><script type="text/javascript" src="/js/toctotop.js?v=2.0.1" async></script><script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["mshare","weixin","tsina","qzone","linkedin","fbook","twi","print","renren","sqq","evernotecn","bdysc","tqq","tqf","bdxc","kaixin001","tieba","douban","bdhome","thx","ibaidu","meilishuo","mogujie","diandian","huaban","duitang","hx","fx","youdao","sdo","qingbiji","people","xinhua","mail","isohu","yaolan","wealink","ty","iguba","h163","copy"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"],"viewText":"分享到：","viewSize":"16"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script></body></html>

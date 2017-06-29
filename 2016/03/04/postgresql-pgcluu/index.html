@@ -1,0 +1,127 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description"><title>PostgreSQL 集群性能审计工具pgCluu | Alex Wu's blog</title><link rel="stylesheet" type="text/css" href="//fonts.css.network/css?family=Source+Code+Pro"><link rel="stylesheet" type="text/css" href="/css/style.css?v=2.0.1"><link rel="stylesheet" type="text/css" href="/css/highlight.css?v=2.0.1"><link rel="Shortcut Icon" href="/favicon.ico"><link rel="bookmark" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">PostgreSQL 集群性能审计工具pgCluu</h1><a id="logo" href="/.">Alex Wu's blog</a><p class="description"></p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div><div id="search-form"><div id="result-mask" class="hide"></div><label><input id="search-key" type="text" autocomplete="off" placeholder="搜索..."></label><div id="result-wrap" class="hide"><div id="search-result"></div></div><div class="hide"><template id="search-tpl"><div class="item"><a href="/{path}" title="{title}"><div class="title">{title}</div><div class="time">{date}</div><div class="tags">{tags}</div></a></div></template></div></div></div><div id="layout" class="layout-g"><div class="layout-l"><div class="content_container"><div class="post"><h1 class="post-title">PostgreSQL 集群性能审计工具pgCluu</h1><div class="post-meta"><span class="date">Mar 04, 2016</span><span class="category"><a href="/categories/数据库/">数据库</a></span><span><i id="busuanzi_container_page_pv"><i id="busuanzi_value_page_pv"></i><i> Hits</i></i></span><a href="/2016/03/04/postgresql-pgcluu/#comments" class="comment-count">留言</a></div><div class="post-content"><p><a href="http://pgcluu.darold.net/" target="_blank" rel="external">pgCluu</a> 是一个对 PostgreSQL 集群性能进行完整审计的工具，该工具分为两部分：<br>1. collector 用于从 PostgreSQL 集群中获取统计数据，使用 psql 和 sar 工具。<br>2. grapher 用于生成 HTML 报表和图表。</p>
+<pre><code>语法：
+    PostgreSQL数据库和系统指标收集器
+         pgcluu_collectd [options] output_dir
+   报表生成器
+         pgcluu [options] -o report_dir input_dir
+`&lt;/pre&gt;
+
+1.安装
+好，下面我们介绍如何安装和使用它。
+我们可以从pgCluu的[github](https://github.com/darold/pgcluu/releases)上下载。目前gpCluu版本更新到了2.4，下载后解压
+tar -xzvf pgcluu-2.4.tar.gz
+检查并编译，可执行文件默认会安装至 /usr/local/bin/目录下。
+
+&lt;pre&gt;`
+[root@anzhy pgcluu-2.4]# perl Makefile.PL
+Checking if your kit is complete...
+Looks good
+Writing Makefile for pgCluu
+[root@anzhy pgcluu-2.4]# make
+cp pgcluu_collectd blib/script/pgcluu_collectd
+/usr/bin/perl -MExtUtils::MY -e &apos;MY-&amp;gt;fixin(shift)&apos; -- blib/script/pgcluu_collectd
+cp pgcluu blib/script/pgcluu
+/usr/bin/perl -MExtUtils::MY -e &apos;MY-&amp;gt;fixin(shift)&apos; -- blib/script/pgcluu
+Manifying blib/man1/pgcluu.1
+[root@anzhy pgcluu-2.4]# sudo make install
+Installing /usr/local/share/man/man1/pgcluu.1
+Installing /usr/local/bin/pgcluu_collectd
+Installing /usr/local/bin/pgcluu
+Appending installation info to /usr/lib64/perl5/perllocal.pod
+`&lt;/pre&gt;
+
+2.配置
+2.1 启动postgres
+如果还没有启动postgres，我们先启动它，我们使用postgres用户
+su - postgres
+pg_ctl -D /usr/local/pgsql/data start
+2.2 执行收集器
+我们先建立临时目录
+mkdir /tmp/stat_db1/
+pgcluu_collectd -D -i 60 /tmp/stat_db1/
+过几分钟我们停止收集
+pgcluu_collectd -k
+
+&lt;pre&gt;&lt;/code&gt;
+[postgres@anzhy ~]$ mkdir /tmp/stat_db1/
+[postgres@anzhy ~]$ pgcluu_collectd -D -i 60 /tmp/stat_db1/
+[postgres@anzhy ~]$ LOG: Detach from terminal with pid: 2704
+[postgres@anzhy ~]$ pgcluu_collectd -k
+OK: pgcluu_collectd exited with value 0
+[postgres@anzhy ~]$ ll /tmp/stat_db1/
+total 280
+-rw-rw-r--. 1 postgres postgres  12554 Mar  4 09:19 pg_class_size.csv
+-rw-rw-r--. 1 postgres postgres    331 Mar  4 09:19 pg_database_size.csv
+-rw-rw-r--. 1 postgres postgres      0 Mar  4 09:19 pg_db_role_setting.csv
+-rw-rw-r--. 1 postgres postgres   4476 Mar  4 09:19 pg_hba.conf
+-rw-rw-r--. 1 postgres postgres   1636 Mar  4 09:19 pg_ident.conf
+-rw-rw-r--. 1 postgres postgres 128800 Mar  4 09:19 pg_settings.csv
+-rw-rw-r--. 1 postgres postgres     90 Mar  4 09:19 pg_stat_bgwriter.csv
+-rw-rw-r--. 1 postgres postgres      0 Mar  4 09:19 pg_stat_connections.csv
+-rw-rw-r--. 1 postgres postgres    342 Mar  4 09:19 pg_stat_database_conflicts.csv
+-rw-rw-r--. 1 postgres postgres    781 Mar  4 09:19 pg_stat_database.csv
+-rw-rw-r--. 1 postgres postgres    295 Mar  4 09:19 pg_statio_user_indexes.csv
+-rw-rw-r--. 1 postgres postgres      0 Mar  4 09:19 pg_statio_user_sequences.csv
+-rw-rw-r--. 1 postgres postgres    470 Mar  4 09:19 pg_statio_user_tables.csv
+-rw-rw-r--. 1 postgres postgres   1415 Mar  4 09:19 pg_stat_locks.csv
+-rw-rw-r--. 1 postgres postgres      0 Mar  4 09:19 pg_stat_missing_fkindexes.csv
+-rw-rw-r--. 1 postgres postgres      0 Mar  4 09:19 pg_stat_redundant_indexes.csv
+-rw-rw-r--. 1 postgres postgres      0 Mar  4 09:19 pg_stat_replication.csv
+-rw-rw-r--. 1 postgres postgres      0 Mar  4 09:19 pg_stat_unused_indexes.csv
+-rw-rw-r--. 1 postgres postgres      0 Mar  4 09:19 pg_stat_user_functions.csv
+-rw-rw-r--. 1 postgres postgres    328 Mar  4 09:19 pg_stat_user_indexes.csv
+-rw-rw-r--. 1 postgres postgres    966 Mar  4 09:19 pg_stat_user_tables.csv
+-rw-rw-r--. 1 postgres postgres      0 Mar  4 09:19 pg_stat_xact_user_functions.csv
+-rw-rw-r--. 1 postgres postgres    383 Mar  4 09:19 pg_stat_xact_user_tables.csv
+-rw-rw-r--. 1 postgres postgres    140 Mar  4 09:19 pg_tablespace_size.csv
+-rw-rw-r--. 1 postgres postgres     58 Mar  4 09:19 pg_xlog_stat.csv
+-rw-rw-r--. 1 postgres postgres  20543 Mar  4 09:19 postgresql.conf
+-rw-rw-r--. 1 postgres postgres  27402 Mar  4 09:19 sar_stats.dat
+-rw-rw-r--. 1 postgres postgres  21605 Mar  4 09:19 sysinfo.txt
+&lt;/code&gt;&lt;/pre&gt;
+
+收集的数据保存在csv及txt文件中。
+2.3 执行报表生成器
+接下来我们通过报表生成器生成我们可以看的html网页
+mkdir /tmp/report_db1/
+pgcluu -o /tmp/report_db1/ /tmp/stat_db1/
+
+&lt;pre&gt;`
+[postgres@anzhy ~]$ mkdir /tmp/report_db1/
+[postgres@anzhy ~]$ pgcluu -o /tmp/report_db1/ /tmp/stat_db1/
+[postgres@anzhy ~]$ ll /tmp/report_db1
+total 1760
+-rw-rw-r--. 1 postgres postgres 102595 Mar  4 09:21 bootstrap.min.css
+-rw-rw-r--. 1 postgres postgres  27834 Mar  4 09:21 bootstrap.min.js
+-rw-rw-r--. 1 postgres postgres 128934 Mar  4 09:21 cluster.html
+-rw-rw-r--. 1 postgres postgres  41925 Mar  4 09:21 database-all.html
+-rw-rw-r--. 1 postgres postgres  71078 Mar  4 09:21 database-pgbench.html
+-rw-rw-r--. 1 postgres postgres  71186 Mar  4 09:21 database-plpython_testdb.html
+-rw-rw-r--. 1 postgres postgres  74045 Mar  4 09:21 database-postgres.html
+-rw-rw-r--. 1 postgres postgres  70967 Mar  4 09:21 database-test.html
+-rw-rw-r--. 1 postgres postgres  71153 Mar  4 09:21 database-trigger_testdb.html
+-rw-rw-r--. 1 postgres postgres 125286 Mar  4 09:21 font-awesome.min.css
+-rw-rw-r--. 1 postgres postgres  80174 Mar  4 09:21 index.html
+-rw-rw-r--. 1 postgres postgres 104684 Mar  4 09:21 jquery.min.js
+-rw-rw-r--. 1 postgres postgres  43879 Mar  4 09:21 network-device0.html
+-rw-rw-r--. 1 postgres postgres  43873 Mar  4 09:21 network-device1.html
+-rw-rw-r--. 1 postgres postgres  43120 Mar  4 09:21 pgbench-index-size.html
+-rw-rw-r--. 1 postgres postgres  41934 Mar  4 09:21 pgbench-table-size.html
+-rw-rw-r--. 1 postgres postgres   3782 Mar  4 09:21 pgcluu.css
+-rw-rw-r--. 1 postgres postgres 104288 Mar  4 09:21 pgcluu.js
+-rw-rw-r--. 1 postgres postgres  42871 Mar  4 09:21 plpython_testdb-index-size.html
+-rw-rw-r--. 1 postgres postgres  41609 Mar  4 09:21 plpython_testdb-table-size.html
+-rw-rw-r--. 1 postgres postgres  42850 Mar  4 09:21 postgres-index-size.html
+-rw-rw-r--. 1 postgres postgres  41588 Mar  4 09:21 postgres-table-size.html
+-rw-rw-r--. 1 postgres postgres  17899 Mar  4 09:21 sorttable.js
+-rw-rw-r--. 1 postgres postgres  53244 Mar  4 09:21 system-device0.html
+-rw-rw-r--. 1 postgres postgres  75758 Mar  4 09:21 system.html
+-rw-rw-r--. 1 postgres postgres  42838 Mar  4 09:21 test-index-size.html
+-rw-rw-r--. 1 postgres postgres  41654 Mar  4 09:21 test-table-size.html
+-rw-rw-r--. 1 postgres postgres  42868 Mar  4 09:21 trigger_testdb-index-size.html
+-rw-rw-r--. 1 postgres postgres  41673 Mar  4 09:21 trigger_testdb-table-size.html
+</code></pre><p>3.结果展示<br>3.1 index 网页<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-04_9-39-39.jpg" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-04_9-39-39.jpg" alt="2016-03-04_9-39-39"></a><br>3.2 系统信息<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-04_9-41-46.jpg" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-04_9-41-46.jpg" alt="2016-03-04_9-41-46"></a><br>3.3 数据库信息<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-04_9-43-44.jpg" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-04_9-43-44.jpg" alt="2016-03-04_9-43-44"></a></p>
+<p>更多结果参见pgCluu官网<a href="http://pgcluu.darold.net/example/index.html" target="_blank" rel="external">Example</a></p>
+<p>本文参考<a href="http://pgcluu.darold.net" target="_blank" rel="external">pgCluu官网</a></p>
+</div><div class="tags"><a href="/tags/postgresql/">postgresql</a><a href="/tags/pgCluu/">pgCluu</a></div><div class="post-share"><div class="bdsharebuttonbox"><span style="float:left;line-height: 28px;height: 28px;font-size:16px;font-weight:blod">分享到：</span><a href="#" data-cmd="more" class="bds_more"></a><a href="#" data-cmd="mshare" title="分享到一键分享" class="bds_mshare"></a><a href="#" data-cmd="fbook" title="分享到Facebook" class="bds_fbook"></a><a href="#" data-cmd="twi" title="分享到Twitter" class="bds_twi"></a><a href="#" data-cmd="linkedin" title="分享到linkedin" class="bds_linkedin"></a><a href="#" data-cmd="youdao" title="分享到有道云笔记" class="bds_youdao"></a><a href="#" data-cmd="evernotecn" title="分享到印象笔记" class="bds_evernotecn"></a><a href="#" data-cmd="weixin" title="分享到微信" class="bds_weixin"></a><a href="#" data-cmd="qzone" title="分享到QQ空间" class="bds_qzone"></a><a href="#" data-cmd="tsina" title="分享到新浪微博" class="bds_tsina"></a></div></div><div class="post-nav"><a href="/2016/03/05/kubernetes-ops1/" class="pre">Kubernetes入门实战(3)：运维之扩容与升级</a><a href="/2016/02/27/kubernetes-cluster-1/" class="next">Kubernetes入门实战(2)：Kubernetes集群初探</a></div><div id="comments"></div></div></div></div><div class="layout-r"><div id="sidebar"><div class="search-pla"></div><div id="toc" class="widget"><div class="widget-title"><i class="fa fa-fei">文章目录</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-xie"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/05/15/storm-3/">Storm与kafka集成(上)</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/09/docker-ps/">docker ps 命令详解</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/26/machine-learning-3/">机器学习之三：降维技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/storm-2/">Storm的基本概念和组件</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/28/machine-learning-2/">机器学习之二：回归分析</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/homo-tommorrow/">《未来简史》读书笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/storm-1/">使用Docker快速安装简单Storm集群环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/machine-learning-1/">机器学习之一：什么是机器学习？</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/blockchain-1/">关于区块链的一点思考</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/reading-2016/">2016 阅读书单</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-gui"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/">云计算及虚拟化</a><span class="category-list-count">34</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/运维/">运维</a><span class="category-list-count">16</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/">商业智能</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/数据库/">数据库</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/">大数据</a><span class="category-list-count">13</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/运维/">运维</a><span class="category-list-count">3</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">18</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/运维/">运维</a><span class="category-list-count">6</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/读书笔记/">读书笔记</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/运维/">运维</a><span class="category-list-count">3</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-biao"> 标签</i></div><div class="tagcloud"><a href="/tags/docker-compose/" style="font-size: 15px;">docker-compose</a> <a href="/tags/区块链/" style="font-size: 15px;">区块链</a> <a href="/tags/BigInSights/" style="font-size: 15px;">BigInSights</a> <a href="/tags/KERBEROS/" style="font-size: 15px;">KERBEROS</a> <a href="/tags/big-data/" style="font-size: 15px;">big data</a> <a href="/tags/data-lake/" style="font-size: 15px;">data lake</a> <a href="/tags/数据湖/" style="font-size: 15px;">数据湖</a> <a href="/tags/Cognos/" style="font-size: 15px;">Cognos</a> <a href="/tags/Container/" style="font-size: 15px;">Container</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/open-vswitch/" style="font-size: 15px;">open vswitch</a> <a href="/tags/容器/" style="font-size: 15px;">容器</a> <a href="/tags/Oracle/" style="font-size: 15px;">Oracle</a> <a href="/tags/userland-proxy/" style="font-size: 15px;">userland-proxy</a> <a href="/tags/Registry/" style="font-size: 15px;">Registry</a> <a href="/tags/Shipyard/" style="font-size: 15px;">Shipyard</a> <a href="/tags/swarm/" style="font-size: 15px;">swarm</a> <a href="/tags/flume/" style="font-size: 15px;">flume</a> <a href="/tags/hadoop/" style="font-size: 15px;">hadoop</a> <a href="/tags/HA/" style="font-size: 15px;">HA</a> <a href="/tags/zookeeper/" style="font-size: 15px;">zookeeper</a> <a href="/tags/Hbase/" style="font-size: 15px;">Hbase</a> <a href="/tags/工业4-0/" style="font-size: 15px;">工业4.0</a> <a href="/tags/ETL/" style="font-size: 15px;">ETL</a> <a href="/tags/InfoPath/" style="font-size: 15px;">InfoPath</a> <a href="/tags/SSIS/" style="font-size: 15px;">SSIS</a> <a href="/tags/XML/" style="font-size: 15px;">XML</a> <a href="/tags/JConsole/" style="font-size: 15px;">JConsole</a> <a href="/tags/Mycat/" style="font-size: 15px;">Mycat</a> <a href="/tags/Kafka/" style="font-size: 15px;">Kafka</a> <a href="/tags/Kafka-Manager/" style="font-size: 15px;">Kafka Manager</a> <a href="/tags/postgresql/" style="font-size: 15px;">postgresql</a> <a href="/tags/keepalived/" style="font-size: 15px;">keepalived</a> <a href="/tags/lvs/" style="font-size: 15px;">lvs</a> <a href="/tags/Kettle/" style="font-size: 15px;">Kettle</a> <a href="/tags/flannel/" style="font-size: 15px;">flannel</a> <a href="/tags/Kubernetes/" style="font-size: 15px;">Kubernetes</a> <a href="/tags/Mysql/" style="font-size: 15px;">Mysql</a> <a href="/tags/Quagga/" style="font-size: 15px;">Quagga</a> <a href="/tags/Redis/" style="font-size: 15px;">Redis</a> <a href="/tags/ku8eye/" style="font-size: 15px;">ku8eye</a> <a href="/tags/eclipse/" style="font-size: 15px;">eclipse</a> <a href="/tags/maven/" style="font-size: 15px;">maven</a> <a href="/tags/机器学习/" style="font-size: 15px;">机器学习</a> <a href="/tags/HAproxy/" style="font-size: 15px;">HAproxy</a> <a href="/tags/catlet/" style="font-size: 15px;">catlet</a> <a href="/tags/devstack/" style="font-size: 15px;">devstack</a> <a href="/tags/openstack/" style="font-size: 15px;">openstack</a> <a href="/tags/Python/" style="font-size: 15px;">Python</a> <a href="/tags/pgbench/" style="font-size: 15px;">pgbench</a> <a href="/tags/pgCluu/" style="font-size: 15px;">pgCluu</a> <a href="/tags/trigger/" style="font-size: 15px;">trigger</a> <a href="/tags/uuid/" style="font-size: 15px;">uuid</a> <a href="/tags/阅读书单/" style="font-size: 15px;">阅读书单</a> <a href="/tags/WordPress/" style="font-size: 15px;">WordPress</a> <a href="/tags/罗马/" style="font-size: 15px;">罗马</a> <a href="/tags/Hive/" style="font-size: 15px;">Hive</a> <a href="/tags/sqoop/" style="font-size: 15px;">sqoop</a> <a href="/tags/Storm/" style="font-size: 15px;">Storm</a> <a href="/tags/Yarn/" style="font-size: 15px;">Yarn</a> <a href="/tags/Thrift/" style="font-size: 15px;">Thrift</a> <a href="/tags/必然/" style="font-size: 15px;">必然</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-archive"> 归档</i></div><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a></li></ul></div></div></div></div><a id="totop" href="#top"></a><div id="footer"><div class="footer-info"><p><a href="/baidusitemap.xml">网站地图</a> |  <a href="/atom.xml">订阅</a> |  <a href="/about/">关于</a></p><p>本站总访问量：<i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>次</p><p><span> Copyright &copy;<a href="/." rel="nofollow">yaodataking.com.</a></span><span> Theme by<a rel="nofollow" target="_blank" href="https://github.com/chaooo/hexo-theme-BlueLake"> BlueLake.</a></span><span> Count by<a href="http://busuanzi.ibruce.info/"> busuanzi.</a></span><span> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a></span></p></div></div></div><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><script type="text/javascript" src="/js/search.json.js?v=2.0.1"></script><script type="text/javascript" src="/js/toctotop.js?v=2.0.1" async></script><script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["mshare","weixin","tsina","qzone","linkedin","fbook","twi","print","renren","sqq","evernotecn","bdysc","tqq","tqf","bdxc","kaixin001","tieba","douban","bdhome","thx","ibaidu","meilishuo","mogujie","diandian","huaban","duitang","hx","fx","youdao","sdo","qingbiji","people","xinhua","mail","isohu","yaolan","wealink","ty","iguba","h163","copy"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"],"viewText":"分享到：","viewSize":"16"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script></body></html>

@@ -1,0 +1,1323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Alex Wu&#39;s blog</title>
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://blog.yaodataking.com/"/>
+  <updated>2017-06-21T14:55:20.000Z</updated>
+  <id>http://blog.yaodataking.com/</id>
+  
+  <author>
+    <name>yaodataking.com</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Storm与kafka集成(上)</title>
+    <link href="http://blog.yaodataking.com/2017/05/15/storm-3/"/>
+    <id>http://blog.yaodataking.com/2017/05/15/storm-3/</id>
+    <published>2017-05-15T11:52:57.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>一、简介<br>我们知道storm的作用主要是进行流式实时计算，对于均匀的数据流storm处理是非常有效的，但是现实生活中大部分场景并不是均匀的数据流，而是时而多时而少的数据流入，这种情况下显然用批量处理是不合适的，如果使用storm做实时计算的话可能因为数据拥堵而导致服务器挂掉，应对这种情况，使用kafka作为消息队列是非常合适的选择，kafka可以将不均匀的数据转换成均匀的消息流，从而和storm比较完善的结合，这样才可以实现稳定的流式计算，storm和kafka结合，实质上无非是把Kafka的数据消费，是由Storm去消费，通过KafkaSpout将数据输送到Storm，然后让Storm安装业务需求对接受的数据做实时处理，最后将处理后的数据输出或者保存到文件、数据库、分布式存储等等。</p>
+<p>二、搭建storm和kafka集群<br>我们要搭建storm和kafka集群,这里使用docker镜像。所以首先使用docker file建立镜像。<br>1.storm的docker file</p>
+<pre><code>FROM openjdk:8-jre-alpine
+
+ARG MIRROR=http://mirrors.aliyun.com
+ARG BIN_VERSION=apache-storm-1.0.3
+
+# Install required packages
+RUN apk add --no-cache \
+    bash \
+    python \
+    su-exec
+
+RUN wget -q -O - ${MIRROR}/apache/storm/${BIN_VERSION}/${BIN_VERSION}.tar.gz | tar -xzf - -C /usr/share \
+&amp;&amp; mv /usr/share/${BIN_VERSION} /usr/share/storm \
+&amp;&amp; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+WORKDIR /usr/share/storm
+
+# add startup script
+ADD entrypoint.sh entrypoint.sh
+ADD cluster.xml log4j2/cluster.xml
+ADD worker.xml log4j2/worker.xml
+RUN chmod +x entrypoint.sh
+
+# supervisor: worker ports
+EXPOSE 6700 6701 6702 6703
+# logviewer
+EXPOSE 8000
+# DRPC and remote deployment
+EXPOSE 6627 3772 3773
+
+ENTRYPOINT [&quot;/usr/share/storm/entrypoint.sh&quot;]`&lt;/pre&gt;
+2.zookeeper和kafak的docker file
+这里略，参见本博客关于[kafka](http://blog.yaodataking.com/2016/10/kafka-4.html)的博文。
+3.使用docker-compose 启动集群
+&lt;pre&gt;`version: &apos;2.0&apos;
+services:
+  zookeeper0:
+    image: alex/zookeeper_cluster:3.4.6
+    container_name: zookeeper0
+    hostname: zookeeper0
+    ports:
+      - &quot;2181:2181&quot;
+      - &quot;2888:2888&quot;
+      - &quot;3888:3888&quot;
+    expose:
+      - 2181
+      - 2888
+      - 3888
+    environment:
+      ZOOKEEPER_PORT: 2181
+      ZOOKEEPER_ID: 0
+      ZOOKEEPER_SERVERS: server.0=zookeeper0:2888:3888 server.1=zookeeper1:28881:38881 server.2=zookeeper2:28882:38882
+  zookeeper1:
+    image: alex/zookeeper_cluster:3.4.6
+    container_name: zookeeper1
+    hostname: zookeeper1
+    ports:
+      - &quot;2182:2182&quot;
+      - &quot;28881:28881&quot;
+      - &quot;38881:38881&quot;
+    expose:
+      - 2182
+      - 2888
+      - 3888
+    environment:
+      ZOOKEEPER_PORT: 2182
+      ZOOKEEPER_ID: 1
+      ZOOKEEPER_SERVERS: server.0=zookeeper0:2888:3888 server.1=zookeeper1:28881:38881 server.2=zookeeper2:28882:38882
+  zookeeper2:
+    image: alex/zookeeper_cluster:3.4.6
+    container_name: zookeeper2
+    hostname: zookeeper2
+    ports:
+      - &quot;2183:2183&quot;
+      - &quot;28882:28882&quot;
+      - &quot;38882:38882&quot;
+    expose:
+      - 2183
+      - 2888
+      - 3888
+    environment:
+      ZOOKEEPER_PORT: 2183
+      ZOOKEEPER_ID: 2
+      ZOOKEEPER_SERVERS: server.0=zookeeper0:2888:3888 server.1=zookeeper1:28881:38881 server.2=zookeeper2:28882:38882
+  kafka0:
+    image: alex/kafka_cluster:0.8.2.2
+    container_name: kafka0
+    hostname: kafka0
+    ports:
+      - &quot;9092:9092&quot;
+    environment:
+      ZOOKEEPER_CONNECT: zookeeper0:2181,zookeeper1:2182,zookeeper2:2183
+      BROKER_ID: 0
+      BROKER_PORT: 9092
+      ADVERTISED_HOST_NAME: kafka0
+      HOST_NAME: kafka0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+        - zookeeper0
+        - zookeeper1
+        - zookeeper2
+    expose:
+      - 9092
+  kafka1:
+    image: alex/kafka_cluster:0.8.2.2
+    container_name: kafka1
+    hostname: kafka1
+    ports:
+      - &quot;9093:9093&quot;
+    environment:
+      ZOOKEEPER_CONNECT: zookeeper0:2181,zookeeper1:2182,zookeeper2:2183
+      BROKER_ID: 1
+      BROKER_PORT: 9093
+      ADVERTISED_HOST_NAME: kafka1
+      HOST_NAME: kafka1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+        - zookeeper0
+        - zookeeper1
+        - zookeeper2
+    expose:
+      - 9093
+  kafka2:
+    image: alex/kafka_cluster:0.8.2.2
+    container_name: kafka2
+    hostname: kafka2
+    ports:
+      - &quot;9094:9094&quot;
+    environment:
+      ZOOKEEPER_CONNECT: zookeeper0:2181,zookeeper1:2182,zookeeper2:2183
+      BROKER_ID: 2
+      BROKER_PORT: 9094
+      ADVERTISED_HOST_NAME: kafka2
+      HOST_NAME: kafka2
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+        - zookeeper0
+        - zookeeper1
+        - zookeeper2
+    expose:
+      - 9094
+  nimbus:
+    image: alex/storm:1.0.3
+    container_name: nimbus
+    command: nimbus -c nimbus.host=nimbus
+    environment:
+      - STORM_ZOOKEEPER_SERVERS=zookeeper0,zookeeper1,zookeeper2
+    hostname: nimbus
+    ports:
+      - &quot;6627:6627&quot;
+  ui:
+    image: alex/storm:1.0.3
+    container_name: ui
+    command: ui -c nimbus.host=nimbus
+    environment:
+      - STORM_ZOOKEEPER_SERVERS=zookeeper0,zookeeper1,zookeeper2
+    hostname: ui
+    ports:
+      - &quot;8080:8080&quot;
+    depends_on:
+          - nimbus
+  supervisor1:
+    image: alex/storm:1.0.3
+    container_name: supervisor1
+    command: supervisor -c nimbus.host=nimbus -c supervisor.slots.ports=[6700,6701,6702,6703]
+    environment:
+      - STORM_ZOOKEEPER_SERVERS=zookeeper0,zookeeper1,zookeeper2
+    hostname: supervisor1
+    ports:
+      - &quot;8000:8000&quot;
+    depends_on:
+          - nimbus
+</code></pre>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;一、简介&lt;br&gt;我们知道storm的作用主要是进行流式实时计算，对于均匀的数据流storm处理是非常有效的，但是现实生活中大部分场景并不是均匀的数据流，而是时而多时而少的数据流入，这种情况下显然用批量处理是不合适的，如果使用storm做实时计算的话可能因为数据拥堵而导致服务
+    
+    </summary>
+    
+      <category term="大数据" scheme="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
+    
+      <category term="运维" scheme="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="Kafka" scheme="http://blog.yaodataking.com/tags/Kafka/"/>
+    
+      <category term="Storm" scheme="http://blog.yaodataking.com/tags/Storm/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>docker ps 命令详解</title>
+    <link href="http://blog.yaodataking.com/2017/04/09/docker-ps/"/>
+    <id>http://blog.yaodataking.com/2017/04/09/docker-ps/</id>
+    <published>2017-04-09T06:19:35.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>对docker容器的管理，docker ps命令必不可少。<br>1.基本命令格式<br>基本命令格式为，docker ps [OPTIONS]，其中OPTIONS有如下选项</p>
+<pre><code>--all, -a    false    显示所有容器默认只显示正在运行中的
+--filter, -f         根据条件过滤
+--format         显示所需字段
+--last, -n    -1    显示最后创建的n个容器
+--latest, -l    false    显示最后创建的容器
+--no-trunc    false    输出时不截断字段
+--quiet, -q    false    只显示容器id
+--size, -s    false    显示文件大小`&lt;/pre&gt;
+2.过滤条件使用
+docker ps 给了我们查看容器的能力，但是如果容器的数量足够多，显然需要一个过滤条件，目前支持的过滤命令有：
+&lt;pre&gt;`id (容器的id)
+label (label=&lt;key&gt; or label=&lt;key&gt;=&lt;value&gt;)
+name (容器的名字)
+exited (列出已退出的容器. 需要与 --all选项一起用)
+status (状态created|restarting|running|removing|paused|exited|dead)
+ancestor (&lt;image-name&gt;[:&lt;tag&gt;], &lt;image id&gt; or &lt;image@digest&gt;) - 过滤所有含某个镜像或层产生的容器
+before (容器的ID或名字) - 过滤给定容器ID或名字之前创建的容器
+since (容器的ID或名字) - 过滤给定容器ID或名字之后创建的容器
+isolation (default|process|hyperv) (Windows daemon only)
+volume (volume name或mount point) - 过滤有mount volume的容器
+network (network id或name) - 过滤指定network id或名字的容器
+health (starting    healthy    unhealthy    none) - 过滤指定health状态的容器`&lt;/pre&gt;
+以下是一些具体使用例子
+&lt;pre&gt;`
+$ docker ps --filter &quot;label=color&quot;
+$ docker ps --filter &quot;label=color=blue&quot;
+下列筛选器匹配所有容器的名称包含kafka字符串。
+$ docker ps --filter &quot;name=kafka&quot;
+容器正常停止的过滤
+$ docker ps -a --filter &apos;exited=0&apos;
+使用kill命令退出的容器
+$ docker ps -a --filter &apos;exited=137&apos;
+正在运行中的容器
+$ docker ps --filter status=running
+所有含ubuntu字符串的镜像产生的容器
+$ docker ps --filter ancestor=ubuntu
+所有层d0e008c6cf02的镜像产生的容器
+$ docker ps --filter ancestor=d0e008c6cf02
+过滤容器9c3527ed70ce之前创建的容器
+$ docker ps -f before=9c3527ed70ce
+过滤容器6e63f6ff38b0之后创建的容器
+$ docker ps -f since=6e63f6ff38b0
+过滤含有指定卷的容器
+$ docker ps --filter volume=remote-volume
+过滤含网络net1的容器
+$ docker ps --filter network=net1
+过滤publish或expose指定端口的容器
+$ docker ps --filter publish=80
+$ docker ps --filter expose=8000-8080/tcp
+`&lt;/pre&gt;
+3.自定义显示字段
+&lt;pre&gt;`--format选项给了我们可以自定义显示字段的能力
+Placeholder    Description
+.ID    Container ID
+.Image    Image ID
+.Command    Quoted command
+.CreatedAt    Time when the container was created.
+.RunningFor    Elapsed time since the container was started.
+.Ports    Exposed ports.
+.Status    Container status.
+.Size    Container disk size.
+.Names    Container names.
+.Labels    All labels assigned to the container.
+.Label    Value of a specific label for this container. For example &apos;{{.Label "com.docker.swarm.cpu"}}&apos;
+.Mounts    Names of the volumes mounted in this container.
+.Networks    Names of the networks attached to this container.
+`&lt;/pre&gt;
+以下具体使用例子
+&lt;pre&gt;`
+显示容器的id和命令
+$ docker ps --format &quot;{{.ID}}: {{.Command}}&quot;
+a87ecb4f327c: /bin/sh -c #(nop) MA
+01946d9d34d8: /bin/sh -c #(nop) MA
+c1d3b0166030: /bin/sh -c yum -y up
+41d50ecd2f57: /bin/sh -c #(nop) MA
+显示容器的id和label并带字段名
+$ docker ps --format &quot;table {{.ID}}\t{{.Labels}}&quot;
+CONTAINER ID        LABELS
+a87ecb4f327c        com.docker.swarm.node=ubuntu,com.docker.swarm.storage=ssd
+01946d9d34d8
+c1d3b0166030        com.docker.swarm.node=debian,com.docker.swarm.cpu=6
+41d50ecd2f57        com.docker.swarm.node=fedora,com.docker.swarm.cpu=3,com.docker.swarm.storage=ssd
+</code></pre>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;对docker容器的管理，docker ps命令必不可少。&lt;br&gt;1.基本命令格式&lt;br&gt;基本命令格式为，docker ps [OPTIONS]，其中OPTIONS有如下选项&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;--all, -a    false    显示所有容器默认只显示正
+    
+    </summary>
+    
+      <category term="运维" scheme="http://blog.yaodataking.com/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="Docker" scheme="http://blog.yaodataking.com/tags/Docker/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>机器学习之三：降维技术</title>
+    <link href="http://blog.yaodataking.com/2017/03/26/machine-learning-3/"/>
+    <id>http://blog.yaodataking.com/2017/03/26/machine-learning-3/</id>
+    <published>2017-03-26T15:10:42.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p><strong>1.基本概念</strong><br>机器学习领域中所谓的降维就是指采用某种映射方法，将原高维空间中的数据点映射到低维度的空间中。降维的本质是学习一个映射函数 f : x-&gt;y，其中x是原始数据点的表达，目前最多使用向量表达形式。y是数据点映射后的低维向量表达，通常y的维度小于x的维度（当然提高维度也是可以的）。f可能是显式的或隐式的、线性的或非线性的。</p>
+<p><strong>2.降维的作用</strong><br>    <li>降低时间和空间复杂度</li><br>    <li>节省了提取不必要特征的开销</li></p>
+<li>去掉数据集中夹杂的噪声</li><br><li>较简单的模型在小数据集上有更强的鲁棒性</li><br><li>当数据能有较少的特征进行解释，我们可以更好的解释数据，使得我们可以提取知识</li><br><li>实现数据可视化</li>
+
+<p><strong>3.降维的方法</strong><br><strong>3.1主成分分析PCA（Principal Component Analysis）</strong><br>Pearson于1901年提出，再由Hotelling(1933)加以发展的一种多变量统计方法。通过析取主成分显出最大的个别差异，也用来削减回归分析和聚类分析中变量的数目，可以使用样本协方差矩阵或相关系数矩阵作为出发点进行分析。Kaiser主张(1960)将特征值小于1的成分放弃，只保留特征值大于1的成分，如果能用不超过3-5个成分就能解释变异的80%，就算是成功。<br>基本思想:设法将原先众多具有一定相关性的指标，重新组合为一组新的互相独立的 综合指标，并代替原先的指标。</p>
+<p><strong>3.2因子分析</strong><br>降维的一种方法，是主成分分析的推广和发展。<br>是用于分析隐藏在表面现象背后的因子作用的统计模型。试图用最少个数的不可测的公共因子的线性函数与特殊因子之和来描述原来观测的每一分量。</p>
+<p><strong>因子分析的主要用途</strong><br>减少分析变量个数<br>通过对变量间相关关系的探测，将原始变量分组，即将相关性高的变量分为一组，用共性因子来代替该变量<br>使问题背后的业务因素的意义更加清晰呈现</p>
+<p><strong>与主成分分析的区别</strong><br>主成分分析侧重“变异量”，通过转换原始变量为新的组合变量使到数据的“变异量”最大，从而能把样本个体之间的差异最大化，但得出来的主成分往往从业务场景的角度难以解释。<br>因子分析更重视相关变量的“共变异量”，组合的是相关性较强的原始变量，目的是找到在背后起作用的少量关键因子，因子分析的结果往往更容易用业务知识去加以解释。</p>
+<p><strong>3.3线性判别式分析（Linear Discriminant Analysis）</strong><br>线性判别式分析（Linear Discriminant Analysis），简称为LDA。也称为Fisher线性判别（Fisher Linear Discriminant，FLD），是模式识别的经典算法，在1996年由Belhumeur引入模式识别和人工智能领域。<br>基本思想是将高维的模式样本投影到最佳鉴别矢量空间，以达到抽取分类信息和压缩特征空间维数的效果，投影后保证模式样本在新的子空间有最大的类间距离和最小的类内距离，即模式在该空间中有最佳的可分离性。<br>LDA与前面介绍过的PCA都是常用的降维技术。PCA主要是从特征的协方差角度，去找到比较好的投影方式。LDA更多的是考虑了标注，即希望投影后不同类别之间数据点的距离更大，同一类别的数据点更紧凑。</p>
+<p><strong>3.4多维尺度分析（Multi Dimensional Scaling）</strong><br>多维尺度分析（Multi Dimensional Scaling）,简称为MDS。MDS的目标是在降维的过程中将数据的dissimilarity(差异性)保持下来，也可以理解降维让高维空间中的距离关系与低维空间中距离关系保持不变。MDS利用成对样本间相似性，目的是利用这个信息去构建合适的低维空间，使得样本在此空间的距离和在高维空间中的样本间的相似性尽可能的保持一致。</p>
+<p><strong>3.5局部线性嵌入Locally Linear Embedding（LLE）</strong><br>Locally Linear Embedding（LLE）是一种非线性降维算法，它能够使降维后的数据较好地保持原有流形结构。LLE可以说是流形学习方法最经典的工作之一。很多后续的流形学习、降维方法都与LLE有密切联系。<br>LLE算法认为每一个数据点都可以由其近邻点的线性加权组合构造得到。算法的主要步骤分为三步：(1)寻找每个样本点的k个近邻点；（2）由每个 样本点的近邻点计算出该样本点的局部重建权值矩阵；（3）由该样本点的局部重建权值矩阵和其近邻点计算出该样本点的输出值。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;strong&gt;1.基本概念&lt;/strong&gt;&lt;br&gt;机器学习领域中所谓的降维就是指采用某种映射方法，将原高维空间中的数据点映射到低维度的空间中。降维的本质是学习一个映射函数 f : x-&amp;gt;y，其中x是原始数据点的表达，目前最多使用向量表达形式。y是数据点映射后的低维
+    
+    </summary>
+    
+      <category term="商业智能" scheme="http://blog.yaodataking.com/categories/%E5%95%86%E4%B8%9A%E6%99%BA%E8%83%BD/"/>
+    
+    
+      <category term="机器学习" scheme="http://blog.yaodataking.com/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Storm的基本概念和组件</title>
+    <link href="http://blog.yaodataking.com/2017/03/07/storm-2/"/>
+    <id>http://blog.yaodataking.com/2017/03/07/storm-2/</id>
+    <published>2017-03-07T11:54:33.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p><strong>Storm是什么</strong><br>Storm是开源的、分布式、流式计算系统。 我们知道Hadoop是开源的、分布式 系统，但是，Hadoop它只能处理适合进行批量计算的需求，对于，非批量的计算就不能够满足要求了。于是类似Storm流式计算系统就雨后春笋般的冒出来了，如Yahoo的S4，IBM的StreamBase，Amazon的Kinesis，Spark的Streaming，Google的Millwheel，不消说，Storm是业内最知名的。</p>
+<p><strong>Storm的主要特点</strong><br>Storm的主工程师Nathan Marz表示： Storm可以方便地在一个计算机集群中编写与扩展复杂的实时计算，Storm之于实时处理，就好比Hadoop之于批处理。Storm保证每个消息都会得到处理，而且它很快——在一个小集群中，每秒可以处理数以百万计的消息。更棒的是你可以使用任意编程语言来做开发。<br>Storm的主要特点如下：<br>1.简单的编程模型。类似于MapReduce降低了并行批处理复杂性，Storm降低了进行实时处理的复杂性。<br>2.可以使用各种编程语言。你可以在Storm之上使用各种编程语言。默认支持Clojure、Java、Ruby和Python。要增加对其他语言的支持，只需实现一个简单的Storm通信协议即可。<br>3.容错性。Storm会管理工作进程和节点的故障。<br>4.水平扩展。计算是在多个线程、进程和服务器之间并行进行的。<br>5.可靠的消息处理。Storm保证每个消息至少能得到一次完整处理。任务失败时，它会负责从消息源重试消息。<br>6.快速。系统的设计保证了消息能得到快速的处理，使用ØMQ作为其底层消息队列。<br>7.本地模式。Storm有一个“本地模式”，可以在处理过程中完全模拟Storm集群。这让你可以快速进行开发和单元测试。</p>
+<p>不过Storm不是一个完整的解决方案。使用Storm时你需要关注以下几点：<br>如果使用的是自己的消息队列，需要加入消息队列做数据的来源和产出的代码<br>需要考虑如何做故障处理：如何记录消息队列处理的进度，应对Storm重启，挂掉的场景<br>需要考虑如何做消息的回退：如果某些消息处理一直失败怎么办？</p>
+<p><strong>Storm组件及概念</strong><br>1. Nimbus：雨云，主节点的守护进程，负责为工作节点分发任务(任务写入Zookeeper)。<br>2. Supervisor：从Zookeeper接收Nimbus分配的任务，启动和停止属于自己管理的worker进程。<br>3. Worker：运行具体处理组件逻辑的进程。<br>4. Topology：一个Storm拓扑打包了一个实时处理程序的逻辑。一个Storm拓扑类似一个Hadoop的MapReduce任务(Job)。主要区别是MapReduce任务最终会结束，而拓扑会一直运行（当然直到你杀死它)。一个拓扑是一个通过流分组(stream grouping)把Spout和Bolt连接到一起的拓扑结构。图的每条边代表一个Bolt订阅了其他Spout或者Bolt的输出流。一个拓扑就是一个复杂的多阶段的流计算。<br>5. Spout：龙卷，是一个在Topology中产生源数据流的组件。通常情况下Spout会从外部数据源中读取数据，然后转换为Topology内部的源数据。Spout 是一个主动的角色，其接口中有个nextTuple()函数， Storm框架会不停地调用此函数，用户只要在其中生成源数据即可。<br>6. Bolt：雷电，是一个在Topology中接受数据然后执行处理的组件。Bolt可以执行过滤、函数操作、合并、写数据库等任何操作。Bolt是一个被动的角色，其接口中有个execute(Tuple input)函数,在接受到消息后会调用此函数，用户可以在其中执行自己想要的操作。<br>7. Task：Worker中每一个Spout/Bolt的线程称为一个Task. 在 Storm 0.8之后，task不再与物理线程对应，同一个Spout/Bolt的Task可能会共享一个物理线程，该线程称为Executor。<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/03/topology.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/03/topology.png" alt=""></a><br>8. Tuple：元组，一次消息传递的基本单元。<br>9. Stream：源源不断传递的Tuple就组成了stream。<br>10.Stream Grouping：即消息的partition方法。流分组策略告诉Topology如何在两个组件之间发送Tuple。 Storm 中提供若干种实用的grouping方式，包括shuffle, fields hash, all, global, none, direct和localOrShuffle等。<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/03/2017-03-07_19-58-54.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/03/2017-03-07_19-58-54.png" alt=""></a><br><strong>Storm基本架构</strong><br>Nimbus和Supervisor之间的通信依靠Zookeeper来完成，并且Nimbus进程和Supervisor都是快速失败和无状态的。所有的状态要么在Zookeeper里面，要么在本地磁盘上。这就意味着你可以用Kill -9 来杀死 Nimbus和Supervisor进程，然后在重启它们，它们可以继续工作，就像什么也没发生。这个设计使Storm具有非常高的稳定性。<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/03/storm-architect.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/03/storm-architect.png" alt=""></a></p>
+<p><strong>与Hadoop的区别</strong><br>Hadoop使用磁盘作为中间交换的介质，而Storm的数据是一直在内存中流转的。两者面向的领域也不完全相同，一个是批量处理，基于任务调度的；另外一个是实时处理，基于流。以水为例，Hadoop可以看作是纯净水，一桶桶地搬；而Storm是用水管，预先接好（Topology），然后打开水龙头，水就源源不断地流出来了。</p>
+<p><strong>与Spark Streaming的区别</strong><br>虽然这两个框架都提供可扩展性和容错性,它们根本的区别在于他们的处理模型。Storm处理的是每次传入的一个事件，而Spark Streaming是处理某个时间段窗口内的事件流。因此,Storm处理一个事件可以达到秒内的延迟，而Spark Streaming则有几秒钟的延迟。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;strong&gt;Storm是什么&lt;/strong&gt;&lt;br&gt;Storm是开源的、分布式、流式计算系统。 我们知道Hadoop是开源的、分布式 系统，但是，Hadoop它只能处理适合进行批量计算的需求，对于，非批量的计算就不能够满足要求了。于是类似Storm流式计算系统就雨后春
+    
+    </summary>
+    
+      <category term="大数据" scheme="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
+    
+      <category term="运维" scheme="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="Storm" scheme="http://blog.yaodataking.com/tags/Storm/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>机器学习之二：回归分析</title>
+    <link href="http://blog.yaodataking.com/2017/02/28/machine-learning-2/"/>
+    <id>http://blog.yaodataking.com/2017/02/28/machine-learning-2/</id>
+    <published>2017-02-28T13:11:13.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>1.基本概念<br>我们首先了解一下关于回归的基本概念。<br><strong>因变量（dependent variable）</strong>是函数中的专业名词，函数关系式中，某些特定的数会随另一个（或另几个）会变动的数的变动而变动，就称为因变量。如：Y=f(X)。此式表示为：Y随X的变化而变化。Y是因变量，X是自变量。<br><strong>自变量（Independent variable）</strong>一词来自数学。在数学中，y=f（x）。在这一方程中自变量是x，因变量是y。将这个方程运用到心理学的研究中，自变量是指研究者主动操纵，而引起因变量发生变化的因素或条件，因此自变量被看作是因变量的原因。自变量有连续变量和类别变量之分。如果实验者操纵的自变量是连续变量，则实验是函数型实验。如实验者操纵的自变量是类别变量，则实验是因素型的。在心理学实验中，一个明显的问题是要有一个有机体作为被试对刺激作反应。显然，这里刺激变量就是自变量。<br>变量间的关系：<br>1)变量间有完全确定的关系：函数关系式<br>2)变量间有一定的关系，无法用函数形式表示出来，为研究这类变量之间的关系就需要通过大量试验或观测获得数据，用统计方法去寻找它们间的关系，这种关系反映了变量间的统计规律，研究这类统计规律的方法之一就是回归分析。</p>
+<p><strong>回归分析（regression analysis)</strong>是确定两种或两种以上变量间相互依赖的定量关系的一种统计分析方法。运用十分广泛，回归分析按照涉及的变量的多少，分为一元回归和多元回归分析；在<strong>线性回归(Linear Regression)</strong>中，按照因变量的多少，可分为简单回归分析和多重回归分析；按照自变量和因变量之间的关系类型，可分为线性回归分析和非线性回归分析。如果在回归分析中，只包括一个自变量和一个因变量，且二者的关系可用一条直线近似表示，这种回归分析称为一元线性回归分析。如果回归分析中包括两个或两个以上的自变量，且自变量之间存在线性相关，则称为多元线性回归分析。<br><strong>回归分析</strong>实际上就是利用样本（已知数据），产生拟合方程，从而（对未知数据）迚行预测。</p>
+<p>2. 主要算法<br>目前的回归算法中，只要有以下几种算法。<br>线性回归（Linear Regression）<br>普通最小二乘回归（Ordinary Least Squares Regression，OLSR）<br>逻辑回归（Logistic Regression）<br>逐步回归（Stepwise Regression）<br>岭回归（Ridge Regression）<br>LASSO回归（Least Absolute Shrinkage and Selection Operator）<br>ElasticNet回归<br>优点：直接、快速、知名度高<br>缺点：要求严格的假设 需要处理异常值</p>
+<p><strong>2.1线性回归（Linear Regression）</strong><br>线性回归用最适直线(回归线)去建立因变量Y和一个或多个自变量X之间的关系。可以用公式来表示：Y=a+b<em>X+e<br>a为截距，b为回归线的斜率，e是误差项。如何找到那条回归线？我们可以通过最小二乘法把这个问题解决。其实最小二乘法就是线性回归模型的损失函数，只要把损失函数做到最小时得出的参数，才是我们最需要的参数。<br><em>*2.2普通最小二乘 (OLS) 回归</em></em><br>在 OLS 回归中，估计方程可通过确定将样本的数据点与由方程预测的值之间的距离平方和最小化的方程计算得出。<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-27_15-06-28.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-27_15-06-28.png" alt=""></a><br>应该满足的 OLS 假定<br>仅当满足以下假定时，OLS 回归才会提供最精确的无偏估计值。<br>1) 回归模型的系数为线性系数。最小二乘可通过变换变量（而不是系数）来为曲率建模。您必须指定适当的函数形式才能正确地为任何曲率建模。<br> <a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-27_15-07-24.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-27_15-07-24.png" alt=""></a><br>在此，对预测变量 X 进行了平方计算以便为曲率建模。<br>2) 残差的均值为零。模型中包含常量将迫使均值等于零。<br>3) 所有预测变量都与残差不相关。<br>4) 残差与残差之间不相关（序列相关）。<br>5) 残差具有恒定方差。<br>6) 任何预测变量都不与其他预测变量完全相关 (r=1)。最好也避免不完全的高度相关（多重共线性）。<br>7) 残差呈正态分布。<br>由于仅当所有这些假定都满足时，OLS 回归才会提供最佳估计值，因此检验这些假定极为重要。 常用方法包括检查残差图、使用失拟检验以及使用方差膨胀因子 (VIF) 检查预测变量之间的相关性。</p>
+<p><strong>2.3逻辑回归（Logistic Regression）</strong><br><strong>逻辑回归（logistic analysis)</strong>就是一种减小预测范围，将预测值限定为[0,1]间的一种回归模型。Logistic回归的因变量可以是二分类的，也可以是多分类的，但是二分类的更为常用，也更加容易解释。所以实际中最常用的就是二分类的Logistic回归。<a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-28_20-52-14.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-28_20-52-14.png" alt=""></a></p>
+<p><strong>2.4逐步回归（Stepwise Regression）</strong><br>在实际问题中, 人们总是希望从对因变量有影响的诸多变量中选择一些变量作为自变量, 应用多元回归分析的方法建立“最优”回归方程以便对因变量进行预报或控制。所谓“最优”回归方程, 主要是指希望在回归方程中包含所有对因变量影响显著的自变量而不包含对影响不显著的自变量的回归方程。逐步回归分析正是根据这种原则提出来的一种回归分析方法。它的主要思路是在考虑的全部自变量中按其对的作用大小, 显著程度大小或者说贡献大小, 由大到小地逐个引入回归方程, 而对那些对作用不显著的变量可能始终不被引人回归方程。另外, 己被引人回归方程的变量在引入新变量后也可能失去重要性, 而需要从回归方程中剔除出去。引人一个变量或者从回归方程中剔除一个变量都称为逐步回归的一步, 每一步都要进行检验, 以保证在引人新变量前回归方程中只含有对影响显著的变量, 而不显著的变量已被剔除。<br><strong>2.5岭回归（Ridge Regression）</strong><br>岭回归是一种专用于共线性数据分析的有偏估计回归方法，实质上是一种改良的最小二乘估计法，通过放弃最小二乘法的无偏性，以损失部分信息、降低精度为代价获得回归系数更为符合实际、更可靠的回归方法，对病态数据的拟合要强于最小二乘法。<br><strong>2.6LASSO回归（Least Absolute Shrinkage and Selection Operator）</strong><br>Lasso也是通过惩罚其回归系数的绝对值。与岭回归不同的是，Lasso回归在惩罚方程中用的是绝对值，而不是平方。这就使得惩罚后的值可能会变成0.<br><strong>2.7ElasticNet回归</strong><br>ElasticNet回归是Lasso回归和岭回归的组合。它会事先训练L1和L2作为惩罚项。当许多变量是相关的时候，Elastic-net是有用的。Lasso一般会随机选择其中一个，而Elastic-net则会选在两个。与Lasso和岭回归的利弊比较，一个实用的优点就是Elastic-Net会继承一些岭回归的稳定性。<br><strong>3.如何选用回归模型</strong><br>面对如此多的回归模型，最重要的是根据自变量因变量的类型、数据的维数和其他数据的重要特征去选择最合适的方法。以下是我们选择正确回归模型时要主要考虑的因素：<br>1.数据探索是建立预测模型不可或缺的部分。它应该是在选择正确模型之前要做的。<br>2.为了比较不同模型的拟合程度，我们可以分析不同的度量，比如统计显著性参数、R方、调整R方、最小信息标准、BIC和误差准则。另一个是Mallow‘s Cp准则。<br>3.交叉验证是验证预测模型最好的方法。你把你的数据集分成两组：一组用于训练，一组用于验证。<br>4.如果你的数据集有许多让你困惑的变量，你就不应该用自动模型选择方法，因为你不想把这些变量放在模型当中。<br>5.不强大的模型往往容易建立，而强大的模型很难建立。<br>6.回归正则方法在高维度和多重共线性的情况下表现的很好。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;1.基本概念&lt;br&gt;我们首先了解一下关于回归的基本概念。&lt;br&gt;&lt;strong&gt;因变量（dependent variable）&lt;/strong&gt;是函数中的专业名词，函数关系式中，某些特定的数会随另一个（或另几个）会变动的数的变动而变动，就称为因变量。如：Y=f(X)。此式表
+    
+    </summary>
+    
+      <category term="商业智能" scheme="http://blog.yaodataking.com/categories/%E5%95%86%E4%B8%9A%E6%99%BA%E8%83%BD/"/>
+    
+    
+      <category term="机器学习" scheme="http://blog.yaodataking.com/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>《未来简史》读书笔记</title>
+    <link href="http://blog.yaodataking.com/2017/02/23/homo-tommorrow/"/>
+    <id>http://blog.yaodataking.com/2017/02/23/homo-tommorrow/</id>
+    <published>2017-02-23T14:52:16.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>如果说《人类简史》是真正从一个全新的角度把智人的历史作为整体研究的一部巨著，那么《未来简史》则更进一步指出智人未来的发展路线。也许你会为作者所说的神人可以永生而心驰神往，但是别忘了还用两种人-无用的人和没有自主的人，你会是哪种人？他们的关系是怎样的？谁会真正拥有自由意识？哪一个是真正的自我？生物真的只是一堆算法吗？生命真的只是数据处理吗？智能和意识，到底哪个更有价值？<br>未来实际怎样发展，谁也说不准。不管怎么样，我们学习历史的最重要的目的就是要摆脱历史的枷锁。历史学家的作用不是在紧要关头告诉我们下一步的历史一定会往哪个方向走，反而恰恰是告诉我们你可以想象多种不同的可能性，让历史往一个不一样的方向走。不管你认不认同赫拉利在《未来简史》中的观点，然而他的思考是如此可贵！因为当我们思考未来时，往往会受限于当今的意识形态和社会制度，要以新的方式来思考或行动并非易事。<br>赫拉利至少给我们打开了一扇窗。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;如果说《人类简史》是真正从一个全新的角度把智人的历史作为整体研究的一部巨著，那么《未来简史》则更进一步指出智人未来的发展路线。也许你会为作者所说的神人可以永生而心驰神往，但是别忘了还用两种人-无用的人和没有自主的人，你会是哪种人？他们的关系是怎样的？谁会真正拥有自由意识？哪
+    
+    </summary>
+    
+      <category term="读书笔记" scheme="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>使用Docker快速安装简单Storm集群环境</title>
+    <link href="http://blog.yaodataking.com/2017/02/23/storm-1/"/>
+    <id>http://blog.yaodataking.com/2017/02/23/storm-1/</id>
+    <published>2017-02-23T02:59:05.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>1.环境准备<br>主机：虚拟机Ubuntu 16.04 内存2G 硬盘20GB<br>Docker镜像：zookeeper版本3.4.6 Storm版本1.0.2<br>2.安装<br>2.1 docker file<br>zookeeper的dockerfile</p>
+<pre><code>FROM java:openjdk-8-jre-alpine
+ARG MIRROR=http://mirrors.aliyun.com/
+ARG VERSION=3.4.6
+LABEL name=&quot;zookeeper&quot; version=$VERSION
+RUN apk update &amp;amp;&amp;amp; apk add ca-certificates &amp;amp;&amp;amp; \
+    apk add tzdata &amp;amp;&amp;amp; \
+    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime &amp;amp;&amp;amp; \
+    echo &quot;Asia/Shanghai&quot; &amp;gt; /etc/timezone
+
+RUN apk add --no-cache wget bash \
+    &amp;amp;&amp;amp; mkdir /opt \
+    &amp;amp;&amp;amp; wget -q -O - $MIRROR/apache/zookeeper/zookeeper-$VERSION/zookeeper-$VERSION.tar.gz | tar -xzf - -C /opt \
+    &amp;amp;&amp;amp; mv /opt/zookeeper-$VERSION /opt/zookeeper \
+    &amp;amp;&amp;amp; cp /opt/zookeeper/conf/zoo_sample.cfg /opt/zookeeper/conf/zoo.cfg \
+    &amp;amp;&amp;amp; mkdir -p /tmp/zookeeper
+
+EXPOSE 2181
+WORKDIR /opt/zookeeper
+VOLUME [&quot;/opt/zookeeper/conf&quot;, &quot;/tmp/zookeeper&quot;]
+ENTRYPOINT [&quot;/opt/zookeeper/bin/zkServer.sh&quot;]
+CMD [&quot;start-foreground&quot;]`&lt;/pre&gt;
+Storm的dockerfile
+&lt;pre&gt;`FROM openjdk:8-jre-alpine
+# Install required packages
+RUN apk add --no-cache \
+    bash \
+    python \
+    su-exec
+ENV STORM_USER=storm \
+    STORM_CONF_DIR=/conf \
+    STORM_DATA_DIR=/data \
+    STORM_LOG_DIR=/logs
+# Add a user and make dirs
+RUN set -x \
+    &amp;&amp; adduser -D &quot;$STORM_USER&quot; \
+    &amp;&amp; mkdir -p &quot;$STORM_CONF_DIR&quot; &quot;$STORM_DATA_DIR&quot; &quot;$STORM_LOG_DIR&quot; \
+    &amp;&amp; chown -R &quot;$STORM_USER:$STORM_USER&quot; &quot;$STORM_CONF_DIR&quot; &quot;$STORM_DATA_DIR&quot; &quot;$STORM_LOG_DIR&quot;
+ARG GPG_KEY=ACEFE18DD2322E1E84587A148DE03962E80B8FFD
+ARG DISTRO_NAME=apache-storm-1.0.2
+# Download Apache Storm, verify its PGP signature, untar and clean up
+RUN set -x \
+    &amp;&amp; apk add --no-cache --virtual .build-deps \
+        gnupg \
+    &amp;&amp; wget -q &quot;http://www.apache.org/dist/storm/$DISTRO_NAME/$DISTRO_NAME.tar.gz&quot; \
+    &amp;&amp; wget -q &quot;http://www.apache.org/dist/storm/$DISTRO_NAME/$DISTRO_NAME.tar.gz.asc&quot; \
+    &amp;&amp; export GNUPGHOME=&quot;$(mktemp -d)&quot; \
+    &amp;&amp; gpg --keyserver ha.pool.sks-keyservers.net --recv-key &quot;$GPG_KEY&quot; \
+    &amp;&amp; gpg --batch --verify &quot;$DISTRO_NAME.tar.gz.asc&quot; &quot;$DISTRO_NAME.tar.gz&quot; \
+    &amp;&amp; tar -xzf &quot;$DISTRO_NAME.tar.gz&quot; \
+    &amp;&amp; chown -R &quot;$STORM_USER:$STORM_USER&quot; &quot;$DISTRO_NAME&quot; \
+    &amp;&amp; rm -r &quot;$GNUPGHOME&quot; &quot;$DISTRO_NAME.tar.gz&quot; &quot;$DISTRO_NAME.tar.gz.asc&quot; \
+    &amp;&amp; apk del .build-deps
+WORKDIR $DISTRO_NAME
+ENV PATH $PATH:/$DISTRO_NAME/bin
+COPY docker-entrypoint.sh /
+ENTRYPOINT [&quot;/docker-entrypoint.sh&quot;]`&lt;/pre&gt;
+2.2 启动
+step1 启动zookeeper
+&lt;pre&gt;`docker run -d --restart always --name zookeeper zookeeper:3.4.6`&lt;/pre&gt;
+step2 启动Nimbus
+&lt;pre&gt;`docker run -d --restart always --name nimbus --link zookeeper storm:1.0.2 storm nimbus`&lt;/pre&gt;
+step3 启动Storm UI
+&lt;pre&gt;`docker run -d -p 8080:8080 --restart always --name ui --link nimbus storm:1.0.2 storm ui`&lt;/pre&gt;
+此时进入127.0.0.1:8080,我们看到nimbus已启动。
+[![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_09-26-09.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_09-26-09.png)
+step4 启动Supervisor
+&lt;pre&gt;`docker run -d --restart always --name supervisor1 --link zookeeper --link nimbus storm:1.0.2 storm supervisor`&lt;/pre&gt;
+[![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_09-29-34.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_09-29-34.png)
+我们看到Supervisor1已正常启动，如果需要我们可以启动多个Supervisor，至此简单Storm集群环境安装完毕。
+3.提交Topology
+进入nimbus的docker,使用storm的example WordCountTopology提交Topology
+&lt;pre&gt;`docker exec -it nimbus bash
+cd examples/storm-starter
+storm jar storm-starter-topologies-1.0.2.jar org.apache.storm.starter.WordCountTopology first-topology
+</code></pre><p>运行情况<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_10-16-42.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_10-16-42.png" alt=""></a><br>详细信息<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_11-01-19.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_11-01-19.png" alt=""></a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;1.环境准备&lt;br&gt;主机：虚拟机Ubuntu 16.04 内存2G 硬盘20GB&lt;br&gt;Docker镜像：zookeeper版本3.4.6 Storm版本1.0.2&lt;br&gt;2.安装&lt;br&gt;2.1 docker file&lt;br&gt;zookeeper的dockerfile&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="大数据" scheme="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
+    
+      <category term="运维" scheme="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="zookeeper" scheme="http://blog.yaodataking.com/tags/zookeeper/"/>
+    
+      <category term="Storm" scheme="http://blog.yaodataking.com/tags/Storm/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>机器学习之一：什么是机器学习？</title>
+    <link href="http://blog.yaodataking.com/2017/01/17/machine-learning-1/"/>
+    <id>http://blog.yaodataking.com/2017/01/17/machine-learning-1/</id>
+    <published>2017-01-17T13:24:09.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>1.什么是机器学习？<br>长期以来众说纷纭，Langley（1996）定义机器学习为：“机器学习是一门人工智能的科学，该领域的主要研究对象是人工智能，特别是如何在经验学习中改善具体算法的性能”。Mitchell（1997）在《Machine Learning》中写道：“机器学习是计算机算法的研究，并通过经验提高其自动进行改善”。Alpaydin（2004）提出自己对机器学习的定义：“机器学习是用数据或以往的经验，来优化计算机程序的性能标准”。Drew Conway在《Machine Learning for Hackers》书中定义：“机器学习就是一套工具和方法，凭借这些工具和方法我们可以从观测到的样本中提炼模式、归纳知识。换句话说，在特定情境下，我们可以记录研究对象的行为，从中学习，然后对其行为建模，该模型反过来促进我们对该情境有更深入的理解”。麦好在《机器学习实践指南：案例应用解析》中定义：“机器学习是一门人工智能的科学，该领域的主要研究对象是人工智能，专门研究计算机怎样模拟或实现人类的学习行为，以获取新的知识或技能，重新组织已有的知识结构使之不断改善自身的性能，它是人工智能的核心，是使计算机具有智能的根本途径。机器学习的研究方法通常是根据生理学、认知科学等对人类学习机理的了解，建立人类学习过程的计算模型或认识模型，发展各种学习理论和学习方法，研究通用的学习算法并进行理论上的分析，建立面向任务的具有特定应用的学习系统”。</p>
+<p>2.机器学习的发展<br>真正的机器学习研究起步较晚，它的发展过程大体上可分为以下4个时期：<br>第一阶段是在20世纪50年代中叶到20世纪60年代中叶，属于热烈时期。<br>第二阶段是在20世纪60年代中叶至20世纪70年代中叶，被称为机器学习冷静期。<br>第三阶段是从20世纪70年代中叶至20世纪80年代中叶，称为机器学习复兴期。<br>最新的阶段起始于1986年。当时，机器学习综合应用了心理学、生物学和神经生理学以及数学、自动化和计算机科学，并形成了机器学习理论基础，同时还结合各种学习方法取长补短，形成集成学习系统。</p>
+<p>3.机器学习比较活跃的领域<br>1）数据分析和数据挖掘<br>数据分析与挖掘技术是机器学习算法和数据存取技术的结合，利用机器学习提供的统计分析、知识发现等手段分析海量数据，同时利用数据存取机制实现数据的高效读写。机器学习在数据分析与挖掘领域中拥有无可取代的地位，2012年Hadoop进军机器学习领域就是一个很好的例子。<br>2）模式识别<br>语音输入，OCR，手写输入，通讯监控，车牌识别，指纹识别，虹膜识别，脸像识别，小波分析<br>3）智慧机器，机器人<br>生产线机器人，人机对话，电脑博弈</p>
+<p>4.机器学习常用软件<br>1）MATLAB<br>2）SPSS<br>3）R<br>4）PYTHON</p>
+<p>5.具有代表性的算法<br>1）回归预测及相应的降维技术<br>线性回归，Logistic回归，主成分分析，因子分析，岭回归，LASSO最小回归系数分析<br>2）分类器<br>决策树，朴素贝叶斯，贝叶斯信念网绚，支持向量机，提升分类器准确率的Adaboost和随机森林算法<br>3）聚类算法<br>k-means，PCM<br>4）人工神经网络<br>模仿生物神经网络结构和功能的数学模型。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;1.什么是机器学习？&lt;br&gt;长期以来众说纷纭，Langley（1996）定义机器学习为：“机器学习是一门人工智能的科学，该领域的主要研究对象是人工智能，特别是如何在经验学习中改善具体算法的性能”。Mitchell（1997）在《Machine Learning》中写道：“机
+    
+    </summary>
+    
+      <category term="商业智能" scheme="http://blog.yaodataking.com/categories/%E5%95%86%E4%B8%9A%E6%99%BA%E8%83%BD/"/>
+    
+    
+      <category term="机器学习" scheme="http://blog.yaodataking.com/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>关于区块链的一点思考</title>
+    <link href="http://blog.yaodataking.com/2017/01/17/blockchain-1/"/>
+    <id>http://blog.yaodataking.com/2017/01/17/blockchain-1/</id>
+    <published>2017-01-17T05:59:31.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>回顾2016年，区块链无疑是最火的一个词，各种关于区块链的书籍就像雨后春笋般的冒出来，各种论坛活动都在讨论区块链，特别是科技金融行业。中本聪运用区块链技术本来是为了解决比特币的去中心化信用问题。然而，人们突然发现区块链技术可以在包括金融、贸易、征信、物联网、共享经济等诸多领域解决直接或间接依赖于第三方担保信任机构的问题。麦肯锡的研究表明，区块链技术,是继蒸汽机、电力、信息和互联网科技之后,目前最有潜力触发第五轮颠覆性革命浪潮的核心技术。</p>
+<p>1.什么是区块链？<br>区块链是一个公共的分布式总账，任何发生在此区块链网络上的交易会被约定的算法记录到区块链上，且满足以下条件：</p>
+<blockquote>
+<p>存储基于分布式数据库</p>
+<p>数据库是区块链的数据载体，区块链是交易的业务逻辑载体</p>
+<p>区块链按时间序列化Block，且每个确认块是整个网络数据共识的唯一准则</p>
+<p>区块链只对添加有效，对其他操作无效</p>
+<p>基于非对称加密的公私钥验证</p>
+<p>记账节点要求拜占庭将军问题可解/避免</p>
+<p>共识过程(consensus progress)是演化稳定的，即面对一定量的不同节点的矛盾数据不会崩溃</p>
+<p>共识过程能够解决double-spending问题</p>
+</blockquote>
+<p>2.什么是比特币？<br>比特币（BitCoin）的概念最初由中本聪在2009年提出，根据中本聪的思路设计发布的开源软件以及建构其上的P2P网络。比特币是一种P2P形式的数字货币。点对点的传输意味着一个去中心化的支付系统。比特币作为区块链的第一个应用，比特币总量固定，至2140年，总量就2100万个。</p>
+<p>3.区块链和比特币书籍介绍。<br>关于区块链和比特币的书籍已经有很多，这里仅列出以下几本开源的图书。<br><a href="http://book.8btc.com/gaosheng_blockchain_report”" target="_blank" rel="external">《高盛区块链报告：区块链 从理论走向实践》</a><br><a href="https://www.gitbook.com/book/yeasy/blockchain_guide/details" target="_blank" rel="external">《区块链技术指南》</a><br><a href="http://book.8btc.com/bitcoin-developer-guide" target="_blank" rel="external">《比特币开发者指南》</a><br><a href="http://zhibimo.com/read/wang-miao/mastering-bitcoin/index.html" target="_blank" rel="external">《精通比特币》</a><br><a href="http://book.8btc.com/digital_giant_chain" target="_blank" rel="external">《数字巨链》</a></p>
+<p>4.区块链技术的挑战<br>从技术角度讲，区块链涉及到的领域比较杂，包括分布式、存储、密码学、心理学、经济学、博弈论、网络协议等。怎么防止交易记录被篡改？怎么证明交易方的身份？怎么保护交易双方的隐私？这是密码学需要解决的问题。分布式一致性问题在很长一段时间内都将是极具学术价值的研究热点，核心的指标将包括容错的节点比例和收敛速度。区块链网络中的块信息需要写到数据库中进行存储，传统的关系数据库及NOSQL数据库能否支持，针对区块链的特点，是否会出现针对性的块数据库（BlockDB）？</p>
+<p>5.比特币会取代法币吗？<br>不会。比特币为了体现稀缺性，限定了总量。但是稀缺性只代表他会有一定的价值，不代表信用。但是不排除将来法币用比特币类似虚拟币锚定。</p>
+<p>6.比特币和黄金是什么关系？<br>比特币目前作为一个投资品种，比特币和黄金是共存关系，但是比特币风险大于黄金。</p>
+<p>7.个人信用区块链是什么？<br>区块链技术天然适合征信系统，区块链的特性如：数据不可逆、无法篡改，数据由全体参与者共同维护等特性，征信系统其实就是一个公告板。</p>
+<p>小结：与其说区块链是一项新技术，不如说是一种新的思想理念。区块链技术突然给人们打开了一扇窗，看到了未来的激动人心的世界。但是正像《区块链：定义未来金融与经济新格局》作者张健所说。</p>
+<blockquote>
+<p>区块链这种协议式的、需要大规模协作和参与的颠覆式技术，其崛起的周期将比大多数人预想的要长，而最终影响的范围和深度也会远远超出大多数人的想象。区块链未来发展的过程不会一帆风顺，可能会经历过热甚至泡沫阶段，也可能会经历低谷。但我相信，区块链作为数字化浪潮下一个阶段的核心技术，最终将会构建出多样化生态的价值互联网，从而深刻改变未来商业社会的结构与我们每个人的生活。</p>
+</blockquote>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;回顾2016年，区块链无疑是最火的一个词，各种关于区块链的书籍就像雨后春笋般的冒出来，各种论坛活动都在讨论区块链，特别是科技金融行业。中本聪运用区块链技术本来是为了解决比特币的去中心化信用问题。然而，人们突然发现区块链技术可以在包括金融、贸易、征信、物联网、共享经济等诸多领
+    
+    </summary>
+    
+      <category term="读书笔记" scheme="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+    
+    
+      <category term="区块链" scheme="http://blog.yaodataking.com/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>2016 阅读书单</title>
+    <link href="http://blog.yaodataking.com/2016/12/30/reading-2016/"/>
+    <id>http://blog.yaodataking.com/2016/12/30/reading-2016/</id>
+    <published>2016-12-30T06:33:39.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p><strong>《在历史的下降线行走》  张鸣</strong><br>历史有时候前进，有时则会退后，有上升，则有下降。细碎处的故事，空白处的讲述，才能真正反映历史的原貌。本书充斥了这样的故事和讲述。诸如“当牛记者碰到强人的时候”、“戴大头巾状如印度兵的中国士兵”、“懂兵法的和会打仗的”、“对毒与赌的另一种期待”……都是重大历史事件中被正史省略的故事，但正是这些正史瞧不上的鸡零狗碎一样的故事，让你感受到历史的真实，感受到它的血与肉，并带你看到纷扰世界中另一番景致。</p>
+<p><strong>《重来：更为简单有效的商业思维》贾森·弗里德　戴维·海涅迈尔·汉森</strong><br>大多数的企业管理的书籍都会告诉你：制定商业计划、分析竞争形势、寻找投资人等等。如果你要找的是那样的书，那么把这本书放回书架吧。《重来：更为简单有效的商业思维》呈现的是一种更好、更简单的经商成功之道。读完这本书，你就会明白为什么计划实际上百害而无一益，为什么你不需要外界投资人，为什么将竞争视而不见反倒会发展得更好。事实是你所需要的比你想象的少得多。你不必成为工作狂，你不必大量招兵买马，你不必把时间浪费在案头工作和会议上，你甚至不必拥有一间办公室。所有这些都仅仅是借口！用直截了当的语言和崇尚简约的方式，《重来》是每一个梦想着拥有自己的事业的人的完美指南。不管是作为中坚力量的企业家、小企业主，还是深陷令人不快的工作中的职场中人、被炒鱿鱼的受害者，抑或是想要“脱贫”的艺术家，都能在这一页页中找到弥足珍贵的指引。</p>
+<p><strong>《拿破仑传》 艾密尔·鲁特维克</strong><br>一个人凭借自信与勇气、激情与想象、勤奋与意志，究竟能达到怎样的高度？拿破仑给出了这个问题的答案。</p>
+<p><strong>《爱因斯坦：想象颠覆世界》 刘继军</strong><br>颠覆了以前对爱因斯坦的认识。</p>
+<p><strong>《特斯拉自传：被遗忘的科学巨匠》 尼古拉·特斯拉</strong><br>尼古拉·特斯拉，世界公论的旷世奇才的心路历程。</p>
+<p><strong>《思考，快与慢》 丹尼尔·卡尼曼</strong><br>每个人都要学点概率论，不仅用于生活中点点小事的判断，而且如果能获得大数据的支撑，那么判断和决策的质量将大幅提高。</p>
+<p><strong>《不贰：数据化思考》 车品觉</strong><br>答案不重要，思考的角度才重要。可见，要习得一套巧妙的数据化思考方式，三分靠想法，七分靠实践。所以，切勿空谈。<br>每个人都要问一下自己：<br>1.现在你所在的公司，面对的3大问题是什么？<br>2.公司未来的3个月中，要解决的问题是什么？<br>3.在过去的1个月中，你做对了什么，做错了什么？</p>
+<p><strong>《大数据》 涂子沛</strong><br>带你了解数据及数据治理的历史。</p>
+<p><strong>《秦谜》 李开元</strong><br>历史的真相到底是什么？作者用严谨的逻辑将蛛丝马迹串联起来，基本还原了历史的真相。然而，历史走到了今天，也许真相已不重要。重要的是，秦始皇灭六国一统天下的历史虽顺应了天意，但严重违背了民意。以史为鉴，当权者顺天重民，调和天意和民意，可谓是须臾而不可忘记。</p>
+<p><strong>《新工业革命》 彼得·马什</strong><br>杰里米•里夫金的《第三次工业革命》提示我们正处在以“互联网+新能源”为聚合推动力的第三次工业革命中。彼得·马什的《新工业革命》从制造方式变革的角度出发，给我们展现了新工业革命的特征：科技化、全球化、互联化、绿色化、定制化和利基产业化。随着变革的加速，个性化量产系统逐渐占据主导地位。而制造业的未来在于差异化生产。作者指出，本次新工业革命将是第五次，大约开始于2005年，并将持续至2040年，但由此产生的影响将延续至21世纪末。虽然中国制造业已经做大做强，但也指出了不足及中国制造业出路：集群‘研发创新。展望未来，作者指出，高低成本混合运营的战略表明：在新工业革命时代，成功的路径并不唯一。只要发挥智慧、机智和想象力，条条大路通罗马。</p>
+<p><strong>《把时间当作朋友》 纪念版 李笑来</strong><br>这不是一本时间管理的书，因为时间是不可管理的。这是一本叫你如何打开心智，如何运用心智来和时间做朋友的书。越早读到这本书，将会使你越少走弯路。不管成功者还是落魄者都会从中的得到启发。</p>
+<p><strong>《中国误会了袁世凯》吕峥</strong><br>可以一读，比较客观的中国近代史，但是说到袁世凯从小立志反清，有点牵强。</p>
+<p><strong>《创业维艰》本·霍洛维茨</strong><br>写的很朴实，不管你是不是在创业，不管你是不是CEO，都能从中得到鼓励与启发。</p>
+<p><strong>《苏东坡传：中国文人从政的标志性人生》 林语堂</strong><br>很精彩的一本书，正如本书的副标题，苏东坡的人生的确是一波三折，由于政敌的迫害和阻扰，我们现在只能看到文学巨擎苏东坡，至于他的抱负，我们只能站在西湖苏提上想象一下了。</p>
+<p><strong>《武则天正传》林语堂</strong><br>这也许是作者的一个尝试，以一个李唐氏后裔的口吻来写，想想也知，对武则天的偏见，恨之入骨跃然纸上。林语堂写的传都带有很强的感情色彩。</p>
+<p><strong>《生命八卦》 袁越 2010版</strong><br>很好的科普文集，不仅传播了科学的知识，更是传播了科学的思维方式。</p>
+<p><strong>《铁血名将：辛弃疾》</strong><br>一个大词人瞬间还原抗金名将，然而辛弃疾注定是悲剧的，因为这不是一个名将的时代。</p>
+<p><strong>《即将到来的场景时代》【美】罗伯特·斯考伯 【美】谢尔·伊斯雷尔</strong><br>可以一读，跟着作者到未来畅想一番，想象大数据、移动设备、社交媒体、传感器和定位系统这五种技术带来的力量。</p>
+<p><strong>《非理性繁荣》 第二版 罗伯特·J·希勒</strong><br>不管你是否在金融行业，本书都值得你一读，储蓄，股票，房产，基金，债券等理财产品，已与百姓生活息息相关。整个金融市场的历史就是一部正反馈和反身性的历史。了解了这些，你就会透过丛丛迷雾对当前中国楼市有一个清晰的认识。</p>
+<p><strong>《大停滞》 [美]泰勒•考恩</strong><br>1．美国的发展靠什么？靠的就是“低垂的果实”；<br>2．美国进入“大停滞”了吗？为什么会进入“大停滞”？<br>3．大停滞正在结束，“万物互联”带来了新的未来；<br>4．互联网带来的未来图景正是中国的机遇。<br>低垂的果实：大量廉价的土地资源、人口红利和科技进步。</p>
+<p><strong>《群山回唱》[美] 卡勒德·胡赛尼</strong><br>时间、空间、人物组成了一幅跨越时空的画卷。 在别人的轨迹里，或许是配角，但在自己的轨迹里，每个人都是自己的主角。</p>
+<p><strong>《创造:只给勤奋者的创新书》 (美) 凯文·阿什顿</strong><br>创造不是魔法，而是工作，勤奋者才有机会。可以看看罗胖的解读 。<a href="https://book.douban.com/review/7749156/" target="_blank" rel="external">https://book.douban.com/review/7749156/</a> </p>
+<p><strong>《我们为什么总是看错人》 王烁</strong><br>王烁的读书笔记，看一看就好。英文阅读很厉害，值得学习。</p>
+<p><strong>《技术简史:从海盗船到黑色直升机》 [美]德伯拉·L·斯帕</strong><br>这是一本2003年出版的书，然而书中揭示的规则至今还在适用，所以英文书名为Ruling the waves，中文名技术简史则更概括了内容。作者讲述了从15世纪葡萄牙人的探险开始的8段技术历史，历经大航海时代，电报时代、无线电时代、广播时代、电视时代、互联网时代、微软时代、网络音乐。每个技术历史都呈现相同的发展阶段，创新阶段，市场化阶段，充满创造性的混乱阶段和制定规则阶段。对我们有何借鉴意义？我们可以借此评估一项新技术所处的发展阶段从而顺势而为，创新阶段搞技术，市场化阶段拼速度，混乱阶段提升整合力，规则化阶段高标准。最重要的一点是，如果你不幸是一名“海盗”，一定要在规则改变之前收手，要不黑色直升机将被送上“断头台”。 </p>
+<p><strong>《天下的当代性:世界秩序的实践与想象》 赵汀阳</strong><br>“天下者非一人之天下，乃天下之天下也。”从这句话理解来说，天下是属于世界上所有人的世界主权，天下是所有人共享的天下。如果这样理解，那么确实当今世界的天下历史尚未开始。未来何去何从呢？从凯文凯利的《失控》和《必然》我们或许找到答案。</p>
+<p><strong>《人类简史：从动物到上帝》 尤瓦尔·赫拉利</strong><br>我们之所以研究历史，不是为了要知道未来，而是要拓展视野，要了解现在的种种绝非“自然”，也并非无可避免。未来的可能性远超过我们的想象。</p>
+<p><strong>《智能时代：大数据与智能革命重新定义未来》 吴军</strong><br>从1956年以麦卡锡、明斯基、罗切斯特和香农等人提出人工智能概念以来，至今年2016正好是60年。如今大数据的概念及大数据技术的兴起重塑了人们的思维，使得人工智能的发展进入了一个新的阶段。未来已来。</p>
+<p><strong>《罗马人的故事》 盐野七生</strong><br>日本女作家盐野七生历时15年完成的15册巨著，详见<a href="http://blog.yaodataking.com/tag/%E7%BD%97%E9%A9%AC">读书笔记</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;strong&gt;《在历史的下降线行走》  张鸣&lt;/strong&gt;&lt;br&gt;历史有时候前进，有时则会退后，有上升，则有下降。细碎处的故事，空白处的讲述，才能真正反映历史的原貌。本书充斥了这样的故事和讲述。诸如“当牛记者碰到强人的时候”、“戴大头巾状如印度兵的中国士兵”、“懂兵法
+    
+    </summary>
+    
+      <category term="读书笔记" scheme="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+    
+    
+      <category term="阅读书单" scheme="http://blog.yaodataking.com/tags/%E9%98%85%E8%AF%BB%E4%B9%A6%E5%8D%95/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Kafka入门之十二:Kafka的高性能之道</title>
+    <link href="http://blog.yaodataking.com/2016/12/30/kafka-12/"/>
+    <id>http://blog.yaodataking.com/2016/12/30/kafka-12/</id>
+    <published>2016-12-30T02:03:24.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>在 LinkedIn 的 Kafka 的系统上，每天有超过 8000 亿条消息被发送，相当于超过 175 兆兆字节（terabytes）数据，另外，每天还会消耗掉 650 兆兆字节（terabytes）数据的消息，为什么Kafka有这样的能力去处理这么多产生的数据和消耗掉的数据? 下面我们就来分析一下Kafka的高性能之道。<br>1.高效使用磁盘<br>首先kafka的消息是不断追加到文件中的，因此数据只增加不更新。也没有记录级别的数据删除，只会整个segment删除。上述这个特性使kafka可以充分利用磁盘的顺序读写性能，顺序读写不需要硬盘磁头的寻道时间，只需很少的扇区旋转时间，所以速度远快于随机读写。另外kafka重度依赖底层操作系统提供的PageCache功能。当上层有写操作时，操作系统只是将数据写入PageCache，同时标记Page属性为Dirty。当读操作发生时，先从PageCache中查找，如果发生缺页才进行磁盘调度，最终返回需要的数据。<br>2.使用零拷贝<br>在Linux kernel2.2 之后出现了一种叫做”零拷贝(zero-copy)”系统调用机制，就是跳过“用户缓冲区”的拷贝，建立一个磁盘空间和内存的直接映射，数据不再复制到“用户态缓冲区”。传统模式下数据从文件传输到网络需要4次数据拷贝，4次上下文切换和2次系统调用，通过NIO的transferTo/transferFrom调用操作系统的sendfile实现了零拷贝。总共发生2次内核数据拷贝，2次上下文切换和1次系统调用，消除了CPU数据拷贝。这样系统上下文切换减少为2次，可以提升一倍的性能。<br>3.数据批处理和压缩<br>Producer和Consumer均支持批量处理数据，从而减少了网络传输的开销。比如每满100条消息才发送一次，或者每5秒发送一次。另外Producer可将数据压缩后发送给broker，从而减少网络传输代价。目前支持Snappy, Gzip和LZ4压缩。Producer压缩之后，在Consumer端需要解压，虽然增加了CPU的工作，但在对大数据处理上，瓶颈在网络上而不是CPU。<br>4.使用Partition技术<br>通过Partition实现了并行处理和水平扩展，Partition是Kafka(包括Kafka Stream)并行处理的最小单位，不同Partition可处于不同的Broker(节点)，可以充分利用多机资源。同一Broker(节点)上的不同Partition可置于不同的Directory，如果节点上 有多个Disk Drive，可将不同的Drive对应不同的Directory，从而使Kafka充分利用多Disk Drive的磁盘优势。<br>5.使用ISR<br>ISR实现了可用性和一致性的动态平衡。ISR可容忍更多的节点失败，ISR如果要容忍f个节点失败，至少只需要f+1个节点。一旦Leader crash后，ISR中的任何replica皆可竞选成为Leader，如果所有replica都crash，可选择让第一个recover的replica或者第一个在ISR中的replica成为leader。<br>6.zerocopy实验<br>这里我们使用NIO的transferTo/transferFrom做文件数据传输性能测试，同时使用read／write方式做文件数据传输测试，并比较二者的差异。</p>
+<p><li>使用FileChannel.transferFrom()</li></p>
+<p><li>使用FileChannel.transferTo()</li></p>
+<p><li>使用非直接模式ByteBuffer的read／write</li></p>
+<p><li>使用直接模式 ByteBuffer的read／write</li><br>测试文件大小：600+ MB<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-24_10-44-45.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-24_10-44-45.png" alt="2016-12-24_10-44-45"></a><br>测试的缓冲区大小：4KB<br>机器配置：MacBook Pro i7 2.2GHz  Mem 16GB  SSD 256 GB</p>
+<p>测试结果如下.<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-24_10-53-32.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-24_10-53-32.png" alt="2016-12-24_10-53-32"></a><br>结论：<br>transferFrom和transferTo 数据传输性能差不多。transferFrom性能稍优<br>使用直接模式和非直接模式 read/write 数据传输性能差不多。直接模式性能稍优<br>transferFrom／To与read/write 性能高一倍以上。</p>
+<p>代码如下：</p>
+<pre lang="java">
+package zerocopy;
+
+import java.io.IOException;  
+import java.nio.ByteBuffer;  
+import java.nio.channels.FileChannel;  
+import java.nio.file.Files;  
+import java.nio.file.Path;  
+import java.nio.file.Paths;  
+import java.nio.file.StandardOpenOption;  
+import java.util.EnumSet;  
+
+public class ZeroCopyTest {  
+
+     private final static Path copy_from = Paths.get("/tmp/test/from/Security.mp4");  
+     private final static Path copy_to = Paths.get("/tmp/test/to/Security.mp4");  
+     private static long startTime, elapsedTime;  
+     private static int bufferSizeKB = 4;
+     private static int bufferSize = bufferSizeKB * 1024;  
+
+    public static void main(String[] args) throws Exception {  
+
+        transferfrom();            
+        transferTo();            
+        nonDirectBuffer();          
+        directBuffer();        
+
+    }  
+
+    public static void transferfrom() {  
+
+         try (FileChannel fileChannel_from = (FileChannel.open(copy_from,     
+                              EnumSet.of(StandardOpenOption.READ)));  
+              FileChannel fileChannel_to = (FileChannel.open(copy_to,    
+                              EnumSet.of(StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)))) {  
+
+              startTime = System.currentTimeMillis();  
+              fileChannel_to.transferFrom(fileChannel_from, 0L, (int) fileChannel_from.size());  
+              elapsedTime = System.currentTimeMillis() - startTime;  
+              System.out.println("transferFrom Time is " + elapsedTime + " ms");  
+         }catch (IOException ex) {  
+           System.err.println(ex);  
+         }  
+         deleteCopied(copy_to);      
+    }  
+
+    public static void transferTo() throws Exception{  
+
+        try (FileChannel fileChannel_from = (FileChannel.open(copy_from,    
+                              EnumSet.of(StandardOpenOption.READ)));  
+              FileChannel fileChannel_to = (FileChannel.open(copy_to,    
+                              EnumSet.of(StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)))) {  
+
+              startTime = System.currentTimeMillis();  
+
+              fileChannel_from.transferTo(0L, fileChannel_from.size(), fileChannel_to);  
+
+              elapsedTime = System.currentTimeMillis() - startTime;  
+              System.out.println("transferTo Time is " + elapsedTime + " ms");  
+        }catch (IOException ex) {  
+           System.err.println(ex);  
+        }  
+        deleteCopied(copy_to);  
+
+    }  
+
+    public static void nonDirectBuffer(){  
+
+         try (  
+                FileChannel fileChannel_from = FileChannel.open(copy_from,    
+                         EnumSet.of(StandardOpenOption.READ));  
+                FileChannel fileChannel_to = FileChannel.open(copy_to,    
+                         EnumSet.of(StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE));){   
+
+              startTime = System.currentTimeMillis();  
+              ByteBuffer bytebuffer = ByteBuffer.allocate(bufferSize);  
+              while ((fileChannel_from.read(bytebuffer)) > 0) {  
+               bytebuffer.flip();  
+               fileChannel_to.write(bytebuffer);  
+               bytebuffer.clear();  
+              }  
+
+              elapsedTime = System.currentTimeMillis() - startTime;  
+              System.out.println("nonDirectBuffer read/write Time is " + elapsedTime  + " ms");  
+         }catch (IOException ex) {  
+              System.err.println(ex);  
+         }  
+         deleteCopied(copy_to);  
+    }  
+
+    public static void directBuffer(){  
+         try (  
+             FileChannel fileChannel_to = FileChannel.open(copy_to,    
+                     EnumSet.of(StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE));  
+             FileChannel fileChannel_from = (FileChannel.open(copy_from,    
+                                 EnumSet.of(StandardOpenOption.READ)));) {  
+
+         startTime = System.currentTimeMillis();  
+         ByteBuffer bytebuffer = ByteBuffer.allocateDirect(bufferSize);  
+         while ((fileChannel_from.read(bytebuffer)) > 0) {  
+              bytebuffer.flip();  
+              fileChannel_to.write(bytebuffer);  
+              bytebuffer.clear();  
+         }  
+
+         elapsedTime = System.currentTimeMillis() - startTime;  
+         System.out.println("directBuffer read/write Time is " + elapsedTime + " ms");  
+        }catch (IOException ex) {  
+        System.err.println(ex);  
+        }  
+
+        deleteCopied(copy_to);  
+    }  
+
+    public static void deleteCopied(Path path){  
+          try {  
+              Files.deleteIfExists(path);  
+          }catch (IOException ex) {  
+            System.err.println(ex);  
+          }  
+
+    }  
+} </pre> 
+
+<p>参考：<a href="https://www.ibm.com/developerworks/cn/java/j-zerocopy/" target="_blank" rel="external">通过零拷贝实现有效数据传输</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在 LinkedIn 的 Kafka 的系统上，每天有超过 8000 亿条消息被发送，相当于超过 175 兆兆字节（terabytes）数据，另外，每天还会消耗掉 650 兆兆字节（terabytes）数据的消息，为什么Kafka有这样的能力去处理这么多产生的数据和消耗掉的
+    
+    </summary>
+    
+      <category term="云计算及虚拟化" scheme="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+    
+      <category term="运维" scheme="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="Kafka" scheme="http://blog.yaodataking.com/tags/Kafka/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Kafka入门之十一:Kafka的监控</title>
+    <link href="http://blog.yaodataking.com/2016/12/23/kafka-11/"/>
+    <id>http://blog.yaodataking.com/2016/12/23/kafka-11/</id>
+    <published>2016-12-23T14:39:23.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>kafka的数据统计是通过一个叫metrics的工具进行收集的，metrics是一个java类库。metrics以JMX的形式提供了对外查看数据的接口，因此我们首先要在kafka启动的时候指定jmx的端口，然后通过可视化工具jconsole或kafka manager查看。下面我们分别介绍一下。<br>1.JMX配置<br>首先我们看JMX如何配置，在Kafka工具中有个脚本bin/kafka-run-class.sh定义了JMX的启动方法。</p>
+<pre><code># JMX settings
+if [ -z &quot;$KAFKA_JMX_OPTS&quot; ]; then
+  KAFKA_JMX_OPTS=&quot;-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false  -Dcom.sun.management.jmxremote.ssl=false &quot;
+fi
+
+# JMX port to use
+if [  $JMX_PORT ]; then
+  KAFKA_JMX_OPTS=&quot;$KAFKA_JMX_OPTS -Dcom.sun.management.jmxremote.port=$JMX_PORT &quot;
+fi
+`&lt;/pre&gt;
+因此，我们只要在docker-compose文件中定义KAFKA_JMX_OPTS和JMX_PORT，那么启动docker同时，JMX自动启动。
+&lt;pre&gt;`
+    hostname: kafka0
+    ports:
+      - &quot;19092:19092&quot;
+      - &quot;29092:29092&quot;
+      - &quot;18083:18083&quot;
+      - &quot;12345:12345&quot;
+    environment:
+      ZOOKEEPER_CONNECT: zookeeper0:12181,zookeeper1:12182,zookeeper2:12183/kafka
+      BROKER_ID: 0
+      LISTENERS: PLAINTEXT://kafka0:19092,SSL://kafka0:29092
+      ZOOKEEPER_SESSION_TIMEOUT: 3600000
+      CONNECT_REST_PORT: 18083
+      KAFKA_PROPERTY_AUTO_CREATE_TOPICS_ENABLE: &quot;false&quot;
+      KAFKA_PROPERTY_SSL_CLIENT_AUTH: required
+      JMX_PORT: 12345
+      KAFKA_JMX_OPTS: &quot;-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false  -Dcom.sun.management.jmxremote.ssl=false&quot;
+`&lt;/pre&gt;
+2.JConsole监控
+我们知道java 内置了jconsole工具，本博客之前也有介绍过[jconsole](http://blog.yaodataking.com/2016/04/jconsole-remote-mycat.html),因此jconsole的使用并不陌生。我们可以通过docker inspect 查看某个broker的IP地址及jmx端口。然后使用命令进入,如下
+&lt;pre&gt;`jconsole 172.19.0.6:12345`&lt;/pre&gt;
+[![2016-12-23_20-53-38](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-23_20-53-38.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-23_20-53-38.png)
+通过查看Mbean标签下的参数，我们可以获取kafka的一些运行参数。
+3.Kafka Manager监控
+Kafka Manager是Yahoo构建的一个开源的基于Web的管理工具，可以简化开发者和运维工程师维护Kafka集群的工作。
+kakfa manager的[GitHub ](https://github.com/yahoo/kafka-manager)地址。同样的我们创建一个kakfa manager的docker镜像,然后加入docker-compose文件。
+&lt;pre&gt;`
+  kafka-manager:
+    build:
+      context: .
+      dockerfile: kafka-manager.Dockerfile
+    image: kafka-manager:1.0
+    container_name: kafka-manager
+    hostname: kafka-manager
+    ports:
+      - &quot;38080:38080&quot;
+    environment:
+      ZK_HOSTS: zookeeper0:12181
+      PORT: 38080
+    expose:
+      - 38080
+</code></pre><p>访问38080端口并加入一个Kafka集群。<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-23_21-11-49.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-23_21-11-49.png" alt="2016-12-23_21-11-49"></a><br>检查broker，<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-23_21-15-55.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-23_21-15-55.png" alt="2016-12-23_21-15-55"></a><br>我们还可以管理以下功能：<br>    <li>管理几个不同的集群；</li><br>    <li>检查集群的状态(topics, brokers, 副本的分布, 分区的分布)；</li><br>    <li>创建topics</li><br>    <li>Preferred副本选举</li><br>    <li>重新分配分区</li></p>
+<p>ps,kakfa监控还有一些工具比如Kafka Web Console，KafkaOffsetMonitor。感兴趣的朋友可以去测试。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;kafka的数据统计是通过一个叫metrics的工具进行收集的，metrics是一个java类库。metrics以JMX的形式提供了对外查看数据的接口，因此我们首先要在kafka启动的时候指定jmx的端口，然后通过可视化工具jconsole或kafka manager查看。
+    
+    </summary>
+    
+      <category term="云计算及虚拟化" scheme="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+    
+      <category term="运维" scheme="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="JConsole" scheme="http://blog.yaodataking.com/tags/JConsole/"/>
+    
+      <category term="Kafka Manager" scheme="http://blog.yaodataking.com/tags/Kafka-Manager/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Kafka入门之十:Kafka的SSL加密和认证</title>
+    <link href="http://blog.yaodataking.com/2016/12/16/kafka-10/"/>
+    <id>http://blog.yaodataking.com/2016/12/16/kafka-10/</id>
+    <published>2016-12-16T12:53:44.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>SSL(Secure Sockets Layer 安全套接层),及其继任者传输层安全（Transport Layer Security，TLS）是为网络通信提供安全及数据完整性的一种安全协议。TLS与SSL在传输层对网络连接进行加密。在SSL中使用密钥交换算法交换密钥；使用密钥对数据进行加密；使用散列算法对数据的完整性进行验证，使用数字证书证明自己的身份。下面我们就Kafka中如何实现及步骤介绍。</p>
+<blockquote>
+<p>生成服务器keystore (密钥和证书)</p>
+<p>生成客户端keystore (密钥和证书) </p>
+<p>创建CA证书</p>
+<p>将CA证书导入服务器truststore</p>
+<p>将CA证书导入客户端truststore</p>
+<p>从服务器keystore导出证书</p>
+<p>用CA证书给服务器证书签名</p>
+<p>将CA证书导入服务器keystore</p>
+<p>将CA证书导入客户端keystore</p>
+<p>将已签名服务器证书导入服务器keystore<br>以下设置我们以kakfa服务器kafka0为例。<br>1. 设置证书<br>1.1 生成服务区Keystore</p>
+</blockquote>
+<pre><code>keytool -keystore kafka0.keystore.jks -alias kafka0 -validity 365 -storepass test1234 -keypass test1234 -genkey`&lt;/pre&gt;
+keystore: 密钥仓库存储证书文件。
+validity: 证书的有效时间，单位天
+1.2 生成客户端Keystore
+&lt;pre&gt;`keytool -keystore client.keystore.jks -alias kafka0 -validity 365 -storepass test1234 -keypass test1234 -genkey`&lt;/pre&gt;
+1.3 创建CA证书
+&lt;pre&gt;`openssl req -new -x509 -keyout ca.key -out ca.crt -days 365 -passout  pass:test1234`&lt;/pre&gt;
+1.4 将CA证书导入服务器truststore
+&lt;pre&gt;&lt;/code&gt;keytool -v -keystore kafka0.truststore.jks -alias CARoot -import -file ca.crt -storepass test1234&lt;/code&gt;&lt;/pre&gt;
+1.5 将CA证书导入客户端truststore
+&lt;pre&gt;`keytool -v -keystore client.truststore.jks -alias CARoot -import -file ca.crt -storepass test1234`&lt;/pre&gt;
+1.6 从服务器keystore导出证书
+&lt;pre&gt;`keytool -keystore kafka0.keystore.jks -alias kafka0 -certreq -file kafka0.crt -storepass test1234`&lt;/pre&gt;
+1.7 用CA证书给服务器证书签名
+&lt;pre&gt;`openssl x509 -req -CA ca.crt -CAkey ca.key -in kafka0.crt -out kafka0-signed.crt -days 365 -CAcreateserial -passin pass:test1234`&lt;/pre&gt;
+1.8 将CA证书导入服务器keystore
+&lt;pre&gt;`keytool -keystore kafka0.keystore.jks -alias CARoot -import -file ca.crt -storepass test1234`&lt;/pre&gt;
+1.9 将CA证书导入客户端keystore
+&lt;pre&gt;`keytool -keystore client.keystore.jks -alias CARoot -import -file ca.crt -storepass test1234`&lt;/pre&gt;
+1.10 将已签名服务器证书导入服务器keystore
+&lt;pre&gt;`keytool -keystore kafka0.keystore.jks -alias kafka0 -import -file kafka0-signed.crt -storepass test1234`&lt;/pre&gt;
+2.配置kafka broker
+配置server.perproties
+&lt;pre&gt;`listeners=PLAINTEXT://kafka0:9092,SSL://kafka0:9093
+ssl.client.auth=required
+ssl.keystore.location=/opt/kafka/kafka0.keystore.jks
+ssl.keystore.password=test1234
+ssl.key.password=test1234
+ssl.truststore.location=/opt/kafka0.truststore.jks
+ssl.truststore.password=test1234`&lt;/pre&gt;
+“required”=&gt;客户端身份验证是必需的，“requested”=&gt;客户端身份验证请求，客户端没有证书仍然可以连接。
+3.配置kafka客户端
+配置client.perproties
+&lt;pre&gt;`security.protocol=SSL
+ssl.keystore.location=/opt/kafka/client.keystore.jks
+ssl.keystore.password=test1234
+ssl.key.password=test1234
+ssl.truststore.location=/opt/kafka/client.truststore.jks
+ssl.truststore.password=test1234`&lt;/pre&gt;
+4.验证ssl是否生效
+&lt;pre&gt;`openssl s_client -debug -connect kafka0:9093 -tls1
+</code></pre><p>如果证书没有出现或者有任何其他错误信息，那么你的keystore设置不正确。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;SSL(Secure Sockets Layer 安全套接层),及其继任者传输层安全（Transport Layer Security，TLS）是为网络通信提供安全及数据完整性的一种安全协议。TLS与SSL在传输层对网络连接进行加密。在SSL中使用密钥交换算法交换密钥；使用
+    
+    </summary>
+    
+      <category term="云计算及虚拟化" scheme="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+    
+      <category term="运维" scheme="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="Kafka" scheme="http://blog.yaodataking.com/tags/Kafka/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Kafka入门之九:Kafka Streams</title>
+    <link href="http://blog.yaodataking.com/2016/12/09/kafka-9/"/>
+    <id>http://blog.yaodataking.com/2016/12/09/kafka-9/</id>
+    <published>2016-12-09T15:12:43.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>1. 概述<br>Kafka Streams是一个客户端程序库，用于处理和分析存储在Kafka中的数据，并将得到的数据写入kafka或发送到外部系统。Kafka Stream中有几个重要的流处理概念：Event time和Process Time、窗口函数、应用状态管理。Kafka Stream的门槛非常低：比如单机进行一些小数据量的功能验证而不需要在其他机器上启动一些服务（比如在Storm运行Topology需要启动Nimbus和Supervisor，当然也支持Local Mode），Kafka Stream的并发模型可以对单应用多实例进行负载均衡。<br>2. 主要特点<br>    <li>轻量的嵌入到Java应用中</li><br>    <li>除了Kafka Stream Client lib以外无外部依赖</li><br>    <li>支持本地状态故障转移，以实现非常高效的有状态操作，如join和window函数</li><br>    <li>低延迟消息处理，支持基于event-time的window操作</li><br>    <li>提供必要的流处理原语、hige-level Stream DSL和low-level Processor API</li><br>3. 开发者指南<br>3.1 核心概念<br>3.1.1 Stream Processing Topology<br>    <li>stream是Kafka Stream最重要的抽象，它代表了一个无限持续的数据集。stream是有序的、可重放消息、对不可变数据集支持故障转移</li><br>    <li>一个stream processing application由一到多个processor topologies组成，其中每个processor topology是一张图，由多个streams（edges）连接着多个stream processor（node）</li><br>    <li>一个stream processor是processor topology中的一个节点，它代表一个在stream中的处理步骤：从上游processors接受数据、进行一些处理、最后发送一到多条数据到下游processors</li><br>Kafka Stream提供两种开发stream processing topology的API<br>    <li>high-level  Stream DSL：提供通用的数据操作，如map和fileter</li><br>    <li>lower-level Processor API：提供定义和连接自定义processor，同时跟state store（下文会介绍）交互</li></p>
+<p>3.1.2 Time<br>在流处理中时间是一个比较重要的概念，比如说在窗口（windows）处理中，时间就代表两个处理边界<br>    <li>Event time：一条消息最初产生/创建的时间点</li><br>    <li>Processing time：消息准备被应用处理的时间点，如kafka消费某条消息的时间，processing time的单位可以是毫秒、小时或天。Processing time晚于Event time.</li><br>    <li>Ingestion Time 消息存入Topic/Partition时的时间</li><br>Kafka Stream 使用TimestampExtractor 接口为每个消息分配一个timestamp，具体的实现可以是从消息中的某个时间字段获取timestamp以提供event-time的语义或者返回处理时的时钟时间，从而将processing-time的语义留给开发者的处理程序。开发者甚至可以强制使用其他不同的时间概念来进行定义event-time和processing time。<br>3.1.3 States<br>    <li>In-memory State Store</li><br>    <li>Persistent State Store</li><br>Kafka Stream使用state stores提供基于stream的数据存储和数据查询，Kafka Stream内嵌了多个state store，可以通过API访问到，这些state store的实现可以是持久化的KV存储引擎、内存HashMap或者其他数据结构。Kafka Stream提供了local state store的故障转移和自动发现。<br>3.1.4 Windows<br>    <li>Hopping time windows</li><br>    <li>Tumbling time windows:Hopping time windows的特例</li><br>    <li>Sliding windows:只用于Join操作，可由JoinWindow类指定</li><br>3.2 KStream vs KTable<br>3.2.1 概念<br>Kafka Stream定义了两种基本抽象：KStream 和 KTable，区别来自于key-value对值如何被解释，在一个流中(KStream)，每个key-value是一个独立的信息片断，比如，用户购买流是：alice-&gt;黄油，bob-&gt;面包，alice-&gt;奶酪面包，我们知道alice既买了黄油，又买了奶酪面包。<br>另一方面，对于一个表table( KTable)，是代表一个变化日志，如果表包含两对同样key的key-value值，后者会覆盖前面的记录，因为key值一样的，比如用户地址表：alice -&gt; 纽约, bob -&gt; 旧金山, alice -&gt; 芝加哥，意味着Alice从纽约迁移到芝加哥，而不是同时居住在两个地方。<br>这两个概念之间有一个二元性，一个流能被看成表，而一个表也可以看成流。<br>    <li>KStream:KStream为数据流，每条消息代表一条不可变的新记录</li><br>    <li>KTable:KTable为change log流，每条消息代表一个更新，几条key相同的消息会将该key的值更新为最后一条消息的值</li><br>3.2.2 Example<br>对于KStream和KTable中插入两条消息 (“key1”, 1), (“key1”, 2)<br>对KStream作sum，结果为(“key1”,3)<br>对KTable作sum，结果为(“key1”,2)<br>3.2.3 几种Join<br>KStream和KStream的Join，适用于Window Join，结果为KStream。<br>KStream和KTable的Join，KTable的变化只影响KStream中新数据，新结果的输出由KStream驱动，输出为KStream。<br>KTable和KTable的Join，类似于RDBMS的Join，结果为KTable。<br>3.3 Stream API<br>3.3.1 Low-level processor API<br>通过实现Processor接口并实现process和punctuate方法，每条消息都会调用process方法，punctuate方法会周期性的被调用。使用TopologyBuilder拼装processor。<br>3.3.2 High-level DSL API<br>使用Stream DSL创建processor topology，开发者可以使用KStreamBuilder类，继承自TopologyBuilder。<br>4.一个示例<br>在<a href="https://github.com/habren/KafkaExample/tree/master/demokafka.0.10.1.0/src/main/java/com/jasongj/kafka/stream" target="_blank" rel="external">PurchaseAnalysis.java</a>的基础上，算出不同地区（用户地址），不同性别的订单数及商品总数和总金额。输出结果schema如下<br>地区（用户地区，如SH），性别，订单总数，商品总数，总金额<br>示例输出<br>SH, male, 3, 4, 188888.88<br>BJ, femail, 5, 8, 288888.88<br>首先我们要定义OrderAddressGenderSum类，</p>
+<p><pre lang="java"><br>                private String userAddress;<br>                private String gender;<br>        private int orderCount;<br>        private int itemSum;<br>        private double orderAmount;</pre><br>增加fromOrderUserItem及add方法。</p>
+<p><pre lang="java"><br>public static OrderAddressGenderSum fromOrderUserItem(OrderUserItem orderUserItem) {<br>            OrderAddressGenderSum orderAddressGenderSum = new OrderAddressGenderSum();<br>            if(orderUserItem == null) {<br>                return orderAddressGenderSum;<br>            }<br>            orderAddressGenderSum.userAddress = orderUserItem.userAddress;<br>            orderAddressGenderSum.gender = orderUserItem.gender;<br>            orderAddressGenderSum.orderCount = 1;<br>            orderAddressGenderSum.itemSum = orderUserItem.quantity;<br>            orderAddressGenderSum.orderAmount = orderUserItem.quantity * orderUserItem.itemPrice;<br>            return orderAddressGenderSum;<br>        }</pre></p>
+<p>public static OrderAddressGenderSum add(OrderAddressGenderSum v1, OrderAddressGenderSum v2) {<br>            OrderAddressGenderSum orderAddressGenderSum = new OrderAddressGenderSum();<br>            orderAddressGenderSum.userAddress = v1.userAddress;<br>            orderAddressGenderSum.gender = v1.gender;<br>            orderAddressGenderSum.orderCount = v1.orderCount + v2.orderCount;<br>            orderAddressGenderSum.itemSum = v1.itemSum + v2.itemSum;<br>            orderAddressGenderSum.orderAmount = v1.orderAmount + v2.orderAmount;<br>            return orderAddressGenderSum;<br>        }<br>定义一个新的streamBuilder，Order使用KStream流，User，Item使用KTable,使用join关联。主要代码如下。</p>
+<p><pre lang="java"><br>KStreamBuilder streamBuilder = new KStreamBuilder();<br>        KStream<string, order=""> orderStream = streamBuilder.stream(Serdes.String(), SerdesFactory.serdFrom(Order.class), “orders”);<br>        KTable<string, user=""> userTable = streamBuilder.table(Serdes.String(), SerdesFactory.serdFrom(User.class), “users”, “users-state-store”);<br>        KTable<string, item=""> itemTable = streamBuilder.table(Serdes.String(), SerdesFactory.serdFrom(Item.class), “items”, “items-state-store”);<br>        KTable<string, orderaddressgendersum=""> kTable = orderStream<br>                .leftJoin(userTable, (Order order, User user) -&gt; OrderUser.fromOrderUser(order, user), Serdes.String(), SerdesFactory.serdFrom(Order.class))<br>                .filter((String userName, OrderUser orderUser) -&gt; orderUser.userAddress != null)<br>                .map((String userName, OrderUser orderUser) -&gt; new KeyValue<string, orderuser="">(orderUser.itemName, orderUser))<br>                .through(Serdes.String(), SerdesFactory.serdFrom(OrderUser.class), (String key, OrderUser orderUser, int numPartitions) -&gt; (orderUser.getItemName().hashCode() &amp; 0x7FFFFFFF) % numPartitions, “orderuser-repartition-by-item”)<br>                .leftJoin(itemTable, (OrderUser orderUser, Item item) -&gt;OrderUserItem.fromOrderUser(orderUser, item), Serdes.String(),SerdesFactory.serdFrom(OrderUser.class))<br>                .map((String item, OrderUserItem orderUserItem) -&gt; KeyValue.<string, orderaddressgendersum="">pair(orderUserItem.userAddress + orderUserItem.gender,OrderAddressGenderSum.fromOrderUserItem(orderUserItem)))<br>                .groupByKey(Serdes.String(), SerdesFactory.serdFrom(OrderAddressGenderSum.class))<br>                .reduce((OrderAddressGenderSum v1, OrderAddressGenderSum v2) -&gt; OrderAddressGenderSum.add(v1, v2),”gender-amount-state-store”);<br>        kTable.foreach((key, orderAddressGenderSum) -&gt; System.out.printf(“%s\n”, orderAddressGenderSum.toString()));<br>        kTable<br>            .toStream()<br>            .map((String key, OrderAddressGenderSum orderAddressGenderSum) -&gt; new KeyValue<string, string="">(key,orderAddressGenderSum.printSelf()))<br>            .to(“gender-amount”);<br>        KafkaStreams kafkaStreams = new KafkaStreams(streamBuilder, props);<br>        kafkaStreams.cleanUp();<br>        kafkaStreams.start();<br>        System.in.read();<br>        kafkaStreams.close();<br>        kafkaStreams.cleanUp();</string,></string,></string,></string,></string,></string,></string,></pre><br>最终结果如下。<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-09_22-43-20.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-09_22-43-20.png" alt="2016-12-09_22-43-20"></a><br>注：此示例基于<a href="https://github.com/habren/KafkaExample" target="_blank" rel="external">harben的GitHub</a>上的Purchase Analysis示例修改。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;1. 概述&lt;br&gt;Kafka Streams是一个客户端程序库，用于处理和分析存储在Kafka中的数据，并将得到的数据写入kafka或发送到外部系统。Kafka Stream中有几个重要的流处理概念：Event time和Process Time、窗口函数、应用状态管理。K
+    
+    </summary>
+    
+      <category term="云计算及虚拟化" scheme="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+    
+      <category term="运维" scheme="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="Kafka" scheme="http://blog.yaodataking.com/tags/Kafka/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Kafka入门之八:Kafka的新API</title>
+    <link href="http://blog.yaodataking.com/2016/12/03/kafka-8/"/>
+    <id>http://blog.yaodataking.com/2016/12/03/kafka-8/</id>
+    <published>2016-12-03T05:10:57.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>前面几节我们讲的Kafka都是基于0.8.2.2的版本，截止到今天，kafka实际上已经更新到0.10.1.0，那么API都有哪些变化呢？<br><strong>1 Producer API</strong><br>在Kafka 0.8.2, Producer已经被重新设计，所以这次变化较少。<br>1.1增加JAVA接口的发送回调（原来只支持SCALA接口）<br>异步发送消息到一个主题，然后调用提供的callback，发送确认结果。</p>
+<pre lang="java">producer.send(record, new Callback() {
+                @Override
+                public void onCompletion(RecordMetadata metadata, Exception exception) {
+                    System.out.printf("Send record partition:%d, offset:%d, keysize:%d, valuesize:%d %n",
+                            metadata.partition(), metadata.offset(), metadata.serializedKeySize(),
+                            metadata.serializedValueSize());
+                }
+
+            });</pre>
+
+<p>1.2重构Partitioner接口<br>原来0.8.2.2的接口是这样的，只有两个参数</p>
+<pre lang="java">public int partition(Object key, int numPartitions) </pre>
+现在0.10.1.0的接口是这样的，有六个参数。
+<pre lang="java">public int partition(String topic, Object key, byte[] keyBytes, Object value, byte[] valueBytes, Cluster cluster)</pre>
+**2 Consumer API**
+在最新的版本中，Consumer API不再区分High Level还是Low Level。
+2.1 重构Consumer包
+把kafka.consumer和kafka.javaapi统一到kafka.clients.consumer，使包更加统一。
+2.2 新增Subscribe和Assign接口
+Subscribe实际实现了原High Level功能，Assign实现了原Low Level功能。
+2.2.1 Subscribe
+Subscribe通过ConsumerRebalanceListener来监听和动态分配。通过subscribe(List, ConsumerRebalanceListener)来订阅主题列表，或者通过subscribe(Pattern, ConsumerRebalanceListener)来订阅匹配特定模式的主题。 所以，如果一个主题有4个分区，并且一个消费者组有2个进程，那么每个进程将从2个分区来进行消费，如果一个进程故障，分区将重新分派到同组的其他的进程。如果有新的进程加入该组，分区将现有消费者移动到新的进程。具体来说，如果2个进程订阅了一个主题，指定不同的组，他们将获取这个主题所有的消息，如果他们指定相同的组，那么它们将每个获取大约一半的消息。
+2.2.2 Assign
+如果我们使用Assign接口，那么将不会使用消费者组,也将禁用动态分区分配.下面的代码演示了直接消费parttion 0和1的消息，不管有多少个进程，消费的消息都是一样的。
+<pre lang="java">consumer.assign(Arrays.asList(new TopicPartition(topic, 0), new TopicPartition(topic, 1)));
+        while (true) {
+            ConsumerRecords<string, string=""> records = consumer.poll(100);
+            records.forEach(record -> {
+                System.out.printf("client : %s , topic: %s , partition: %d , offset = %d, key = %s, value = %s%n", clientid, record.topic(),
+                        record.partition(), record.offset(), record.key(), record.value());
+            });
+        }</string,></pre>
+2.3 commit功能
+除了保持原来自动commit和手动commit的功能外，kafka增加了两个功能。
+1）支持同步和异步的commit并支持commit回调
+这是0.8.2.2的手动commit。
+<pre lang="java">consumerConnector.commitOffsets();</pre>
+在0.10.1.0中手动同步commit。
+<pre lang="java">consumer.commitSync();</pre>
+在0.10.1.0中手动异步commit并回调。
+<pre lang="java">consumer.commitAsync(new OffsetCommitCallback() {
+                        @Override
+                        public void onComplete(Map<topicpartition, offsetandmetadata=""> offsets, Exception exception) {
+
+                        }
+                    });</topicpartition,></pre>
+2）支持手动commit特定的partition的offset
+<pre lang="java">consumer.subscribe(Arrays.asList(topic));
+        AtomicLong atomicLong = new AtomicLong();
+        while (true) {
+            ConsumerRecords<string, string=""> records = consumer.poll(100);
+            records.partitions().forEach(topicPartition -> {
+                List<consumerrecord<string, string="">> partitionRecords = records.records(topicPartition);
+                partitionRecords.forEach(record -> {
+                    System.out.printf("client : %s , topic: %s , partition: %d , offset = %d, key = %s, value = %s%n", clientid, record.topic(),
+                            record.partition(), record.offset(), record.key(), record.value());
+                });
+                long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
+                consumer.commitSync(Collections.singletonMap(topicPartition, new OffsetAndMetadata(lastOffset + 1)));
+            });
+        }</consumerrecord<string,></string,></pre>
+这里需要注意的是，已提交的偏移量应该一直将读取的下一条消息来的偏移量。因此，调用commitSync时，需要添加最后一条消息的偏移量。
+
+2.4 控制消费位置
+kafka允许指定位置，通过API指定从任意offset位置开始消费。使用seek(TopicPartition, long)来指定新的位置，也可用seekToBeginning(Collection) 表示从最开始位置和seekToEnd(Collection)表示从最后位置消费。
+2.5 消费流程控制
+kafka支持动态控制消费流量，分别在poll(long)调用中执行中使用 pause(Collection) 和 resume(Collection) 来暂停消费指定分配的分区，重新开始消费指定暂停的分区。下面的代码将暂停消费partition 3和4.
+<pre lang="java">while (true) {
+            ConsumerRecords<string, string=""> records = consumer.poll(100);
+            consumer.pause(Arrays.asList(new TopicPartition(topic, 3)));
+            consumer.pause(Arrays.asList(new TopicPartition(topic, 4)));
+            records.forEach(record -> {
+                System.out.printf("client : %s , topic: %s , partition: %d , offset = %d, key = %s, value = %s%n", clientid, record.topic(),
+                        record.partition(), record.offset(), record.key(), record.value());
+            });
+        }</string,></pre>
+
+<p>2.6 多线程处理模型<br>Kafka的Consumer的接口为非线程安全的。多线程共用IO，Consumer线程需要自己做好线程同步。如果想立即终止consumer，唯一办法是用调用接口：wakeup()，使处理线程产生WakeupException。参见<a href="http://kafka.apache.org/0100/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html#multithreaded" target="_blank" rel="external">官方文档</a></p>
+<p><pre lang="java">public class KafkaConsumerRunner implements Runnable {<br>     private final AtomicBoolean closed = new AtomicBoolean(false);<br>     private final KafkaConsumer consumer;</pre></p>
+<pre><code>public void run() {
+    try {
+        consumer.subscribe(Arrays.asList(&quot;topic&quot;));
+        while (!closed.get()) {
+            ConsumerRecords records = consumer.poll(10000);
+            // Handle new records
+        }
+    } catch (WakeupException e) {
+        // Ignore exception if closing
+        if (!closed.get()) throw e;
+    } finally {
+        consumer.close();
+    }
+}
+
+// Shutdown hook which can be called from a separate thread
+public void shutdown() {
+    closed.set(true);
+    consumer.wakeup();
+}
+</code></pre><p> }<br>如果用以下的方式开启多个线程是禁止的。</p>
+<p><pre lang="java"><br>        Thread[] consumerThreads = new Thread[2];<br>        for (int i = 0; i &lt; consumerThreads.length; ++i) {<br>            consumerThreads[i] = new Thread(runnable);<br>            consumerThreads[i].start();<br>        }</pre><br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-03_12-50-49.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-03_12-50-49.png" alt="2016-12-03_12-50-49"></a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;前面几节我们讲的Kafka都是基于0.8.2.2的版本，截止到今天，kafka实际上已经更新到0.10.1.0，那么API都有哪些变化呢？&lt;br&gt;&lt;strong&gt;1 Producer API&lt;/strong&gt;&lt;br&gt;在Kafka 0.8.2, Producer已经被重新设计
+    
+    </summary>
+    
+      <category term="云计算及虚拟化" scheme="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+    
+      <category term="运维" scheme="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="Kafka" scheme="http://blog.yaodataking.com/tags/Kafka/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>软件架构师的12项修炼</title>
+    <link href="http://blog.yaodataking.com/2016/12/01/soft-skill/"/>
+    <id>http://blog.yaodataking.com/2016/12/01/soft-skill/</id>
+    <published>2016-12-01T14:49:23.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>最近重读了Dave Hendricksen的《软件架构师的12项修炼》，感觉在提高自己的软技能方面还是有所用的，特别是沟通，协商，领导力等关系技能上，其实这些技能对于每个人都是适用的。<br>作者把这些技能看作一个金字塔，如下图。<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/softskill.jpg" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/softskill.jpg" alt="softskill"></a><br>以下是简单的技能说明。<br><strong>关系技能：</strong><br>文雅的举止（在任何环境下都能与人文雅相处的能力）<br>沟通（与人有效交互的能力）<br>协商（将事情办成的能力）<br>领导力（通过施加影响力将事情办成的能力）<br>政治（“政治场合”与人交互的能力）<br><strong>个人技能：</strong><br>透明化（使自我、团队关系和项目透明化的能力）<br>激情（激发和保护激情的能力）<br>语境切换（将注意力迅速切换到新语境并保持专注的能力）<br><strong>商务技能：</strong><br>商务知识（读懂商务语言的能力和了解产品与顾客的能力）<br>创新（如何通过学习和思考来创新的能力）<br>实用主义（抓住关键问题的能力）<br>认知（认知目标、战略及合作伙伴的能力）</p>
+<p>对于每个具体的技能，作者详细列出了具体的步骤，也给出了实现途径中的一些忠告。对某些软技能欠缺的朋友不妨参考一下。<br>附：豆瓣对此书的介绍和评价的<a href="https://book.douban.com/subject/10746257/" target="_blank" rel="external">链接</a>。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;最近重读了Dave Hendricksen的《软件架构师的12项修炼》，感觉在提高自己的软技能方面还是有所用的，特别是沟通，协商，领导力等关系技能上，其实这些技能对于每个人都是适用的。&lt;br&gt;作者把这些技能看作一个金字塔，如下图。&lt;br&gt;&lt;a href=&quot;http://or
+    
+    </summary>
+    
+      <category term="读书笔记" scheme="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>《罗马人的故事15:罗马世界的终曲》读书笔记</title>
+    <link href="http://blog.yaodataking.com/2016/11/30/rome-story-15/"/>
+    <id>http://blog.yaodataking.com/2016/11/30/rome-story-15/</id>
+    <published>2016-11-30T13:24:10.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>尤里安之后，罗马皇帝基本上都是君权神授了。虽然皇帝的位置坐稳了，但作为皇帝的“三大职责”，保障边境安全，维护国内政治秩序，完善基础设施建设，完全交给别人了。斯提利科，被称为最后的罗马人，以一人之躯肩负起帝国的重任，最终落到“记录抹杀刑”的结局，实在是令人唏嘘。罗马统治下的和平早已不再发挥作用，八百年未曾陷落的、长久以来被赞颂为“世界之都”的罗马城于公元410年遭到了浩劫，幸存的人下决心离弃罗马，帝国的国境早已千疮百孔。公元476年，随着少年皇帝罗慕路斯·奥古斯都的退位，西罗马帝国灭亡了。没有蛮族进攻和激烈的战斗，没有火焰，没有惨叫，无声无息，无人注意到她的消失。<br>小西庇阿在毁灭迦太基城后失声痛哭，当旁人问及原因时，他回答道：“这曾经是一个伟大的民族，拥有着辽阔的领地、统治着海洋，在最危急的时刻比那些庞大的帝国表现了更刚毅、勇敢的精神，但仍避免不了灭亡。想想过去的亚述帝国、波斯帝国、马其顿帝国还有那个高傲的特洛伊，又有哪个能避免这样的结局。我真害怕在将来有人会对我的祖国做出同样的事。” 小西庇阿的预言注定成真了。<br>记得有人总结过，我觉得很有道理。</p>
+<blockquote>
+<p>如果把视野拉长到三年以上，你就能隐约感受到经济的周期波动。</p>
+<p>如果把视野拉长到十年到三十年，你就能看到人口年龄结构的变化、技术进步的影响、社会风气的演变、经济发展阶段的跃升。</p>
+<p>如果把视野拉长到五十年到一百年，你能看到国家的兴衰、世界政治经济格局的调整、战争与和平的更迭。</p>
+<p>如果把视野拉长到数百年到数千年，你能看到文化的形成和沉淀、宗教的兴起和衰落。</p>
+<p>如果把视野拉到数万年、数十万年乃至数百万年，你就能看到进化的脉络、气候的轮回。<br>罗马帝国为什么衰亡？众说不一。说基督教的原因我认为是不确切的，基督教应该是罗马帝国衰落的果，不是因。说蛮族的入侵也是不确切的，蛮族入侵的威胁一直是存在的，但是力量此消彼涨，一旦罗马军力衰落，蛮族的入侵就源源不断。我们回顾罗马历史知道，罗马的疆域主要是在罗马共和国扩张时期形成的，转成帝制的主要原因就是容易提高效率统一力量保卫疆土。然而帝国的弊端也是显而易见的，罗马历史上就产生好多臭名昭著的皇帝。因此从罗马帝国的兴盛开始，我们就应该知道衰亡也是必然的，正所谓，成也萧何，败也萧何。</p>
+</blockquote>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;尤里安之后，罗马皇帝基本上都是君权神授了。虽然皇帝的位置坐稳了，但作为皇帝的“三大职责”，保障边境安全，维护国内政治秩序，完善基础设施建设，完全交给别人了。斯提利科，被称为最后的罗马人，以一人之躯肩负起帝国的重任，最终落到“记录抹杀刑”的结局，实在是令人唏嘘。罗马统治下的和
+    
+    </summary>
+    
+      <category term="读书笔记" scheme="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+    
+    
+      <category term="罗马" scheme="http://blog.yaodataking.com/tags/%E7%BD%97%E9%A9%AC/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Kafka入门之七:Kafka的offset管理</title>
+    <link href="http://blog.yaodataking.com/2016/11/26/kafka-7/"/>
+    <id>http://blog.yaodataking.com/2016/11/26/kafka-7/</id>
+    <published>2016-11-26T05:01:50.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p><strong>1.Low Level Consumer(Simple Consumer)的offset管理</strong><br><a href="http://blog.yaodataking.com/2016/11/kafka-6.html">上一节</a>我们讲到了kafka的High Level Consumer的消息消费是自动根据offset的顺序消费的。但有时候用户希望比Consumer Group更好的控制数据的消费，比如<br>&bull;同一条消息读多次，方便Replay。<br>&bull;只消费某个Topic的部分Partition。<br>&bull;管理事务，从而确保每条消息被处理一次。<br>kafka提供了kafka.javaapi.consumer.SimpleConsumer这个API,但是相比High Level Consumer，Low Level Consumer要求用户做大量的额外工作，如<br>&bull;在应用程序中跟踪处理offset，并决定下一条消费哪条消息。<br>&bull;获知每个Partition的Leader。<br>&bull;处理Leader的变化。<br>&bull;处理多Consumer的协作。<br>下面一段代码，演示了每次从特定Partition的特定offset开始fetch特定大小的消息，如果这些值固定，返回的消息是固定的。</p>
+<pre><code>import java.nio.ByteBuffer;
+import kafka.api.FetchRequest;
+import kafka.api.FetchRequestBuilder;
+import kafka.javaapi.FetchResponse;
+import kafka.javaapi.consumer.SimpleConsumer;
+import kafka.javaapi.message.ByteBufferMessageSet;
+import kafka.message.MessageAndOffset;
+
+public class DemoLowLevelConsumer {
+
+    public static void main(String[] args) throws Exception {
+        final String topic = &quot;topic1&quot;;
+        String clientID = &quot;DemoLowLevelConsumer1&quot;;
+        SimpleConsumer simpleConsumer = new SimpleConsumer(&quot;kafka0&quot;, 9092, 100000, 64 * 1000000, clientID);
+        FetchRequest req = new FetchRequestBuilder().clientId(clientID)
+                .addFetch(topic, 0, 0L, 50000).addFetch(topic, 1, 0L, 50000).addFetch(topic, 2, 0L, 50000).build();
+        FetchResponse fetchResponse = simpleConsumer.fetch(req);
+        ByteBufferMessageSet messageSet = (ByteBufferMessageSet) fetchResponse.messageSet(topic, 0);
+        for (MessageAndOffset messageAndOffset : messageSet) {
+            ByteBuffer payload = messageAndOffset.message().payload();
+            long offset = messageAndOffset.offset();
+            byte[] bytes = new byte[payload.limit()];
+            payload.get(bytes);
+            System.out.println(&quot;Offset:&quot; + offset + &quot;, Payload:&quot; + new String(bytes, &quot;UTF-8&quot;));
+        }
+    }
+
+}`&lt;/pre&gt;
+**2.High Level Consumer的offset管理**
+对于High Level Consumer来说，offset是自动管理的，我们只需要在参数里设置自动commit还是手工commit。
+&lt;pre&gt;`auto.commit.enable=true
+auto.commit.interval.ms=60 * 1000 `&lt;/pre&gt;
+如果auto.commit.enable=false，那么我们就要在程序中手工指定何时执行下面这条语句。
+&lt;pre&gt;`ConsumerConnector.commitOffsets();`&lt;/pre&gt;
+**3.Offset的存储**
+kafka通过参数设置可以指定offset存储的位置，在zookeeper里还是在kafka上。当然要把dual.commit.enabled设置为true。下面的设置表示offset存储在Kafka上。
+&lt;pre&gt;`offsets.storage=kafka
+dual.commit.enabled=true`&lt;/pre&gt;
+**4.Offse的范围查询**
+kafka提供了一个工具可以查询指定topic的offset范围。如查询topic1的offset最小值和最大值。
+最小值
+&lt;pre&gt;`bin/kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list kafka0:9092 -topic topic1 --time -2`&lt;/pre&gt;
+最大值
+&lt;pre&gt;`bin/kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list kafka0:9092 -topic topic1 --time -1`&lt;/pre&gt;
+当然通过这个工具,我们还可获取指定timestamp的offset，具体用法参见此命令help。
+**5.日志压缩**
+5.1原理
+为什么日志压缩放在这里讲呢？因为kafka的日志压缩跟offset有关，启动压缩机制后，kafka只保留每一Key的最大的offset（也就是最新值)，而把旧的值在压缩过程中删除掉。如下图。
+[![2016-11-26_12-15-07](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_12-15-07.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_12-15-07.png)
+5.2配置
+为实现日志压缩，我们必须修改Kafka配置文件server.properties，把log.cleaner.enable设置为true，然后重启kafka。
+5.3实验演示
+5.3.1目标
+创建一个topic，将其log.cleanup.policy设置为compact，等clean（compact）过后使用consumer消费该topic，打印出每条消息的partition  key  offset，观察其offset是否连续.
+5.3.2步骤
+a)创建topic1，注意这个topic里加了两个配置cleanup.policy=compact及segment.bytes=512，这将会对这个topic启动日志压缩,并且分段文件达到512字节就轮转。
+&lt;pre&gt;`bin/kafka-topics.sh --zookeeper zookeeper0:2181/kafka --topic topic1 --create --config cleanup.policy=compact --config segment.bytes=512 --replication-factor 1 --partitions 3
+</code></pre><p>b)发送消息，我们连续10次发送key为0，1，2的消息。（确保超过512字节）<br>c)消费消息，停止消费，再连续3次发送，再消费消息。看下图<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_10-43-01.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_10-43-01.png" alt="2016-11-26_10-43-01"></a><br>查看kafka上的log目录，看到生成了以第一个offset的不同log，旧的log在删除过程中。<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_10-44-57.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_10-44-57.png" alt="2016-11-26_10-44-57"></a><br>查看log文件的内容，看到压缩过的log只保留了最后一个offset。<br><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_10-47-56.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_10-47-56.png" alt="2016-11-26_10-47-56"></a><br>5.3.3实验小结<br>&bull;一直保持消费Log head的consumer可按顺序消费所有消息，并且offset连续。<br>&bull;任何从offset 0开始的读操作至少可读到每个key对应的最后一条消息。<br>&bull;每条消息的offset保持不变，offset是消息的永久标志符。<br>&bull;消费本身的顺序不会被改变。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;strong&gt;1.Low Level Consumer(Simple Consumer)的offset管理&lt;/strong&gt;&lt;br&gt;&lt;a href=&quot;http://blog.yaodataking.com/2016/11/kafka-6.html&quot;&gt;上一节&lt;/a&gt;我们讲到
+    
+    </summary>
+    
+      <category term="云计算及虚拟化" scheme="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+    
+      <category term="运维" scheme="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="Kafka" scheme="http://blog.yaodataking.com/tags/Kafka/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Oracle的函数及位图索引</title>
+    <link href="http://blog.yaodataking.com/2016/11/19/oracle-index-2/"/>
+    <id>http://blog.yaodataking.com/2016/11/19/oracle-index-2/</id>
+    <published>2016-11-19T06:29:19.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<p><strong>1.函数索引</strong><br>1）函数索引的原理：<br>使用基于函数的索引可建立函数返回值的索引。服务器根据索引表达式执行搜索时，不必为每个关键字值调用函数，该函数索引相当于表的一个虚拟列，虽然不真正存于表中，但存于索引结构中。这个函数可以是一个内置 SQL 函数、外部提供的 PL/SQL 函数、或用户编写函数。<br>2）函数索引的好处：<br>a.利用函数索引可以只对限定的键值创建索引，节约空间，提高效率。<br>b.利用函数索引可以避免where子句中使用函数时的全表扫描，提高查询效率。<br>c.使不走索引的SQL使用索引<br>d.减少递归调用<br>3）函数索引对性能的影响<br>当然这会对插入数据有一定影响，因为需要通过函数计算一下，然后生成索引。如果插入数据量不大，而查询数据量比较大。那么为了优化查询速度，稍微降低点插入速度是可以承担的。</p>
+<p><strong>2.位图索引</strong><br>1）什么是位图索引<br>位图索引是指用位图表示的索引，oracle对于选择度底的列的每个键值建立一个位图，位图中的每一位可能对应多个列，位图中位等于1表示特定的行含有此位图表示的键值。<br>2）位图索引的优势：<br>a.减少即席查询的相应时间<br>b.和其它类型索引比较，真正节约了索引数据空间<br>c.即使在非常差的硬件上，也可能会有戏剧化的性能提升<br>d.高效的并行DML和LOAD操作。<br>e.生成索引的时候更高效，首先是不排序，其次是占用的空间少（索引空间）。<br>f.可以通过位图索引直接计数。<br>3）位图索引不适用场景：<br>a.列的基数比较多，不适合位图索引，因为它会占用更多的存储空间。<br>b.索引列DML频繁的列，不适合位图索引，容易造成死锁。</p>
+<p><strong>3.反向键索引</strong><br>1）什么是反向键索引<br>反向键索引也是一种B树索引，但是它与一般的B树索引相比又有一个很奇特的地方。反向键索引将索引键值的每一个字节做一个翻转变换，举一个例子：数字123456在反向键索引中的存储形式便是654321。<br>好处是消除了热块竞争。坏处是范围查询根本无法使用!<br>2）反向键索引的应用场景<br>反向索引主要是建立在那些以序列号生成的列上，可以将本来是连在一起的index entry分散到不同的leaf block中去，当索引是从序列中取的时候，如果是一般的b-tree 索引，在大量的插入后会导致块的分裂以及树的倾斜，使用reverse key index可以使索引段条目被更均匀的分布，所以，reverse index主要是缓解右向增长的索引右侧叶子节点的争用,因此常用于解决被索引引起的热块问题。</p>
+<p><strong>4.全文索引</strong><br>1)什么是全文索引<br>全文索引就是通过将文字按照某种语言进行词汇拆分，重新将数据组合存储，来达到快速检索的目的。全文索引不是按照键值存储的，而是按照分词重组数据，常用于模糊查询Where name like ‘%leonarding%’效率比全表扫描高很多。<br>2）全文索引的典型应用场景<br>a.普通查询，创建OracleText中Context类型的索引，生成大量的关键词，用于加快类似于普通的like ‘%xx%’操作速度，或者查询一些比较大的文档。可以使用contains函数进行数据检索。缺点：比较依赖于关键词和文档格式。有时可能不太准确。<br>b.目录信息Ctxcat(context catelog) 索引为事务维护，也就是说更改数据的时候会更新索引，不需要像context类型的全文索引一样每次更改数据后执行CTX_DDL.SYNC_INDEX刷新操作。<br>c.文档分类，创建规则表，根据关键词，对文档进行分类操作。比较适合对比较大的文档进行分类的操作。索引类型：ctxsys.ctxrule<br>用于将文档分类的应用</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;strong&gt;1.函数索引&lt;/strong&gt;&lt;br&gt;1）函数索引的原理：&lt;br&gt;使用基于函数的索引可建立函数返回值的索引。服务器根据索引表达式执行搜索时，不必为每个关键字值调用函数，该函数索引相当于表的一个虚拟列，虽然不真正存于表中，但存于索引结构中。这个函数可以是一个内
+    
+    </summary>
+    
+      <category term="数据库" scheme="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+    
+    
+      <category term="Oracle" scheme="http://blog.yaodataking.com/tags/Oracle/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>《罗马人的故事14:基督的胜利》读书笔记</title>
+    <link href="http://blog.yaodataking.com/2016/11/14/rome-story-14/"/>
+    <id>http://blog.yaodataking.com/2016/11/14/rome-story-14/</id>
+    <published>2016-11-14T03:00:17.000Z</published>
+    <updated>2017-06-21T14:55:20.000Z</updated>
+    
+    <content type="html"><![CDATA[<pre><code>公元356年，24岁的副帝尤里安开始了他在高卢的战斗生活。令人意想不到的是，作为一名哲学门徒，尤里安犹如凯撒转世，不仅成功瓦解了莱茵河沿岸蛮族的入侵，而且赢得了罗马军队的拥护，罗马人的精神似乎又回来了。历史也给了尤里安一次绝佳的机会，5年后，皇帝君士坦提乌斯突然因病逝世，尤里安顺理成章地成为了罗马帝国唯一的最高统治者。然而尤里安终究不是凯撒，对基督的不正确处理导致他无法被当时社会接受，尤里安的死应该也是一次暗杀。我在想如果是凯撒，他会怎么面对基督的崛起呢？大概也很难吧，先接受再利用应该是正确的政治态度吧。总的来说，如果不能引领及顺应这个时代，个人的成就无法脱离他所处的时代。让我们用尤里安的遗言作为罗马帝国的谢幕吧。
+</code></pre><blockquote>
+<p>告别人生的时刻好像到了。我一直希望能回报养育我的大自然，现在我做到了，备感欣慰。哲学说，生为苦，死为解脱，因此是快乐。哲学还告诉我，死是神明赐给在现世建下功德之人的最后的奖励。对于迄今为止的所为，我没有任何后悔。我从未有过谋杀及其他卑劣之举，这让我感到欣慰。无论是与世隔绝的时期，还是日后集大权于一身，我始终忠实于自己，没有背叛自己的信念。我尽力顺应神明之期待而活，施善政兴利安民。遇战争，事前必深思熟虑，不得已才为之。尽管如此，结果未必尽如人意。像人间诸事，结果良善是神明之援助，欠佳则归咎于人之过失。我坚信帝国存在之意义，在于保证人民的安全与繁荣，并为之付出努力。我可以问心无愧地断言，为政后我所推行的一切政策，皆是为了实现这个目的。</p>
+<p>说到这里，尤里安长长地吸了一口气，然后继续说道：</p>
+<p>不能再多说了，我精力不济，感到死亡即将降临。唯有一事须作最后的交代。关于继任皇帝的人选，我不作提名。我的抉择可能考虑不够周延，或不够明智。若无法获得军队的支持，我的推荐会危及他的性命。人选委由诸位决定。我仅祝福罗马帝国的百姓，能在贤明的君主的统治下，过上安全幸福的生活。</p>
+</blockquote>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;pre&gt;&lt;code&gt;公元356年，24岁的副帝尤里安开始了他在高卢的战斗生活。令人意想不到的是，作为一名哲学门徒，尤里安犹如凯撒转世，不仅成功瓦解了莱茵河沿岸蛮族的入侵，而且赢得了罗马军队的拥护，罗马人的精神似乎又回来了。历史也给了尤里安一次绝佳的机会，5年后，皇帝君士坦提乌斯
+    
+    </summary>
+    
+      <category term="读书笔记" scheme="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+    
+    
+      <category term="罗马" scheme="http://blog.yaodataking.com/tags/%E7%BD%97%E9%A9%AC/"/>
+    
+  </entry>
+  
+</feed>
