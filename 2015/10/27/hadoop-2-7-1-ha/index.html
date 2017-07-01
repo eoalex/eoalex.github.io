@@ -1,7 +1,42 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="ss"><title>Hadoop 2.7.1 实现HA集群部署 | Alex Wu's blog</title><link rel="stylesheet" type="text/css" href="//fonts.css.network/css?family=Source+Code+Pro"><link rel="stylesheet" type="text/css" href="/css/style.css?v=2.0.1"><link rel="stylesheet" type="text/css" href="/css/highlight.css?v=2.0.1"><link rel="Shortcut Icon" href="/favicon.ico"><link rel="bookmark" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Hadoop 2.7.1 实现HA集群部署</h1><a id="logo" href="/.">Alex Wu's blog</a><p class="description">THINK BIG, START SMALL, DELIVER VALUE TO THE BUSINESS</p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div><div id="search-form"><div id="result-mask" class="hide"></div><label><input id="search-key" type="text" autocomplete="off" placeholder="搜索..."></label><div id="result-wrap" class="hide"><div id="search-result"></div></div><div class="hide"><template id="search-tpl"><div class="item"><a href="/{path}" title="{title}"><div class="title">{title}</div><div class="time">{date}</div><div class="tags">{tags}</div></a></div></template></div></div></div><div id="layout" class="layout-g"><div class="layout-l"><div class="content_container"><div class="post"><h1 class="post-title">Hadoop 2.7.1 实现HA集群部署</h1><div class="post-meta"><span class="date">Oct 27, 2015</span><span class="category"><a href="/categories/大数据/">大数据</a></span><span><i id="busuanzi_container_page_pv"><i id="busuanzi_value_page_pv"></i><i> Hits</i></i></span><a href="/2015/10/27/hadoop-2-7-1-ha/#comments" class="comment-count">留言</a></div><div class="post-content"><h2 id="1-0-简述"><a href="#1-0-简述" class="headerlink" title="1.0 简述"></a>1.0 简述</h2><p>Hadoop 2.0中的HDFS增加了两个重大特性，HA和Federation，HA即为High Availability，用于解决NameNode单点故障问题，该特性通过热备的方式为主NameNode提供一个备用者，一旦主NameNode出现故障，可以迅速切换至备NameNode，从而实现不间断对外提供服务。Federation即为“联邦”，该特性允许一个HDFS集群中存在多个NameNode同时对外提供服务，这些NameNode分管一部分目录（水平切分），彼此之间相互隔离，但共享底层的DataNode存储资源。本文就讲如何安装Hadoop 2.7.1 实现HA集群。联邦的安装部署我们将在下次讲。</p>
-<h2 id="1-1-主机列表"><a href="#1-1-主机列表" class="headerlink" title="1.1 主机列表"></a>1.1 主机列表</h2><table width="553"><br><tbody><br><tr><br><td width="109">IP</td><br><td width="156">NAME</td><br><td width="288">Function</td><br></tr><br><tr><br><td width="109">192.168.199.24</td><br><td width="156">hadoop24.hadoop.com</td><br><td width="288">主namenode, zookeeper,journalnode,zkfc, ResourceManager</td><br></tr><br><tr><br><td width="109">192.168.199.25</td><br><td width="156">hadoop25.hadoop.com</td><br><td width="288">备namenode,zookeepaer,journalnode,zkfc</td><br></tr><br><tr><br><td width="109">192.168.199.26</td><br><td width="156">hadoop26.hadoop.com</td><br><td width="288">datanode, ,zookeepaer,journalnode, NodeManager</td><br></tr><br><tr><br><td width="109">192.168.199.27</td><br><td width="156">hadoop27.hadoop.com</td><br><td width="288">Datanode, NodeManager</td><br></tr><br><tr><br><td width="109">192.168.199.28</td><br><td width="156">hadoop28.hadoop.com</td><br><td width="288">Datanode, NodeManager</td><br></tr><br></tbody><br></table>
-
-<h2 id="1-2-下载Zookeeper并安装配置"><a href="#1-2-下载Zookeeper并安装配置" class="headerlink" title="1.2 下载Zookeeper并安装配置"></a>1.2 下载Zookeeper并安装配置</h2><pre><code>#tar -xzvf zookeeper-3.4.6.tar.gz
+<h2 id="1-1-主机列表"><a href="#1-1-主机列表" class="headerlink" title="1.1 主机列表"></a>1.1 主机列表</h2><table>
+<thead>
+<tr>
+<th style="text-align:left">IP</th>
+<th style="text-align:left">NAME</th>
+<th style="text-align:left">Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">192.168.199.24</td>
+<td style="text-align:left">hadoop24.hadoop.com</td>
+<td style="text-align:left">主namenode,zookeeper,journalnode,zkfc,ResourceManager</td>
+</tr>
+<tr>
+<td style="text-align:left">192.168.199.25</td>
+<td style="text-align:left">hadoop25.hadoop.com</td>
+<td style="text-align:left">备namenode,zookeepaer,journalnode,zkfc</td>
+</tr>
+<tr>
+<td style="text-align:left">192.168.199.26</td>
+<td style="text-align:left">hadoop26.hadoop.com</td>
+<td style="text-align:left">datanode,zookeepaer,journalnode,NodeManager</td>
+</tr>
+<tr>
+<td style="text-align:left">192.168.199.27</td>
+<td style="text-align:left">hadoop27.hadoop.com</td>
+<td style="text-align:left">Datanode,NodeManager</td>
+</tr>
+<tr>
+<td style="text-align:left">192.168.199.28</td>
+<td style="text-align:left">hadoop28.hadoop.com</td>
+<td style="text-align:left">Datanode,NodeManager</td>
+</tr>
+</tbody>
+</table>
+<h2 id="1-2-Zookeeper安装配置"><a href="#1-2-Zookeeper安装配置" class="headerlink" title="1.2 Zookeeper安装配置"></a>1.2 Zookeeper安装配置</h2><p>下载Zookeeper并安装配置</p>
+<pre><code>#tar -xzvf zookeeper-3.4.6.tar.gz
 #cd zookeeper-3.4.6/conf
 #cp zoo_sample.cfg zoo.cfg
 #vi zoo.cfg
@@ -11,301 +46,264 @@ server.2=hadoop25.hadoop.com:2888:3888
 server.3=hadoop26.hadoop.com:2888:3888
 #cd ..
 #mkdir data
-#cd ..`&lt;/pre&gt;
-生成分发脚本，并执行
-&lt;pre&gt;`#cat zookeeper-3.4.6/conf/zoo.cfg | grep server |sed &apos;s/[^*]*=//g&apos; |sed &apos;s/:[^*]*//g&apos; |awk &apos;{print &quot;scp -rp ./zookeeper-3.4.6 grid@&quot;$1&quot;:/home/grid&quot;}&apos; | sed &apos;1d&apos; &amp;gt; zoocopy
+#cd ..
+</code></pre><p>生成分发脚本，并执行</p>
+<pre><code>#cat zookeeper-3.4.6/conf/zoo.cfg | grep server |sed &apos;s/[^*]*=//g&apos; |sed &apos;s/:[^*]*//g&apos; |awk &apos;{print &quot;scp -rp ./zookeeper-3.4.6 grid@&quot;$1&quot;:/home/grid&quot;}&apos; | sed &apos;1d&apos; &gt; zoocopy
 #./zoocopy
-`&lt;/pre&gt;
-[![20151027001](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027001.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027001.png)
-
-在hadoop24上
-&lt;pre&gt;`#echo &quot;1&quot; &amp;gt; ~/zookeeper-3.4.6/data/myid`&lt;/pre&gt;
-在hadoop25
-&lt;pre&gt;`#echo &quot;2&quot; &amp;gt; ~/zookeeper-3.4.6/data/myid`&lt;/pre&gt;
-在hadoop26
-&lt;pre&gt;`#echo &quot;3&quot; &amp;gt; ~/zookeeper-3.4.6/data/myid`&lt;/pre&gt;
-在每台上执行启动
-&lt;pre&gt;`#~/zookeeper-3.4.6/bin/zkServer.sh start`&lt;/pre&gt;
-[![20151027002](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027002.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027002.png)
-
-查看状态
-&lt;pre&gt;`#~/zookeeper-3.4.6/bin/zkServer.sh status`&lt;/pre&gt;
-[![20151027003](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027003.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027003.png)
-
-可以看到一台leader，两台follower
-
-## 1.3 安装配置hadoop 2.7.1
-
-&lt;pre&gt;`#tar -xzvf hadoop-2.7.1.tar.gz
+</code></pre><p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027001.png" alt="20151027001"></p>
+<p>在hadoop24上</p>
+<pre><code>#echo &quot;1&quot; &gt; ~/zookeeper-3.4.6/data/myid
+</code></pre><p>在hadoop25上</p>
+<pre><code>#echo &quot;2&quot; &gt; ~/zookeeper-3.4.6/data/myid
+</code></pre><p>在hadoop26上</p>
+<pre><code>#echo &quot;3&quot; &gt; ~/zookeeper-3.4.6/data/myid
+</code></pre><p>在每台上执行启动</p>
+<pre><code>#~/zookeeper-3.4.6/bin/zkServer.sh start
+</code></pre><p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027002.png" alt="20151027002"></p>
+<p>查看状态</p>
+<pre><code>#~/zookeeper-3.4.6/bin/zkServer.sh status
+</code></pre><p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027003.png" alt="20151027003"></p>
+<p>可以看到一台leader，两台follower</p>
+<h2 id="1-3-Hadoop安装配置"><a href="#1-3-Hadoop安装配置" class="headerlink" title="1.3 Hadoop安装配置"></a>1.3 Hadoop安装配置</h2><p>下载hadoop 2.7.1并解压</p>
+<pre><code>#tar -xzvf hadoop-2.7.1.tar.gz
 #cd hadoop-2.7.1
 #mkdir name data tmp journal
 #cd etc/Hadoop
-`&lt;/pre&gt;
-设置JAVA_HOME路径
-&lt;pre&gt;`#vi hadoop-env.sh
+</code></pre><p>设置JAVA_HOME路径</p>
+<pre><code>#vi hadoop-env.sh
 export JAVA_HOME=/usr/java/jdk1.8.0_51
 #vi yarn-env.sh
-export JAVA_HOME=/usr/java/jdk1.8.0_51`&lt;/pre&gt;
-编辑slaves文件
-&lt;pre&gt;`#vi slaves
-hadoop26.hadoop.com
-hadoop27.hadoop.com
-hadoop28.hadoop.com
-`&lt;/pre&gt;
-&lt;pre&gt;`#vi core-site.xml
-&amp;lt;configuration&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;fs.defaultFS&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;hdfs://mycluster&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;hadoop.tmp.dir&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;file:/home/grid/hadoop-2.7.1/tmp&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;io.file.buffer.size&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;131702&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;hadoop.proxyuser.hadoop.hosts&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;*&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;hadoop.proxyuser.hadoop.groups&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;*&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;ha.zookeeper.quorum&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;192.168.199.24:2181,192.168.199.25:2181,192.168.199.26:2181&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;ha.zookeeper.session-timeout.ms&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;1000&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;/configuration&amp;gt;
-
-#vi mapred-site.xml
-&amp;lt;configuration&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;mapreduce.framework.name&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;yarn&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;/configuration&amp;gt;
-
-#vi yarn-site.xml
-&amp;lt;configuration&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;yarn.nodemanager.aux-services&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;mapreduce_shuffle&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;yarn.nodemanager.auxservices.mapreduce.shuffle.class&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;org.apache.hadoop.mapred.ShuffleHandler&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;yarn.resourcemanager.address&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;hadoop24.hadoop.com:8032&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;yarn.resourcemanager.scheduler.address&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;hadoop24.hadoop.com:8030&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;yarn.resourcemanager.resource-tracker.address&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;hadoop24.hadoop.com:8031&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;yarn.resourcemanager.admin.address&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;hadoop24.hadoop.com:8033&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;yarn.resourcemanager.webapp.address&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;hadoop24.hadoop.com:8088&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;/configuration&amp;gt;
-
-#vi hdfs-site.xml
-&amp;lt;configuration&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.namenode.name.dir&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;file:/home/grid/hadoop-2.7.1/name&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.datanode.data.dir&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;file:/home/grid/hadoop-2.7.1/data&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.replication&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;3&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.webhdfs.enabled&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;true&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.permissions&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;false&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.permissions.enabled&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;false&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.nameservices&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;mycluster&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.ha.namenodes.mycluster&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;nn1,nn2&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.namenode.rpc-address.mycluster.nn1&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;hadoop24.hadoop.com:9000&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.namenode.rpc-address.mycluster.nn2&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;hadoop25.hadoop.com:9000&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.namenode.servicerpc-address.mycluster.nn1&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;hadoop24.hadoop.com:53310&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.namenode.servicerpc-address.mycluster.nn2&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;hadoop25.hadoop.com:53310&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.namenode.http-address.mycluster.nn1&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;hadoop24.hadoop.com:50070&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.namenode.http-address.mycluster.nn2&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;hadoop25.hadoop.com:50070&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.namenode.shared.edits.dir&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;qjournal://hadoop24.hadoop.com:8485;hadoop25.hadoop.com:8485;hadoop26.hadoop.com:8485/mycluster&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.client.failover.proxy.provider.mycluster&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.ha.fencing.methods&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;sshfence&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.ha.fencing.ssh.private-key-files&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;/home/grid/.ssh/id_rsa&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.ha.fencing.ssh.connect-timeout&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;30000&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.journalnode.edits.dir&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;/home/grid/hadoop-2.7.1/journal&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.ha.automatic-failover.enabled&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;true&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;ha.failover-controller.cli-check.rpc-timeout.ms&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;60000&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;ipc.client.connect.timeout&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;60000&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-&amp;lt;name&amp;gt;dfs.image.transfer.bandwidthPerSec&amp;lt;/name&amp;gt;
-&amp;lt;value&amp;gt;4194304&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;/configuration&amp;gt;
-`&lt;/pre&gt;
-生成分发脚本
-&lt;pre&gt;`#cat zoocopy|sed &apos;s/zookeeper-3.4.6/hadoop-2.7.1/g&apos; &amp;gt; tmphadoop
-#cat ./hadoop-2.7.1/etc/hadoop/slaves |awk &apos;{print &quot;scp -rp ./hadoop-2.7.1 grid@&quot;$1&quot;:/home/grid&quot;}&apos; &amp;gt;&amp;gt; tmphadoop
-#sort -n tmphadoop | uniq &amp;gt; hadoopcopy
+export JAVA_HOME=/usr/java/jdk1.8.0_51
+</code></pre><p>编辑slaves文件</p>
+<pre><code>#vi slaves
+    hadoop26.hadoop.com
+    hadoop27.hadoop.com
+    hadoop28.hadoop.com
+</code></pre><p> 编辑core-site文件</p>
+<pre><code>#vi core-site.xml
+    &lt;configuration&gt;
+        &lt;property&gt;
+            &lt;name&gt;fs.defaultFS&lt;/name&gt;
+            &lt;value&gt;hdfs://mycluster&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;hadoop.tmp.dir&lt;/name&gt;
+            &lt;value&gt;file:/home/grid/hadoop-2.7.1/tmp&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;io.file.buffer.size&lt;/name&gt;
+            &lt;value&gt;131702&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;hadoop.proxyuser.hadoop.hosts&lt;/name&gt;
+            &lt;value&gt;*&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;hadoop.proxyuser.hadoop.groups&lt;/name&gt;
+            &lt;value&gt;*&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;ha.zookeeper.quorum&lt;/name&gt;
+            &lt;value&gt;192.168.199.24:2181,192.168.199.25:2181,192.168.199.26:2181&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;ha.zookeeper.session-timeout.ms&lt;/name&gt;
+            &lt;value&gt;1000&lt;/value&gt;
+        &lt;/property&gt;
+    &lt;/configuration&gt;
+</code></pre><p>编辑mapred-site文件</p>
+<pre><code>#vi mapred-site.xml
+    &lt;configuration&gt;
+        &lt;property&gt;
+            &lt;name&gt;mapreduce.framework.name&lt;/name&gt;
+            &lt;value&gt;yarn&lt;/value&gt;
+        &lt;/property&gt;
+    &lt;/configuration&gt;
+</code></pre><p>编辑yarn-site文件</p>
+<pre><code>#vi yarn-site.xml
+    &lt;configuration&gt;
+        &lt;property&gt;
+            &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;
+            &lt;value&gt;mapreduce_shuffle&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;yarn.nodemanager.auxservices.mapreduce.shuffle.class&lt;/name&gt;
+            &lt;value&gt;org.apache.hadoop.mapred.ShuffleHandler&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;yarn.resourcemanager.address&lt;/name&gt;
+            &lt;value&gt;hadoop24.hadoop.com:8032&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;yarn.resourcemanager.scheduler.address&lt;/name&gt;
+            &lt;value&gt;hadoop24.hadoop.com:8030&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;yarn.resourcemanager.resource-tracker.address&lt;/name&gt;
+            &lt;value&gt;hadoop24.hadoop.com:8031&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;yarn.resourcemanager.admin.address&lt;/name&gt;
+            &lt;value&gt;hadoop24.hadoop.com:8033&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;yarn.resourcemanager.webapp.address&lt;/name&gt;
+            &lt;value&gt;hadoop24.hadoop.com:8088&lt;/value&gt;
+        &lt;/property&gt;
+    &lt;/configuration&gt;
+</code></pre><p>编辑hdfs-site文件</p>
+<pre><code>#vi hdfs-site.xml
+    &lt;configuration&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.namenode.name.dir&lt;/name&gt;
+            &lt;value&gt;file:/home/grid/hadoop-2.7.1/name&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.datanode.data.dir&lt;/name&gt;
+            &lt;value&gt;file:/home/grid/hadoop-2.7.1/data&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.replication&lt;/name&gt;
+            &lt;value&gt;3&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.webhdfs.enabled&lt;/name&gt;
+            &lt;value&gt;true&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.permissions&lt;/name&gt;
+            &lt;value&gt;false&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.permissions.enabled&lt;/name&gt;
+            &lt;value&gt;false&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.nameservices&lt;/name&gt;
+            &lt;value&gt;mycluster&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.ha.namenodes.mycluster&lt;/name&gt;
+            &lt;value&gt;nn1,nn2&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.namenode.rpc-address.mycluster.nn1&lt;/name&gt;
+            &lt;value&gt;hadoop24.hadoop.com:9000&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.namenode.rpc-address.mycluster.nn2&lt;/name&gt;
+            &lt;value&gt;hadoop25.hadoop.com:9000&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.namenode.servicerpc-address.mycluster.nn1&lt;/name&gt;
+            &lt;value&gt;hadoop24.hadoop.com:53310&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.namenode.servicerpc-address.mycluster.nn2&lt;/name&gt;
+            &lt;value&gt;hadoop25.hadoop.com:53310&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.namenode.http-address.mycluster.nn1&lt;/name&gt;
+            &lt;value&gt;hadoop24.hadoop.com:50070&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.namenode.http-address.mycluster.nn2&lt;/name&gt;
+            &lt;value&gt;hadoop25.hadoop.com:50070&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.namenode.shared.edits.dir&lt;/name&gt;
+            &lt;value&gt;qjournal://hadoop24.hadoop.com:8485;hadoop25.hadoop.com:8485;hadoop26.hadoop.com:8485/mycluster&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.client.failover.proxy.provider.mycluster&lt;/name&gt;
+            &lt;value&gt;org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.ha.fencing.methods&lt;/name&gt;
+            &lt;value&gt;sshfence&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.ha.fencing.ssh.private-key-files&lt;/name&gt;
+            &lt;value&gt;/home/grid/.ssh/id_rsa&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.ha.fencing.ssh.connect-timeout&lt;/name&gt;
+            &lt;value&gt;30000&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.journalnode.edits.dir&lt;/name&gt;
+            &lt;value&gt;/home/grid/hadoop-2.7.1/journal&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.ha.automatic-failover.enabled&lt;/name&gt;
+            &lt;value&gt;true&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;ha.failover-controller.cli-check.rpc-timeout.ms&lt;/name&gt;
+            &lt;value&gt;60000&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;ipc.client.connect.timeout&lt;/name&gt;
+            &lt;value&gt;60000&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+            &lt;name&gt;dfs.image.transfer.bandwidthPerSec&lt;/name&gt;
+            &lt;value&gt;4194304&lt;/value&gt;
+        &lt;/property&gt;
+    &lt;/configuration&gt;
+</code></pre><p>生成分发脚本</p>
+<pre><code>#cat zoocopy|sed &apos;s/zookeeper-3.4.6/hadoop-2.7.1/g&apos; &gt; tmphadoop
+#cat ./hadoop-2.7.1/etc/hadoop/slaves |awk &apos;{print &quot;scp -rp ./hadoop-2.7.1 grid@&quot;$1&quot;:/home/grid&quot;}&apos; &gt;&gt; tmphadoop
+#sort -n tmphadoop | uniq &gt; hadoopcopy
 #rm -r tmphadoop
 #cat hadoopcopy
 #./hadoopcopy
-`&lt;/pre&gt;
-[![20151027004](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027004.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027004.png)
-
-创建znode
-&lt;pre&gt;`#~/zookeeper-3.4.6/bin/zkServer.sh start
+</code></pre><p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027004.png" alt="20151027004"></p>
+<p>创建znode</p>
+<pre><code>#~/zookeeper-3.4.6/bin/zkServer.sh start
 #~/hadoop-2.7.1/bin/hdfs zkfc -formatZK
-`&lt;/pre&gt;
-验证
-&lt;pre&gt;`#~/zookeeper-3.4.6/bin/zkCli.sh`&lt;/pre&gt;
-[![20151027005](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027005.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027005.png)
-
-在hadoop24,hadoop25,hadoop26启动journalnode
-&lt;pre&gt;`#~/hadoop-2.7.1/sbin/hadoop-daemon.sh start journalnode`&lt;/pre&gt;
-[![20151027006](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027006.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027006.png)
-
-在主namenode节点(Hadoop24.hadoop.com)上格式化Namenode
-&lt;pre&gt;`#~/hadoop-2.7.1/bin/hadoop namenode –format`&lt;/pre&gt;
-[![20151027007](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027007.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027007.png)
-
-在主namenode节点(Hadoop24.hadoop.com)启动namenode进程
-&lt;pre&gt;`#~/hadoop-2.7.1/sbin/hadoop-daemon.sh start namenode`&lt;/pre&gt;
-[![20151027008](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027008.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027008.png)
-
-在备namenode节点(Hadoop25.hadoop.com)同步元数据
-&lt;pre&gt;`#~/hadoop-2.7.1/bin/hdfs namenode -bootstrapStandby`&lt;/pre&gt;
-启动备NameNode节点(Hadoop25.hadoop.com)
-&lt;pre&gt;`#~/hadoop-2.7.1/sbin/hadoop-daemon.sh start namenode`&lt;/pre&gt;
-在两个namenode节点都执行以下命令来配置自动故障转移：
-
-在NameNode节点上安装和运行ZKFC
-&lt;pre&gt;`#~/hadoop-2.7.1/sbin/hadoop-daemon.sh start zkfc`&lt;/pre&gt;
-[![20151027008](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027008.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027008.png)
-
-[![20151027009](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027009.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027009.png)
-
-启动datanode(hadoop26,hadoop27,hadoop28)
-&lt;pre&gt;`#~/hadoop-2.7.1/sbin/hadoop-daemons.sh start datanode`&lt;/pre&gt;
-[![20151027010](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027010.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027010.png)
-
-启动yarn
-&lt;pre&gt;`#~/hadoop-2.7.1/sbin/start-yarn.sh`&lt;/pre&gt;
-[![20151027011](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027011.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027011.png)
-
-主namenode节点上active
-
-[![20151027012](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027012.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027012.png)
-
-备namenode节点上standby
-
-[![20151027013](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027013.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027013.png)
-
-## 1.4 测试主备namenode节点是否工作
-
-在主namenode机器上通过jps命令查找到namenode的进程号，然后通过kill -9的方式杀掉进程，观察另一个namenode节点是否会从状态standby变成active状态
-
-[![20151027015](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027015.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027015.png)
-
-Kill进程后,主节点不能访问
-
-[![20151027016](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027016.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027016.png)
-
-备节点已变为active
-
-[![20151027017](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027017.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027017.png)
-
-测试备节点能否继续工作
-
-在备节点上测试
-&lt;pre&gt;`#~/hadoop-2.7.1/bin/hadoop fs -ls /
+</code></pre><p>验证</p>
+<pre><code>#~/zookeeper-3.4.6/bin/zkCli.sh
+</code></pre><p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027005.png" alt="20151027005"></p>
+<p>在hadoop24,hadoop25,hadoop26启动journalnode</p>
+<pre><code>#~/hadoop-2.7.1/sbin/hadoop-daemon.sh start journalnode
+</code></pre><p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027006.png" alt="20151027006"></p>
+<p>在主namenode节点(Hadoop24.hadoop.com)上格式化Namenode</p>
+<pre><code>#~/hadoop-2.7.1/bin/hadoop namenode –format
+</code></pre><p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027007.png" alt="20151027007"></p>
+<p>在主namenode节点(Hadoop24.hadoop.com)启动namenode进程</p>
+<pre><code>#~/hadoop-2.7.1/sbin/hadoop-daemon.sh start namenode
+</code></pre><p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027008.png" alt="20151027008"></p>
+<p>在备namenode节点(Hadoop25.hadoop.com)同步元数据</p>
+<pre><code>#~/hadoop-2.7.1/bin/hdfs namenode -bootstrapStandby
+</code></pre><p>启动备NameNode节点(Hadoop25.hadoop.com)</p>
+<pre><code>#~/hadoop-2.7.1/sbin/hadoop-daemon.sh start namenode
+</code></pre><p>在两个namenode节点都执行以下命令来配置自动故障转移：</p>
+<p>在NameNode节点上安装和运行ZKFC</p>
+<pre><code>#~/hadoop-2.7.1/sbin/hadoop-daemon.sh start zkfc
+</code></pre><p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027008.png" alt="20151027008"></p>
+<p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027009.png" alt="20151027009"></p>
+<p>启动datanode(hadoop26,hadoop27,hadoop28)</p>
+<pre><code>#~/hadoop-2.7.1/sbin/hadoop-daemons.sh start datanode
+</code></pre><p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027010.png" alt="20151027010"></p>
+<p>启动yarn</p>
+<pre><code>#~/hadoop-2.7.1/sbin/start-yarn.sh
+</code></pre><p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027011.png" alt="20151027011"></p>
+<p>主namenode节点上active</p>
+<p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027012.png" alt="20151027012"></p>
+<p>备namenode节点上standby<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027013.png" alt="20151027013">]</p>
+<h2 id="1-4-验证HA"><a href="#1-4-验证HA" class="headerlink" title="1.4 验证HA"></a>1.4 验证HA</h2><p>测试主备namenode节点是否工作，在主namenode机器上通过jps命令查找到namenode的进程号，然后通过kill -9的方式杀掉进程，观察另一个namenode节点是否会从状态standby变成active状态<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027015.png" alt="20151027015"></p>
+<p>Kill进程后,主节点不能访问<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027016.png" alt="20151027016"></p>
+<p>备节点已变为active<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027017.png" alt="20151027017"></p>
+<p>测试备节点能否继续工作</p>
+<p>在备节点上测试</p>
+<pre><code>#~/hadoop-2.7.1/bin/hadoop fs -ls /
 #~/hadoop-2.7.1/bin/hadoop fs -put /home/grid/test.txt /
 #~/hadoop-2.7.1/bin/hadoop fs -cat /test.txt
 #~/hadoop-2.7.1/bin/hadoop jar ~/hadoop-2.7.1/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.1.jar wordcount /test.txt /out
 #~/hadoop-2.7.1/bin/hadoop fs -ls /out
 #~/hadoop-2.7.1/bin/hadoop fs -cat /out/part-r-00000
-</code></pre><p><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027018.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027018.png" alt="20151027018"></a></p>
+</code></pre><p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027018.png" alt="20151027018"></p>
 <p>至此在Hadoop2.7.1集群上成功实现HA</p>
-</div><div class="tags"><a href="/tags/HA/">HA</a><a href="/tags/hadoop/">hadoop</a><a href="/tags/zookeeper/">zookeeper</a></div><div class="post-share"><div class="bdsharebuttonbox"><span style="float:left;line-height: 28px;height: 28px;font-size:16px;font-weight:blod">分享到：</span><a href="#" data-cmd="more" class="bds_more"></a><a href="#" data-cmd="mshare" title="分享到一键分享" class="bds_mshare"></a><a href="#" data-cmd="fbook" title="分享到Facebook" class="bds_fbook"></a><a href="#" data-cmd="twi" title="分享到Twitter" class="bds_twi"></a><a href="#" data-cmd="linkedin" title="分享到linkedin" class="bds_linkedin"></a><a href="#" data-cmd="youdao" title="分享到有道云笔记" class="bds_youdao"></a><a href="#" data-cmd="evernotecn" title="分享到印象笔记" class="bds_evernotecn"></a><a href="#" data-cmd="weixin" title="分享到微信" class="bds_weixin"></a><a href="#" data-cmd="qzone" title="分享到QQ空间" class="bds_qzone"></a><a href="#" data-cmd="tsina" title="分享到新浪微博" class="bds_tsina"></a></div></div><div class="post-nav"><a href="/2015/11/06/hbase/" class="pre">Hbase完全分布式安装</a><a href="/2015/10/27/hadoop2-7-1/" class="next">Hadoop 2.7.1 完全分布式安装部署</a></div><div id="comments"></div></div></div></div><div class="layout-r"><div id="sidebar"><div class="search-pla"></div><div id="toc" class="widget"><div class="widget-title"><i class="fa fa-fei">文章目录</i></div><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-0-简述"><span class="toc-text">1.0 简述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-主机列表"><span class="toc-text">1.1 主机列表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-下载Zookeeper并安装配置"><span class="toc-text">1.2 下载Zookeeper并安装配置</span></a></li></ol></div><div class="widget"><div class="widget-title"><i class="fa fa-xie"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/05/15/storm-3/">Storm与kafka集成(上)</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/09/docker-ps/">docker ps 命令详解</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/26/machine-learning-3/">机器学习之三：降维技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/storm-2/">Storm的基本概念和组件</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/28/machine-learning-2/">机器学习之二：回归分析</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/homo-tommorrow/">《未来简史》读书笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/storm-1/">使用Docker快速安装简单Storm集群环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/machine-learning-1/">机器学习之一：什么是机器学习？</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/blockchain-1/">关于区块链的一点思考</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/reading-2016/">2016 阅读书单</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-gui"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/">云计算及虚拟化</a><span class="category-list-count">34</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/运维/">运维</a><span class="category-list-count">16</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/">商业智能</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/数据库/">数据库</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/">大数据</a><span class="category-list-count">13</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/运维/">运维</a><span class="category-list-count">3</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">18</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/运维/">运维</a><span class="category-list-count">6</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/读书笔记/">读书笔记</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/运维/">运维</a><span class="category-list-count">3</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-biao"> 标签</i></div><div class="tagcloud"><a href="/tags/docker-compose/" style="font-size: 15px;">docker-compose</a> <a href="/tags/BigInSights/" style="font-size: 15px;">BigInSights</a> <a href="/tags/区块链/" style="font-size: 15px;">区块链</a> <a href="/tags/Cognos/" style="font-size: 15px;">Cognos</a> <a href="/tags/postgresql/" style="font-size: 15px;">postgresql</a> <a href="/tags/big-data/" style="font-size: 15px;">big data</a> <a href="/tags/data-lake/" style="font-size: 15px;">data lake</a> <a href="/tags/数据湖/" style="font-size: 15px;">数据湖</a> <a href="/tags/Container/" style="font-size: 15px;">Container</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/open-vswitch/" style="font-size: 15px;">open vswitch</a> <a href="/tags/容器/" style="font-size: 15px;">容器</a> <a href="/tags/Oracle/" style="font-size: 15px;">Oracle</a> <a href="/tags/userland-proxy/" style="font-size: 15px;">userland-proxy</a> <a href="/tags/Registry/" style="font-size: 15px;">Registry</a> <a href="/tags/Shipyard/" style="font-size: 15px;">Shipyard</a> <a href="/tags/swarm/" style="font-size: 15px;">swarm</a> <a href="/tags/flume/" style="font-size: 15px;">flume</a> <a href="/tags/HA/" style="font-size: 15px;">HA</a> <a href="/tags/hadoop/" style="font-size: 15px;">hadoop</a> <a href="/tags/zookeeper/" style="font-size: 15px;">zookeeper</a> <a href="/tags/Hbase/" style="font-size: 15px;">Hbase</a> <a href="/tags/工业4-0/" style="font-size: 15px;">工业4.0</a> <a href="/tags/ETL/" style="font-size: 15px;">ETL</a> <a href="/tags/InfoPath/" style="font-size: 15px;">InfoPath</a> <a href="/tags/SSIS/" style="font-size: 15px;">SSIS</a> <a href="/tags/XML/" style="font-size: 15px;">XML</a> <a href="/tags/JConsole/" style="font-size: 15px;">JConsole</a> <a href="/tags/Mycat/" style="font-size: 15px;">Mycat</a> <a href="/tags/Kafka/" style="font-size: 15px;">Kafka</a> <a href="/tags/Kafka-Manager/" style="font-size: 15px;">Kafka Manager</a> <a href="/tags/KERBEROS/" style="font-size: 15px;">KERBEROS</a> <a href="/tags/keepalived/" style="font-size: 15px;">keepalived</a> <a href="/tags/lvs/" style="font-size: 15px;">lvs</a> <a href="/tags/Kettle/" style="font-size: 15px;">Kettle</a> <a href="/tags/Kubernetes/" style="font-size: 15px;">Kubernetes</a> <a href="/tags/Mysql/" style="font-size: 15px;">Mysql</a> <a href="/tags/flannel/" style="font-size: 15px;">flannel</a> <a href="/tags/Quagga/" style="font-size: 15px;">Quagga</a> <a href="/tags/ku8eye/" style="font-size: 15px;">ku8eye</a> <a href="/tags/Redis/" style="font-size: 15px;">Redis</a> <a href="/tags/eclipse/" style="font-size: 15px;">eclipse</a> <a href="/tags/maven/" style="font-size: 15px;">maven</a> <a href="/tags/机器学习/" style="font-size: 15px;">机器学习</a> <a href="/tags/HAproxy/" style="font-size: 15px;">HAproxy</a> <a href="/tags/catlet/" style="font-size: 15px;">catlet</a> <a href="/tags/devstack/" style="font-size: 15px;">devstack</a> <a href="/tags/openstack/" style="font-size: 15px;">openstack</a> <a href="/tags/Python/" style="font-size: 15px;">Python</a> <a href="/tags/pgbench/" style="font-size: 15px;">pgbench</a> <a href="/tags/pgCluu/" style="font-size: 15px;">pgCluu</a> <a href="/tags/trigger/" style="font-size: 15px;">trigger</a> <a href="/tags/uuid/" style="font-size: 15px;">uuid</a> <a href="/tags/阅读书单/" style="font-size: 15px;">阅读书单</a> <a href="/tags/WordPress/" style="font-size: 15px;">WordPress</a> <a href="/tags/罗马/" style="font-size: 15px;">罗马</a> <a href="/tags/Hive/" style="font-size: 15px;">Hive</a> <a href="/tags/sqoop/" style="font-size: 15px;">sqoop</a> <a href="/tags/Storm/" style="font-size: 15px;">Storm</a> <a href="/tags/Yarn/" style="font-size: 15px;">Yarn</a> <a href="/tags/必然/" style="font-size: 15px;">必然</a> <a href="/tags/Thrift/" style="font-size: 15px;">Thrift</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-archive"> 归档</i></div><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a></li></ul></div></div></div></div><a id="totop" href="#top"></a><div id="footer"><div class="footer-info"><p><a href="/baidusitemap.xml">网站地图</a> |  <a href="/atom.xml">订阅</a> |  <a href="/about/">关于</a></p><p>本站总访问量：<i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>次</p><p><span> Copyright &copy;<a href="/." rel="nofollow">yaodataking.com.</a></span><span> Theme by<a rel="nofollow" target="_blank" href="https://github.com/chaooo/hexo-theme-BlueLake"> BlueLake.</a></span><span> Count by<a href="http://busuanzi.ibruce.info/"> busuanzi.</a></span><span> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a></span></p></div></div></div><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><script type="text/javascript" src="/js/search.json.js?v=2.0.1"></script><script type="text/javascript" src="/js/toctotop.js?v=2.0.1" async></script><script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["mshare","weixin","tsina","qzone","linkedin","fbook","twi","print","renren","sqq","evernotecn","bdysc","tqq","tqf","bdxc","kaixin001","tieba","douban","bdhome","thx","ibaidu","meilishuo","mogujie","diandian","huaban","duitang","hx","fx","youdao","sdo","qingbiji","people","xinhua","mail","isohu","yaolan","wealink","ty","iguba","h163","copy"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"],"viewText":"分享到：","viewSize":"16"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</div><div class="tags"><a href="/tags/HA/">HA</a><a href="/tags/hadoop/">hadoop</a><a href="/tags/zookeeper/">zookeeper</a></div><div class="post-share"><div class="bdsharebuttonbox"><span style="float:left;line-height: 28px;height: 28px;font-size:16px;font-weight:blod">分享到：</span><a href="#" data-cmd="more" class="bds_more"></a><a href="#" data-cmd="mshare" title="分享到一键分享" class="bds_mshare"></a><a href="#" data-cmd="fbook" title="分享到Facebook" class="bds_fbook"></a><a href="#" data-cmd="twi" title="分享到Twitter" class="bds_twi"></a><a href="#" data-cmd="linkedin" title="分享到linkedin" class="bds_linkedin"></a><a href="#" data-cmd="youdao" title="分享到有道云笔记" class="bds_youdao"></a><a href="#" data-cmd="evernotecn" title="分享到印象笔记" class="bds_evernotecn"></a><a href="#" data-cmd="weixin" title="分享到微信" class="bds_weixin"></a><a href="#" data-cmd="qzone" title="分享到QQ空间" class="bds_qzone"></a><a href="#" data-cmd="tsina" title="分享到新浪微博" class="bds_tsina"></a></div></div><div class="post-nav"><a href="/2015/11/06/hbase/" class="pre">Hbase完全分布式安装</a><a href="/2015/10/27/hadoop2-7-1/" class="next">Hadoop 2.7.1 完全分布式安装部署</a></div><div id="comments"></div></div></div></div><div class="layout-r"><div id="sidebar"><div class="search-pla"></div><div id="toc" class="widget"><div class="widget-title"><i class="fa fa-fei">文章目录</i></div><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-0-简述"><span class="toc-text">1.0 简述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-主机列表"><span class="toc-text">1.1 主机列表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-Zookeeper安装配置"><span class="toc-text">1.2 Zookeeper安装配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-Hadoop安装配置"><span class="toc-text">1.3 Hadoop安装配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-4-验证HA"><span class="toc-text">1.4 验证HA</span></a></li></ol></div><div class="widget"><div class="widget-title"><i class="fa fa-xie"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/05/15/storm-3/">Storm与kafka集成(上)</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/09/docker-ps/">docker ps 命令详解</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/26/machine-learning-3/">机器学习之三：降维技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/storm-2/">Storm的基本概念和组件</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/28/machine-learning-2/">机器学习之二：回归分析</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/homo-tommorrow/">《未来简史》读书笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/storm-1/">使用Docker快速安装简单Storm集群环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/machine-learning-1/">机器学习之一：什么是机器学习？</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/blockchain-1/">关于区块链的一点思考</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/reading-2016/">2016 阅读书单</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-gui"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/">云计算及虚拟化</a><span class="category-list-count">34</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/运维/">运维</a><span class="category-list-count">16</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/">商业智能</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/数据库/">数据库</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/">大数据</a><span class="category-list-count">13</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/运维/">运维</a><span class="category-list-count">3</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">18</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/运维/">运维</a><span class="category-list-count">6</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/读书笔记/">读书笔记</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/运维/">运维</a><span class="category-list-count">3</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-biao"> 标签</i></div><div class="tagcloud"><a href="/tags/docker-compose/" style="font-size: 15px;">docker-compose</a> <a href="/tags/BigInSights/" style="font-size: 15px;">BigInSights</a> <a href="/tags/区块链/" style="font-size: 15px;">区块链</a> <a href="/tags/Cognos/" style="font-size: 15px;">Cognos</a> <a href="/tags/postgresql/" style="font-size: 15px;">postgresql</a> <a href="/tags/big-data/" style="font-size: 15px;">big data</a> <a href="/tags/data-lake/" style="font-size: 15px;">data lake</a> <a href="/tags/数据湖/" style="font-size: 15px;">数据湖</a> <a href="/tags/Container/" style="font-size: 15px;">Container</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/open-vswitch/" style="font-size: 15px;">open vswitch</a> <a href="/tags/容器/" style="font-size: 15px;">容器</a> <a href="/tags/Oracle/" style="font-size: 15px;">Oracle</a> <a href="/tags/userland-proxy/" style="font-size: 15px;">userland-proxy</a> <a href="/tags/Registry/" style="font-size: 15px;">Registry</a> <a href="/tags/Shipyard/" style="font-size: 15px;">Shipyard</a> <a href="/tags/swarm/" style="font-size: 15px;">swarm</a> <a href="/tags/flume/" style="font-size: 15px;">flume</a> <a href="/tags/HA/" style="font-size: 15px;">HA</a> <a href="/tags/hadoop/" style="font-size: 15px;">hadoop</a> <a href="/tags/zookeeper/" style="font-size: 15px;">zookeeper</a> <a href="/tags/Hbase/" style="font-size: 15px;">Hbase</a> <a href="/tags/工业4-0/" style="font-size: 15px;">工业4.0</a> <a href="/tags/ETL/" style="font-size: 15px;">ETL</a> <a href="/tags/InfoPath/" style="font-size: 15px;">InfoPath</a> <a href="/tags/SSIS/" style="font-size: 15px;">SSIS</a> <a href="/tags/XML/" style="font-size: 15px;">XML</a> <a href="/tags/JConsole/" style="font-size: 15px;">JConsole</a> <a href="/tags/Mycat/" style="font-size: 15px;">Mycat</a> <a href="/tags/Kafka/" style="font-size: 15px;">Kafka</a> <a href="/tags/Kafka-Manager/" style="font-size: 15px;">Kafka Manager</a> <a href="/tags/KERBEROS/" style="font-size: 15px;">KERBEROS</a> <a href="/tags/keepalived/" style="font-size: 15px;">keepalived</a> <a href="/tags/lvs/" style="font-size: 15px;">lvs</a> <a href="/tags/Kettle/" style="font-size: 15px;">Kettle</a> <a href="/tags/Kubernetes/" style="font-size: 15px;">Kubernetes</a> <a href="/tags/Mysql/" style="font-size: 15px;">Mysql</a> <a href="/tags/flannel/" style="font-size: 15px;">flannel</a> <a href="/tags/Quagga/" style="font-size: 15px;">Quagga</a> <a href="/tags/Redis/" style="font-size: 15px;">Redis</a> <a href="/tags/ku8eye/" style="font-size: 15px;">ku8eye</a> <a href="/tags/eclipse/" style="font-size: 15px;">eclipse</a> <a href="/tags/maven/" style="font-size: 15px;">maven</a> <a href="/tags/机器学习/" style="font-size: 15px;">机器学习</a> <a href="/tags/HAproxy/" style="font-size: 15px;">HAproxy</a> <a href="/tags/catlet/" style="font-size: 15px;">catlet</a> <a href="/tags/devstack/" style="font-size: 15px;">devstack</a> <a href="/tags/openstack/" style="font-size: 15px;">openstack</a> <a href="/tags/Python/" style="font-size: 15px;">Python</a> <a href="/tags/pgbench/" style="font-size: 15px;">pgbench</a> <a href="/tags/pgCluu/" style="font-size: 15px;">pgCluu</a> <a href="/tags/trigger/" style="font-size: 15px;">trigger</a> <a href="/tags/uuid/" style="font-size: 15px;">uuid</a> <a href="/tags/阅读书单/" style="font-size: 15px;">阅读书单</a> <a href="/tags/WordPress/" style="font-size: 15px;">WordPress</a> <a href="/tags/罗马/" style="font-size: 15px;">罗马</a> <a href="/tags/Hive/" style="font-size: 15px;">Hive</a> <a href="/tags/sqoop/" style="font-size: 15px;">sqoop</a> <a href="/tags/Storm/" style="font-size: 15px;">Storm</a> <a href="/tags/Yarn/" style="font-size: 15px;">Yarn</a> <a href="/tags/必然/" style="font-size: 15px;">必然</a> <a href="/tags/Thrift/" style="font-size: 15px;">Thrift</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-archive"> 归档</i></div><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a></li></ul></div></div></div></div><a id="totop" href="#top"></a><div id="footer"><div class="footer-info"><p><a href="/baidusitemap.xml">网站地图</a> |  <a href="/atom.xml">订阅</a> |  <a href="/about/">关于</a></p><p>本站总访问量：<i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>次</p><p><span> Copyright &copy;<a href="/." rel="nofollow">yaodataking.com.</a></span><span> Theme by<a rel="nofollow" target="_blank" href="https://github.com/chaooo/hexo-theme-BlueLake"> BlueLake.</a></span><span> Count by<a href="http://busuanzi.ibruce.info/"> busuanzi.</a></span><span> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a></span></p></div></div></div><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><script type="text/javascript" src="/js/search.json.js?v=2.0.1"></script><script type="text/javascript" src="/js/toctotop.js?v=2.0.1" async></script><script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["mshare","weixin","tsina","qzone","linkedin","fbook","twi","print","renren","sqq","evernotecn","bdysc","tqq","tqf","bdxc","kaixin001","tieba","douban","bdhome","thx","ibaidu","meilishuo","mogujie","diandian","huaban","duitang","hx","fx","youdao","sdo","qingbiji","people","xinhua","mail","isohu","yaolan","wealink","ty","iguba","h163","copy"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"],"viewText":"分享到：","viewSize":"16"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
 </script></body></html>
