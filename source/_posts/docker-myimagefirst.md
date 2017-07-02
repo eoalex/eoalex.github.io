@@ -7,12 +7,15 @@ categories:
   - 云计算及虚拟化
 date: 2016-01-01 23:58:07
 ---
-
+## 1. 目标
 本文目标是使用centos7为基础镜像，构建一个包括java 8,tomcat7,mysql(mariadb),mycat的镜像，并验证从本机（非宿主机）能访问 8080 ，能用mysql客户端连接mycat的 8066,9066端口。
-1.首先从仓库下拉centos7镜像，为了加速下拉，我这里选择国内的daoclould作为代理镜像
-[![2015-12-27_10-04-15](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_10-04-15.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_10-04-15.jpg)
-2.Dockfile
-***********************************************************
+## 2. 步骤
+### 2.1 下拉镜像
+首先从仓库下拉centos7镜像，为了加速下拉，我这里选择国内的daoclould作为代理镜像
+![2015-12-27_10-04-15](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_10-04-15.jpg)
+
+### 2.2 制作Dockfile
+Dockfile
 
     from centos:7
     MAINTAINER Alex Wu
@@ -44,40 +47,45 @@ date: 2016-01-01 23:58:07
     COPY ./schema.xml /opt/mycat/conf
     ENV MYCAT_USER mycatuser
     ENV MYCAT_PASS mycatpass
-    RUN sed -i 's/user name="test"/user name=\"'"$MYCAT_USER"'"/' /opt/mycat/conf/server.xml &amp;&amp; sed -i 's/name="password"&gt;test/name="password"&gt;'"$MYCAT_PASS"'/' /opt/mycat/conf/server.xml
+    RUN sed -i 's/user name="test"/user name=\"'"$MYCAT_USER"'"/' /opt/mycat/conf/server.xml && sed -i 's/name="password">test/name="password" >'"$MYCAT_PASS"'/' /opt/mycat/conf/server.xml
 
     EXPOSE 8080 8066 9066
     COPY ./start.sh .
     ENTRYPOINT ./start.sh
-    `</pre>
-    ************************************************************************
-    3.start脚本
-    ************************************************************************
-    <pre>`
+    
+    
+### 2.3 Start脚本
+    
     #!/bin/bash
-    #/usr/local/mysql/bin/mysqld_safe --datadir='/usr/local/mysql/data' &amp;
-    /usr/bin/mysqld_safe --datadir=/var/lib/mysql &amp;
-    /opt/mycat/bin/mycat start &amp;
+    #/usr/local/mysql/bin/mysqld_safe --datadir='/usr/local/mysql/data' &
+    /usr/bin/mysqld_safe --datadir=/var/lib/mysql &
+    /opt/mycat/bin/mycat start &
     /usr/local/tomcat/bin/catalina.sh run
 
-***********************************************************************
-4.build镜像
-#docker build -t myimage/first .
+### 2.4 build镜像
+	
+	#docker build -t myimage/first .
 build 完毕，我们可以看到image
-#docker images
-[![2016-01-01_23-36-21](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-01_23-36-21.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-01_23-36-21.jpg)
-5.启动容器
-docker create --name mycontainer01 -p 8080:8080 -p 8066:8066 -p 9066:9066 myimage/first
-docker start mycontainer01
-docker exec -it mycontainer01 /bin/bash
-[![2015-12-27_20-31-33](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-31-33.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-31-33.jpg)
+	
+	#docker images
+![2016-01-01_23-36-21](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-01_23-36-21.jpg)
+
+### 2.5 启动容器
+	docker create --name mycontainer01 -p 8080:8080 -p 8066:8066 -p 9066:9066 myimage/first
+	docker start mycontainer01
+	docker exec -it mycontainer01 /bin/bash
+![2015-12-27_20-31-33](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-31-33.jpg)
+
 我们可以看到容器已经起来。
-[![2016-01-01_23-51-43](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-01_23-51-43.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-01_23-51-43.jpg)
-6.验证
-1) 访问8080端口
-[![2015-12-27_20-43-03](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-43-03.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-43-03.jpg)
-2)其他主机mysql访问8066，9066端口
-mysql -umycatuser -pmycatpass -h192.168.199.111 –P8066
-[![2015-12-27_20-44-27](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-44-27.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-44-27.jpg)
-mysql -umycatuser -pmycatpass -h192.168.199.111 –P9066
-[![2015-12-27_20-45-51](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-45-51.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-45-51.jpg)
+![2016-01-01_23-51-43](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-01_23-51-43.jpg)
+## 3. 验证
+### 3.1 访问8080端口
+![2015-12-27_20-43-03](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-43-03.jpg)
+
+### 3.2 其他主机mysql访问8066，9066端口
+	
+	mysql -umycatuser -pmycatpass -h192.168.199.111 –P8066
+![2015-12-27_20-44-27](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-44-27.jpg)
+
+	mysql -umycatuser -pmycatpass -h192.168.199.111 –P9066
+![2015-12-27_20-45-51](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-45-51.jpg)
