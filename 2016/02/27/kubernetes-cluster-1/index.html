@@ -1,10 +1,36 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="ss"><title>Kubernetes入门实战(2)：Kubernetes集群初探 | Alex Wu's blog</title><link rel="stylesheet" type="text/css" href="//fonts.css.network/css?family=Source+Code+Pro"><link rel="stylesheet" type="text/css" href="/css/style.css?v=2.0.1"><link rel="stylesheet" type="text/css" href="/css/highlight.css?v=2.0.1"><link rel="Shortcut Icon" href="/favicon.ico"><link rel="bookmark" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Kubernetes入门实战(2)：Kubernetes集群初探</h1><a id="logo" href="/.">Alex Wu's blog</a><p class="description">THINK BIG, START SMALL, DELIVER VALUE TO THE BUSINESS</p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div><div id="search-form"><div id="result-mask" class="hide"></div><label><input id="search-key" type="text" autocomplete="off" placeholder="搜索..."></label><div id="result-wrap" class="hide"><div id="search-result"></div></div><div class="hide"><template id="search-tpl"><div class="item"><a href="/{path}" title="{title}"><div class="title">{title}</div><div class="time">{date}</div><div class="tags">{tags}</div></a></div></template></div></div></div><div id="layout" class="layout-g"><div class="layout-l"><div class="content_container"><div class="post"><h1 class="post-title">Kubernetes入门实战(2)：Kubernetes集群初探</h1><div class="post-meta"><span class="date">Feb 27, 2016</span><span class="category"><a href="/categories/云计算及虚拟化/">云计算及虚拟化</a></span><span><i id="busuanzi_container_page_pv"><i id="busuanzi_value_page_pv"></i><i> Hits</i></i></span><a href="/2016/02/27/kubernetes-cluster-1/#comments" class="comment-count">留言</a></div><div class="post-content"><p>上文我们在一台虚机上演示了Kubernetes基于redis和docker的guestbook留言簿案例，本文我们将通过配置Kubernetes集群的方式继续深入研究。集群组件安装如下配置。</p>
-<table width="553"><br><tbody><br><tr><br><td width="109">IP</td><br><td width="156">NAME</td><br><td width="288">Component</td><br></tr><br><tr><br><td width="109">192.168.199.51</td><br><td width="156">centos-master</td><br><td width="288">etcd,kube-apiserver,kube-controller-manager,kube-scheduler</td><br></tr><br><tr><br><td width="109">192.168.199.52</td><br><td width="156">centos-minion01</td><br><td width="288">kube-proxy,kubelet,docker </td><br></tr><br><td width="109">192.168.199.53</td><br><td width="156">centos-minion02</td><br><td width="288">kube-proxy,kubelet,docker </td><br><br></tbody><br></table>
-
-<p>主机环境：centos 7，三台虚机。<br>1.准备工作<br>以下工作在每台虚机执行。<br>1.1 停止防火墙</p>
-<p>#systemctl disable firewalld</p>
-<p>#systemctl stop firewalld</p>
-<p>1.2 修改iptables<br>把icmp-host-prohibited两条注释掉</p>
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="ss"><title>Kubernetes入门实战(2)：Kubernetes集群初探 | Alex Wu's blog</title><link rel="stylesheet" type="text/css" href="//fonts.css.network/css?family=Source+Code+Pro"><link rel="stylesheet" type="text/css" href="/css/style.css?v=2.0.1"><link rel="stylesheet" type="text/css" href="/css/highlight.css?v=2.0.1"><link rel="Shortcut Icon" href="/favicon.ico"><link rel="bookmark" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Kubernetes入门实战(2)：Kubernetes集群初探</h1><a id="logo" href="/.">Alex Wu's blog</a><p class="description">THINK BIG, START SMALL, DELIVER VALUE TO THE BUSINESS</p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div><div id="search-form"><div id="result-mask" class="hide"></div><label><input id="search-key" type="text" autocomplete="off" placeholder="搜索..."></label><div id="result-wrap" class="hide"><div id="search-result"></div></div><div class="hide"><template id="search-tpl"><div class="item"><a href="/{path}" title="{title}"><div class="title">{title}</div><div class="time">{date}</div><div class="tags">{tags}</div></a></div></template></div></div></div><div id="layout" class="layout-g"><div class="layout-l"><div class="content_container"><div class="post"><h1 class="post-title">Kubernetes入门实战(2)：Kubernetes集群初探</h1><div class="post-meta"><span class="date">Feb 27, 2016</span><span class="category"><a href="/categories/云计算及虚拟化/">云计算及虚拟化</a></span><span><i id="busuanzi_container_page_pv"><i id="busuanzi_value_page_pv"></i><i> Hits</i></i></span><a href="/2016/02/27/kubernetes-cluster-1/#comments" class="comment-count">留言</a></div><div class="post-content"><h2 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h2><p><a href="/2016/02/04/kubernetes-guestbook/">上文</a>我们在一台虚机上演示了Kubernetes基于redis和docker的guestbook留言簿案例，本文我们将通过配置Kubernetes集群的方式继续深入研究。</p>
+<h2 id="2-准备"><a href="#2-准备" class="headerlink" title="2. 准备"></a>2. 准备</h2><p>集群组件安装如下配置。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">IP</th>
+<th style="text-align:left">NAME</th>
+<th style="text-align:left">Component</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">192.168.199.51</td>
+<td style="text-align:left">centos-master</td>
+<td style="text-align:left">etcd,kube-apiserver,kube-controller-manager,kube-scheduler</td>
+</tr>
+<tr>
+<td style="text-align:left">192.168.199.52</td>
+<td style="text-align:left">centos-minion01</td>
+<td style="text-align:left">kube-proxy,kubelet,docker</td>
+</tr>
+<tr>
+<td style="text-align:left">192.168.199.53</td>
+<td style="text-align:left">centos-minion02</td>
+<td style="text-align:left">kube-proxy,kubelet,docker</td>
+</tr>
+</tbody>
+</table>
+<p>主机环境：centos 7，三台虚机。</p>
+<p>以下工作在每台虚机执行。</p>
+<h3 id="2-1-停止防火墙"><a href="#2-1-停止防火墙" class="headerlink" title="2.1 停止防火墙"></a>2.1 停止防火墙</h3><pre><code>#systemctl disable firewalld
+#systemctl stop firewalld
+</code></pre><h3 id="2-2-修改iptables"><a href="#2-2-修改iptables" class="headerlink" title="2.2 修改iptables"></a>2.2 修改iptables</h3><p>把icmp-host-prohibited两条注释掉</p>
 <pre><code># sample configuration for iptables service
 # you can edit this manually or use system-config-firewall
 # please do not ask us to add additional ports/services to this default configuration
@@ -19,26 +45,16 @@
 #-A INPUT -j REJECT --reject-with icmp-host-prohibited
 #-A FORWARD -j REJECT --reject-with icmp-host-prohibited
 COMMIT
-`&lt;/pre&gt;
-重启iptables
-#systemctl restart iptables
-
-1.3 使用阿里镜像
-#wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
-
-1.4 更新主机列表
-#echo &quot;192.168.199.51 centos-master
+</code></pre><p> 重启iptables</p>
+<pre><code>#systemctl restart iptables
+</code></pre><h3 id="2-3-使用阿里镜像"><a href="#2-3-使用阿里镜像" class="headerlink" title="2.3 使用阿里镜像"></a>2.3 使用阿里镜像</h3><pre><code>#wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+</code></pre><h3 id="2-4-更新主机列表"><a href="#2-4-更新主机列表" class="headerlink" title="2.4 更新主机列表"></a>2.4 更新主机列表</h3><pre><code>#echo &quot;192.168.199.51 centos-master
 192.168.199.52 centos-minion01
 192.168.199.53 centos-minion02&quot; &amp;gt;&amp;gt; /etc/hosts
-
-2.安装配置kubernetes master
-2.1 在centos-master上安装
-#yum install kubernetes-master
+</code></pre><h2 id="3-安装配置kubernetes-master"><a href="#3-安装配置kubernetes-master" class="headerlink" title="3. 安装配置kubernetes master"></a>3. 安装配置kubernetes master</h2><h3 id="3-1-在centos-master上安装"><a href="#3-1-在centos-master上安装" class="headerlink" title="3.1 在centos-master上安装"></a>3.1 在centos-master上安装</h3><pre><code>#yum install kubernetes-master
 #yum install etcd
-
-2.2配置 Kubernetes services
-#vi /etc/kubernetes/config
-&lt;pre&gt;`###
+</code></pre><h3 id="3-2-配置-Kubernetes-services"><a href="#3-2-配置-Kubernetes-services" class="headerlink" title="3.2 配置 Kubernetes services"></a>3.2 配置 Kubernetes services</h3><pre><code>#vi /etc/kubernetes/config
+###
 # kubernetes system config
 #
 # The following values are used to configure various aspects of all
@@ -60,11 +76,8 @@ KUBE_ALLOW_PRIV=&quot;--allow-privileged=false&quot;
 
 # How the controller-manager, scheduler, and proxy find the apiserver
 KUBE_MASTER=&quot;--master=http://centos-master:8080&quot;
-`&lt;/pre&gt;
-
-2.3配置Kubernetes API server
-#vi /etc/kubernetes/apiserver
-&lt;pre&gt;`###
+</code></pre><h3 id="3-3-配置Kubernetes-API-server"><a href="#3-3-配置Kubernetes-API-server" class="headerlink" title="3.3 配置Kubernetes API server"></a>3.3 配置Kubernetes API server</h3><pre><code>#vi /etc/kubernetes/apiserver
+###
 # kubernetes system config
 #
 # The following values are used to configure the kube-apiserver
@@ -89,26 +102,18 @@ KUBE_ADMISSION_CONTROL=&quot;--admission-control=NamespaceLifecycle,NamespaceExi
 
 # Add your own!
 KUBE_API_ARGS=&quot;&quot;
-`&lt;/pre&gt;
-
-2.4 启动服务
-&lt;pre&gt;`for SERVICES in etcd kube-apiserver kube-controller-manager kube-scheduler; do 
+</code></pre><h3 id="3-4-启动服务"><a href="#3-4-启动服务" class="headerlink" title="3.4 启动服务"></a>3.4 启动服务</h3><pre><code>for SERVICES in etcd kube-apiserver kube-controller-manager kube-scheduler; do 
     systemctl restart $SERVICES
     systemctl enable $SERVICES
     systemctl status $SERVICES 
 done
-`&lt;/pre&gt;
-2.5 停止服务
-&lt;pre&gt;`for SERVICES in etcd kube-apiserver kube-controller-manager kube-scheduler; do 
+</code></pre><h3 id="3-5-停止服务"><a href="#3-5-停止服务" class="headerlink" title="3.5 停止服务"></a>3.5 停止服务</h3><pre><code>for SERVICES in etcd kube-apiserver kube-controller-manager kube-scheduler; do 
     systemctl stop $SERVICES
 done
-`&lt;/pre&gt;
-
-3.安装配置kubernetes node
-3.1 在centos-minion01及centos-minion02上安装
-#yum install kubernetes-node
+</code></pre><h2 id="4-安装配置kubernetes-node"><a href="#4-安装配置kubernetes-node" class="headerlink" title="4. 安装配置kubernetes node"></a>4. 安装配置kubernetes node</h2><h3 id="4-1-安装"><a href="#4-1-安装" class="headerlink" title="4.1 安装"></a>4.1 安装</h3><p>在centos-minion01及centos-minion02上安装</p>
+<pre><code>#yum install kubernetes-node
 #vi /etc/kubernetes/config
-&lt;pre&gt;`###
+###
 # kubernetes system config
 #
 # The following values are used to configure various aspects of all
@@ -130,11 +135,8 @@ KUBE_ALLOW_PRIV=&quot;--allow-privileged=false&quot;
 
 # How the controller-manager, scheduler, and proxy find the apiserver
 KUBE_MASTER=&quot;--master=http://centos-master:8080&quot;
-`&lt;/pre&gt;
-3.2 配置 kubelet文件
-vi /etc/kubernetes/kubelet
-centos-minion01
-&lt;pre&gt;`###
+</code></pre><h3 id="4-2-配置-kubelet文件"><a href="#4-2-配置-kubelet文件" class="headerlink" title="4.2 配置 kubelet文件"></a>4.2 配置 kubelet文件</h3><p> 编辑<code>/etc/kubernetes/kubelet</code><br> centos-minion01</p>
+<pre><code>###
 # kubernetes kubelet (minion) config
 
 # The address for the info server to serve on (set to 0.0.0.0 or &quot;&quot; for all interfaces)
@@ -154,10 +156,8 @@ KUBELET_POD_INFRA_CONTAINER=&quot;--pod-infra-container-image=registry.access.re
 
 # Add your own!
 KUBELET_ARGS=&quot;&quot;
-`&lt;/pre&gt;
-centos-minion02
-&lt;pre&gt;`
-###
+</code></pre><p>centos-minion02</p>
+<pre><code>###
 # kubernetes kubelet (minion) config
 
 # The address for the info server to serve on (set to 0.0.0.0 or &quot;&quot; for all interfaces)
@@ -177,9 +177,7 @@ KUBELET_POD_INFRA_CONTAINER=&quot;--pod-infra-container-image=registry.access.re
 
 # Add your own!
 KUBELET_ARGS=&quot;&quot;
-`&lt;/pre&gt;
-3.3 配置config文件
-&lt;pre&gt;`###
+</code></pre><h3 id="4-3-配置config文件"><a href="#4-3-配置config文件" class="headerlink" title="4.3 配置config文件"></a>4.3 配置config文件</h3><pre><code>###
 # kubernetes system config
 #
 # The following values are used to configure various aspects of all
@@ -201,22 +199,13 @@ KUBE_ALLOW_PRIV=&quot;--allow-privileged=false&quot;
 
 # How the controller-manager, scheduler, and proxy find the apiserver
 KUBE_MASTER=&quot;--master=http://centos-master:8080&quot;
-`&lt;/pre&gt;
-
-3.4 启动服务
-&lt;pre&gt;`for SERVICES in kube-proxy kubelet docker; do 
+</code></pre><h3 id="4-4-启动服务"><a href="#4-4-启动服务" class="headerlink" title="4.4 启动服务"></a>4.4 启动服务</h3><pre><code>for SERVICES in kube-proxy kubelet docker; do 
     systemctl restart $SERVICES
     systemctl enable $SERVICES
     systemctl status $SERVICES 
 done
-`&lt;/pre&gt;
-在centos-minion01上启动
-&lt;pre&gt;`[root@centos-minion01 ~]# for SERVICES in kube-proxy kubelet docker; do
-&amp;gt;     systemctl restart $SERVICES
-&amp;gt;     systemctl enable $SERVICES
-&amp;gt;     systemctl status $SERVICES
-&amp;gt; done
-● kube-proxy.service - Kubernetes Kube-Proxy Server
+</code></pre><p>在centos-minion01上启动</p>
+<pre><code>   ● kube-proxy.service - Kubernetes Kube-Proxy Server
    Loaded: loaded (/usr/lib/systemd/system/kube-proxy.service; enabled; vendor preset: disabled)
    Active: active (running) since Sat 2016-02-27 07:35:45 CST; 227ms ago
      Docs: https://github.com/GoogleCloudPlatform/kubernetes
@@ -261,14 +250,8 @@ Feb 27 07:35:46 centos-minion01 docker[3875]: time=&quot;2016-02-27T07:35:46.880
 Feb 27 07:35:46 centos-minion01 systemd[1]: Started Docker Application Container Engine.
 Hint: Some lines were ellipsized, use -l to show in full.
 [root@centos-minion01 ~]#
-`&lt;/pre&gt;
-在centos-minion02上启动
-&lt;pre&gt;`[root@centos-minion02 kubernetes]# for SERVICES in kube-proxy kubelet docker; do
-&amp;gt;     systemctl restart $SERVICES
-&amp;gt;     systemctl enable $SERVICES
-&amp;gt;     systemctl status $SERVICES
-&amp;gt; done
-● kube-proxy.service - Kubernetes Kube-Proxy Server
+</code></pre><p>在centos-minion02上启动</p>
+<pre><code>       ● kube-proxy.service - Kubernetes Kube-Proxy Server
    Loaded: loaded (/usr/lib/systemd/system/kube-proxy.service; enabled; vendor preset: disabled)
    Active: active (running) since Sat 2016-02-27 07:32:22 CST; 221ms ago
      Docs: https://github.com/GoogleCloudPlatform/kubernetes
@@ -314,41 +297,28 @@ Feb 27 07:32:23 centos-minion02 docker[3338]: time=&quot;2016-02-27T07:32:23.843
 Feb 27 07:32:23 centos-minion02 systemd[1]: Started Docker Application Container Engine.
 Hint: Some lines were ellipsized, use -l to show in full.
 [root@centos-minion02 kubernetes]#
-`&lt;/pre&gt;
-
-3.5 停止服务
-&lt;pre&gt;`for SERVICES in kube-proxy kubelet docker; do 
+</code></pre><h3 id="4-5-停止服务"><a href="#4-5-停止服务" class="headerlink" title="4.5 停止服务"></a>4.5 停止服务</h3><pre><code>for SERVICES in kube-proxy kubelet docker; do 
     systemctl stop $SERVICES 
 done
-`&lt;/pre&gt;
-
-4\. 检查及确认状态
-#kubectl get nodes
+</code></pre><h2 id="5-检查及确认状态"><a href="#5-检查及确认状态" class="headerlink" title="5. 检查及确认状态"></a>5. 检查及确认状态</h2><pre><code>#kubectl get nodes
 #kubectl cluster-info
-我们看到2个节点都正常启动。
-&lt;pre&gt;`[root@centos-master ~]# kubectl get nodes
+</code></pre><p>我们看到2个节点都正常启动。</p>
+<pre><code>[root@centos-master ~]# kubectl get nodes
 NAME              LABELS                                   STATUS    AGE
 centos-minion01   kubernetes.io/hostname=centos-minion01   Ready     1m
 centos-minion02   kubernetes.io/hostname=centos-minion02   Ready     51s
 [root@centos-master ~]# kubectl cluster-info
 Kubernetes master is running at http://localhost:8080
 [root@centos-master ~]#
-`&lt;/pre&gt;
-
-5.创建MYSQL POD
-5.1 建立工作目录并查看API版本
-在kubernetes master节点
-#mkdir mysqlpod
+</code></pre><h2 id="6-创建MYSQL-POD"><a href="#6-创建MYSQL-POD" class="headerlink" title="6. 创建MYSQL POD"></a>6. 创建MYSQL POD</h2><h3 id="6-1-建立工作目录并查看API版本"><a href="#6-1-建立工作目录并查看API版本" class="headerlink" title="6.1 建立工作目录并查看API版本"></a>6.1 建立工作目录并查看API版本</h3><p>在kubernetes master节点</p>
+<pre><code>#mkdir mysqlpod
 #cd mysqlpod
 #kubectl api-versions
-我们看到API版本为1,所以设置文件时用v1就可以了。
-&lt;pre&gt;`
-[root@centos-master mysqlpod]# kubectl api-versions
+</code></pre><p>我们看到API版本为1,所以设置文件时用v1就可以了。</p>
+<pre><code>[root@centos-master mysqlpod]# kubectl api-versions
 Available Server Api Versions: v1
-`&lt;/pre&gt;
-5.2 编写mysql的pod文件
-#vi mysqlpod.yaml
-&lt;pre&gt;`apiVersion: v1
+</code></pre><h3 id="6-2-编写mysql的pod文件"><a href="#6-2-编写mysql的pod文件" class="headerlink" title="6.2 编写mysql的pod文件"></a>6.2 编写mysql的pod文件</h3><pre><code>#vi mysqlpod.yaml
+apiVersion: v1
 kind: Pod
 metadata:
   name: mysql
@@ -363,12 +333,11 @@ spec:
       value: 123456
     ports:
     - containerPort: 3306
-`&lt;/pre&gt;
-5.3 启动POD
-#kubectl create -f mysqlpod.yaml
+</code></pre><h3 id="6-3-启动POD"><a href="#6-3-启动POD" class="headerlink" title="6.3 启动POD"></a>6.3 启动POD</h3><pre><code>#kubectl create -f mysqlpod.yaml
 #kubectl get pods
 #kubectl describe pods mysql
-&lt;pre&gt;`Events:
+
+Events:
   FirstSeen     LastSeen        Count   From                            SubobjectPath                           Reason            Message
   ─────────     ────────        ─────   ────                            ─────────────                           ──────            ───────
   49s           49s             1       {scheduler }                                                            Scheduled Successfully assigned mysql to centos-minion02
@@ -378,19 +347,14 @@ spec:
   48s           48s             1       {kubelet centos-minion02}       spec.containers{mysql}                  Pulled            Container image &quot;mysql&quot; already present on machine
   48s           48s             1       {kubelet centos-minion02}       spec.containers{mysql}                  Created           Created with docker id aa39d65008dc
   47s           47s             1       {kubelet centos-minion02}       spec.containers{mysql}                  Started           Started with docker id aa39d65008dc
-`&lt;/pre&gt;
-我们看到这个POD启动在centos-minion02虚机上，首先它启动了一个叫pod-infrastructure的容器，然后去找本机是否有mysql镜像，没有就去下载，已有的话就直接创建一个mysql容器。
-在centos-minion02上看启动的容器。
-#docker ps
-&lt;pre&gt;`[root@centos-minion02 ~]# docker ps
+</code></pre><p>我们看到这个POD启动在centos-minion02虚机上，首先它启动了一个叫pod-infrastructure的容器，然后去找本机是否有mysql镜像，没有就去下载，已有的话就直接创建一个mysql容器。<br>在centos-minion02上看启动的容器。</p>
+<pre><code>[root@centos-minion02 ~]# docker ps
 CONTAINER ID        IMAGE                                                        COMMAND                  CREATED             STATUS              PORTS               NAMES
 aa39d65008dc        mysql                                                        &quot;/entrypoint.sh mysql&quot;   About an hour ago   Up About an hour                        k8s_mysql.1431d49_mysql_default_c935d35d-dce2-11e5-9ab1-000c29beeacc_95c7a9b7
 31f65f03a960        registry.access.redhat.com/rhel7/pod-infrastructure:latest   &quot;/pod&quot;                   About an hour ago   Up About an hour                        k8s_POD.36d00adb_mysql_default_c935d35d-dce2-11e5-9ab1-000c29beeacc_1cf5c985
-`&lt;/pre&gt;
-我们看到启动两个容器，一个是mysql，一个是pod-infrastructure。
-5.4 编写mysql的服务文件
-#vi mysqlservice.yaml
-&lt;pre&gt;`apiVersion: v1
+</code></pre><p>我们看到启动两个容器，一个是mysql，一个是pod-infrastructure。</p>
+<h3 id="6-4-编写mysql的服务文件"><a href="#6-4-编写mysql的服务文件" class="headerlink" title="6.4 编写mysql的服务文件"></a>6.4 编写mysql的服务文件</h3><pre><code>#vi mysqlservice.yaml
+apiVersion: v1
 kind: Service
 metadata:
   labels:
@@ -401,18 +365,14 @@ spec:
     - port: 3306
   selector:
     name: mysql
-`&lt;/pre&gt;
-5.4 启动服务
-#kubectl create -f mysqlservice.yaml
-&lt;pre&gt;`[root@centos-master mysqlpod]# kubectl get services
+</code></pre><h3 id="6-4-启动服务"><a href="#6-4-启动服务" class="headerlink" title="6.4 启动服务"></a>6.4 启动服务</h3><pre><code>#kubectl create -f mysqlservice.yaml
+[root@centos-master mysqlpod]# kubectl get services
 NAME         CLUSTER_IP     EXTERNAL_IP   PORT(S)    SELECTOR     AGE
 kubernetes   10.254.0.1             443/TCP           18h
 mysql        10.254.62.21           3306/TCP   name=mysql   9s
 [root@centos-master mysqlpod]#
-`&lt;/pre&gt;
-5.5 mysql登录
-在centos-minion02上连接mysql的POD，我们看到连接正常。
-&lt;pre&gt;`[root@centos-minion02 ~]# mysql -uroot -p -h10.254.62.21
+</code></pre><h3 id="6-5-mysql登录"><a href="#6-5-mysql登录" class="headerlink" title="6.5 mysql登录"></a>6.5 mysql登录</h3><p>在centos-minion02上连接mysql的POD，我们看到连接正常。</p>
+<pre><code> [root@centos-minion02 ~]# mysql -uroot -p -h10.254.62.21
 Enter password:
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 3
@@ -426,7 +386,7 @@ owners.
 
 Type &apos;help;&apos; or &apos;\h&apos; for help. Type &apos;\c&apos; to clear the current input statement.
 
-mysql&amp;gt; show databases;
+mysql&gt; show databases;
 +--------------------+
 | Database           |
 +--------------------+
@@ -437,7 +397,7 @@ mysql&amp;gt; show databases;
 +--------------------+
 4 rows in set (0.01 sec)
 
-mysql&amp;gt;
+mysql&gt;
 </code></pre><p>参考：Kubernetes权威指南</p>
-</div><div class="tags"><a href="/tags/Docker/">Docker</a><a href="/tags/Kubernetes/">Kubernetes</a><a href="/tags/Mysql/">Mysql</a></div><div class="post-share"><div class="bdsharebuttonbox"><span style="float:left;line-height: 28px;height: 28px;font-size:16px;font-weight:blod">分享到：</span><a href="#" data-cmd="more" class="bds_more"></a><a href="#" data-cmd="mshare" title="分享到一键分享" class="bds_mshare"></a><a href="#" data-cmd="fbook" title="分享到Facebook" class="bds_fbook"></a><a href="#" data-cmd="twi" title="分享到Twitter" class="bds_twi"></a><a href="#" data-cmd="linkedin" title="分享到linkedin" class="bds_linkedin"></a><a href="#" data-cmd="youdao" title="分享到有道云笔记" class="bds_youdao"></a><a href="#" data-cmd="evernotecn" title="分享到印象笔记" class="bds_evernotecn"></a><a href="#" data-cmd="weixin" title="分享到微信" class="bds_weixin"></a><a href="#" data-cmd="qzone" title="分享到QQ空间" class="bds_qzone"></a><a href="#" data-cmd="tsina" title="分享到新浪微博" class="bds_tsina"></a></div></div><div class="post-nav"><a href="/2016/03/04/postgresql-pgcluu/" class="pre">PostgreSQL 集群性能审计工具pgCluu</a><a href="/2016/02/25/mycat-performance-test/" class="next">基于Docker容器的Mycat性能测试案例</a></div><div id="comments"></div></div></div></div><div class="layout-r"><div id="sidebar"><div class="search-pla"></div><div id="toc" class="widget"><div class="widget-title"><i class="fa fa-fei">文章目录</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-xie"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/05/15/storm-3/">Storm与kafka集成(上)</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/09/docker-ps/">docker ps 命令详解</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/26/machine-learning-3/">机器学习之三：降维技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/storm-2/">Storm的基本概念和组件</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/28/machine-learning-2/">机器学习之二：回归分析</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/homo-tommorrow/">《未来简史》读书笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/storm-1/">使用Docker快速安装简单Storm集群环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/machine-learning-1/">机器学习之一：什么是机器学习？</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/blockchain-1/">关于区块链的一点思考</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/reading-2016/">2016 阅读书单</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-gui"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/">云计算及虚拟化</a><span class="category-list-count">34</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/运维/">运维</a><span class="category-list-count">16</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/">商业智能</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/数据库/">数据库</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/">大数据</a><span class="category-list-count">13</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/运维/">运维</a><span class="category-list-count">3</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">18</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/运维/">运维</a><span class="category-list-count">6</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/读书笔记/">读书笔记</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/运维/">运维</a><span class="category-list-count">3</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-biao"> 标签</i></div><div class="tagcloud"><a href="/tags/docker-compose/" style="font-size: 15px;">docker-compose</a> <a href="/tags/BigInSights/" style="font-size: 15px;">BigInSights</a> <a href="/tags/区块链/" style="font-size: 15px;">区块链</a> <a href="/tags/Cognos/" style="font-size: 15px;">Cognos</a> <a href="/tags/postgresql/" style="font-size: 15px;">postgresql</a> <a href="/tags/big-data/" style="font-size: 15px;">big data</a> <a href="/tags/data-lake/" style="font-size: 15px;">data lake</a> <a href="/tags/数据湖/" style="font-size: 15px;">数据湖</a> <a href="/tags/Container/" style="font-size: 15px;">Container</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/open-vswitch/" style="font-size: 15px;">open vswitch</a> <a href="/tags/容器/" style="font-size: 15px;">容器</a> <a href="/tags/Oracle/" style="font-size: 15px;">Oracle</a> <a href="/tags/userland-proxy/" style="font-size: 15px;">userland-proxy</a> <a href="/tags/Registry/" style="font-size: 15px;">Registry</a> <a href="/tags/Shipyard/" style="font-size: 15px;">Shipyard</a> <a href="/tags/swarm/" style="font-size: 15px;">swarm</a> <a href="/tags/flume/" style="font-size: 15px;">flume</a> <a href="/tags/HA/" style="font-size: 15px;">HA</a> <a href="/tags/hadoop/" style="font-size: 15px;">hadoop</a> <a href="/tags/zookeeper/" style="font-size: 15px;">zookeeper</a> <a href="/tags/Hbase/" style="font-size: 15px;">Hbase</a> <a href="/tags/工业4-0/" style="font-size: 15px;">工业4.0</a> <a href="/tags/ETL/" style="font-size: 15px;">ETL</a> <a href="/tags/InfoPath/" style="font-size: 15px;">InfoPath</a> <a href="/tags/SSIS/" style="font-size: 15px;">SSIS</a> <a href="/tags/XML/" style="font-size: 15px;">XML</a> <a href="/tags/JConsole/" style="font-size: 15px;">JConsole</a> <a href="/tags/Mycat/" style="font-size: 15px;">Mycat</a> <a href="/tags/Kafka/" style="font-size: 15px;">Kafka</a> <a href="/tags/Kafka-Manager/" style="font-size: 15px;">Kafka Manager</a> <a href="/tags/KERBEROS/" style="font-size: 15px;">KERBEROS</a> <a href="/tags/keepalived/" style="font-size: 15px;">keepalived</a> <a href="/tags/lvs/" style="font-size: 15px;">lvs</a> <a href="/tags/Kettle/" style="font-size: 15px;">Kettle</a> <a href="/tags/Kubernetes/" style="font-size: 15px;">Kubernetes</a> <a href="/tags/Mysql/" style="font-size: 15px;">Mysql</a> <a href="/tags/flannel/" style="font-size: 15px;">flannel</a> <a href="/tags/Quagga/" style="font-size: 15px;">Quagga</a> <a href="/tags/Redis/" style="font-size: 15px;">Redis</a> <a href="/tags/ku8eye/" style="font-size: 15px;">ku8eye</a> <a href="/tags/eclipse/" style="font-size: 15px;">eclipse</a> <a href="/tags/maven/" style="font-size: 15px;">maven</a> <a href="/tags/机器学习/" style="font-size: 15px;">机器学习</a> <a href="/tags/HAproxy/" style="font-size: 15px;">HAproxy</a> <a href="/tags/catlet/" style="font-size: 15px;">catlet</a> <a href="/tags/devstack/" style="font-size: 15px;">devstack</a> <a href="/tags/openstack/" style="font-size: 15px;">openstack</a> <a href="/tags/Python/" style="font-size: 15px;">Python</a> <a href="/tags/pgbench/" style="font-size: 15px;">pgbench</a> <a href="/tags/pgCluu/" style="font-size: 15px;">pgCluu</a> <a href="/tags/trigger/" style="font-size: 15px;">trigger</a> <a href="/tags/uuid/" style="font-size: 15px;">uuid</a> <a href="/tags/阅读书单/" style="font-size: 15px;">阅读书单</a> <a href="/tags/WordPress/" style="font-size: 15px;">WordPress</a> <a href="/tags/罗马/" style="font-size: 15px;">罗马</a> <a href="/tags/Hive/" style="font-size: 15px;">Hive</a> <a href="/tags/sqoop/" style="font-size: 15px;">sqoop</a> <a href="/tags/Storm/" style="font-size: 15px;">Storm</a> <a href="/tags/Yarn/" style="font-size: 15px;">Yarn</a> <a href="/tags/必然/" style="font-size: 15px;">必然</a> <a href="/tags/Thrift/" style="font-size: 15px;">Thrift</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-archive"> 归档</i></div><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a></li></ul></div></div></div></div><a id="totop" href="#top"></a><div id="footer"><div class="footer-info"><p><a href="/baidusitemap.xml">网站地图</a> |  <a href="/atom.xml">订阅</a> |  <a href="/about/">关于</a></p><p>本站总访问量：<i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>次</p><p><span> Copyright &copy;<a href="/." rel="nofollow">yaodataking.com.</a></span><span> Theme by<a rel="nofollow" target="_blank" href="https://github.com/chaooo/hexo-theme-BlueLake"> BlueLake.</a></span><span> Count by<a href="http://busuanzi.ibruce.info/"> busuanzi.</a></span><span> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a></span></p></div></div></div><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><script type="text/javascript" src="/js/search.json.js?v=2.0.1"></script><script type="text/javascript" src="/js/toctotop.js?v=2.0.1" async></script><script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["mshare","weixin","tsina","qzone","linkedin","fbook","twi","print","renren","sqq","evernotecn","bdysc","tqq","tqf","bdxc","kaixin001","tieba","douban","bdhome","thx","ibaidu","meilishuo","mogujie","diandian","huaban","duitang","hx","fx","youdao","sdo","qingbiji","people","xinhua","mail","isohu","yaolan","wealink","ty","iguba","h163","copy"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"],"viewText":"分享到：","viewSize":"16"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</div><div class="tags"><a href="/tags/Docker/">Docker</a><a href="/tags/Kubernetes/">Kubernetes</a><a href="/tags/Mysql/">Mysql</a></div><div class="post-share"><div class="bdsharebuttonbox"><span style="float:left;line-height: 28px;height: 28px;font-size:16px;font-weight:blod">分享到：</span><a href="#" data-cmd="more" class="bds_more"></a><a href="#" data-cmd="mshare" title="分享到一键分享" class="bds_mshare"></a><a href="#" data-cmd="fbook" title="分享到Facebook" class="bds_fbook"></a><a href="#" data-cmd="twi" title="分享到Twitter" class="bds_twi"></a><a href="#" data-cmd="linkedin" title="分享到linkedin" class="bds_linkedin"></a><a href="#" data-cmd="youdao" title="分享到有道云笔记" class="bds_youdao"></a><a href="#" data-cmd="evernotecn" title="分享到印象笔记" class="bds_evernotecn"></a><a href="#" data-cmd="weixin" title="分享到微信" class="bds_weixin"></a><a href="#" data-cmd="qzone" title="分享到QQ空间" class="bds_qzone"></a><a href="#" data-cmd="tsina" title="分享到新浪微博" class="bds_tsina"></a></div></div><div class="post-nav"><a href="/2016/03/04/postgresql-pgcluu/" class="pre">PostgreSQL 集群性能审计工具pgCluu</a><a href="/2016/02/25/mycat-performance-test/" class="next">基于Docker容器的Mycat性能测试案例</a></div><div id="comments"></div></div></div></div><div class="layout-r"><div id="sidebar"><div class="search-pla"></div><div id="toc" class="widget"><div class="widget-title"><i class="fa fa-fei">文章目录</i></div><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-简介"><span class="toc-text">1. 简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-准备"><span class="toc-text">2. 准备</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-停止防火墙"><span class="toc-text">2.1 停止防火墙</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-修改iptables"><span class="toc-text">2.2 修改iptables</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-使用阿里镜像"><span class="toc-text">2.3 使用阿里镜像</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-更新主机列表"><span class="toc-text">2.4 更新主机列表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-安装配置kubernetes-master"><span class="toc-text">3. 安装配置kubernetes master</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-在centos-master上安装"><span class="toc-text">3.1 在centos-master上安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-配置-Kubernetes-services"><span class="toc-text">3.2 配置 Kubernetes services</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-配置Kubernetes-API-server"><span class="toc-text">3.3 配置Kubernetes API server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-启动服务"><span class="toc-text">3.4 启动服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-停止服务"><span class="toc-text">3.5 停止服务</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-安装配置kubernetes-node"><span class="toc-text">4. 安装配置kubernetes node</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-安装"><span class="toc-text">4.1 安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-配置-kubelet文件"><span class="toc-text">4.2 配置 kubelet文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-配置config文件"><span class="toc-text">4.3 配置config文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-启动服务"><span class="toc-text">4.4 启动服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-停止服务"><span class="toc-text">4.5 停止服务</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-检查及确认状态"><span class="toc-text">5. 检查及确认状态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-创建MYSQL-POD"><span class="toc-text">6. 创建MYSQL POD</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-建立工作目录并查看API版本"><span class="toc-text">6.1 建立工作目录并查看API版本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-编写mysql的pod文件"><span class="toc-text">6.2 编写mysql的pod文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-启动POD"><span class="toc-text">6.3 启动POD</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-编写mysql的服务文件"><span class="toc-text">6.4 编写mysql的服务文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-启动服务"><span class="toc-text">6.4 启动服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-5-mysql登录"><span class="toc-text">6.5 mysql登录</span></a></li></ol></li></ol></div><div class="widget"><div class="widget-title"><i class="fa fa-xie"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/05/15/storm-3/">Storm与kafka集成(上)</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/09/docker-ps/">docker ps 命令详解</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/26/machine-learning-3/">机器学习之三：降维技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/storm-2/">Storm的基本概念和组件</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/28/machine-learning-2/">机器学习之二：回归分析</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/homo-tommorrow/">《未来简史》读书笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/storm-1/">使用Docker快速安装简单Storm集群环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/machine-learning-1/">机器学习之一：什么是机器学习？</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/blockchain-1/">关于区块链的一点思考</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/reading-2016/">2016 阅读书单</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-gui"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/">云计算及虚拟化</a><span class="category-list-count">34</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/运维/">运维</a><span class="category-list-count">16</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/">商业智能</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/数据库/">数据库</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/">大数据</a><span class="category-list-count">13</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/运维/">运维</a><span class="category-list-count">3</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">18</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/运维/">运维</a><span class="category-list-count">6</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/读书笔记/">读书笔记</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/运维/">运维</a><span class="category-list-count">3</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-biao"> 标签</i></div><div class="tagcloud"><a href="/tags/docker-compose/" style="font-size: 15px;">docker-compose</a> <a href="/tags/BigInSights/" style="font-size: 15px;">BigInSights</a> <a href="/tags/区块链/" style="font-size: 15px;">区块链</a> <a href="/tags/flume/" style="font-size: 15px;">flume</a> <a href="/tags/postgresql/" style="font-size: 15px;">postgresql</a> <a href="/tags/Container/" style="font-size: 15px;">Container</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/open-vswitch/" style="font-size: 15px;">open vswitch</a> <a href="/tags/容器/" style="font-size: 15px;">容器</a> <a href="/tags/Oracle/" style="font-size: 15px;">Oracle</a> <a href="/tags/big-data/" style="font-size: 15px;">big data</a> <a href="/tags/data-lake/" style="font-size: 15px;">data lake</a> <a href="/tags/数据湖/" style="font-size: 15px;">数据湖</a> <a href="/tags/userland-proxy/" style="font-size: 15px;">userland-proxy</a> <a href="/tags/Cognos/" style="font-size: 15px;">Cognos</a> <a href="/tags/Registry/" style="font-size: 15px;">Registry</a> <a href="/tags/Shipyard/" style="font-size: 15px;">Shipyard</a> <a href="/tags/swarm/" style="font-size: 15px;">swarm</a> <a href="/tags/hadoop/" style="font-size: 15px;">hadoop</a> <a href="/tags/Hbase/" style="font-size: 15px;">Hbase</a> <a href="/tags/工业4-0/" style="font-size: 15px;">工业4.0</a> <a href="/tags/HA/" style="font-size: 15px;">HA</a> <a href="/tags/zookeeper/" style="font-size: 15px;">zookeeper</a> <a href="/tags/JConsole/" style="font-size: 15px;">JConsole</a> <a href="/tags/Kafka-Manager/" style="font-size: 15px;">Kafka Manager</a> <a href="/tags/ETL/" style="font-size: 15px;">ETL</a> <a href="/tags/InfoPath/" style="font-size: 15px;">InfoPath</a> <a href="/tags/SSIS/" style="font-size: 15px;">SSIS</a> <a href="/tags/XML/" style="font-size: 15px;">XML</a> <a href="/tags/Kafka/" style="font-size: 15px;">Kafka</a> <a href="/tags/Mycat/" style="font-size: 15px;">Mycat</a> <a href="/tags/KERBEROS/" style="font-size: 15px;">KERBEROS</a> <a href="/tags/Kettle/" style="font-size: 15px;">Kettle</a> <a href="/tags/Kubernetes/" style="font-size: 15px;">Kubernetes</a> <a href="/tags/Mysql/" style="font-size: 15px;">Mysql</a> <a href="/tags/keepalived/" style="font-size: 15px;">keepalived</a> <a href="/tags/lvs/" style="font-size: 15px;">lvs</a> <a href="/tags/flannel/" style="font-size: 15px;">flannel</a> <a href="/tags/Quagga/" style="font-size: 15px;">Quagga</a> <a href="/tags/Redis/" style="font-size: 15px;">Redis</a> <a href="/tags/ku8eye/" style="font-size: 15px;">ku8eye</a> <a href="/tags/eclipse/" style="font-size: 15px;">eclipse</a> <a href="/tags/maven/" style="font-size: 15px;">maven</a> <a href="/tags/机器学习/" style="font-size: 15px;">机器学习</a> <a href="/tags/HAproxy/" style="font-size: 15px;">HAproxy</a> <a href="/tags/catlet/" style="font-size: 15px;">catlet</a> <a href="/tags/openstack/" style="font-size: 15px;">openstack</a> <a href="/tags/devstack/" style="font-size: 15px;">devstack</a> <a href="/tags/Python/" style="font-size: 15px;">Python</a> <a href="/tags/pgbench/" style="font-size: 15px;">pgbench</a> <a href="/tags/pgCluu/" style="font-size: 15px;">pgCluu</a> <a href="/tags/trigger/" style="font-size: 15px;">trigger</a> <a href="/tags/uuid/" style="font-size: 15px;">uuid</a> <a href="/tags/阅读书单/" style="font-size: 15px;">阅读书单</a> <a href="/tags/罗马/" style="font-size: 15px;">罗马</a> <a href="/tags/WordPress/" style="font-size: 15px;">WordPress</a> <a href="/tags/Storm/" style="font-size: 15px;">Storm</a> <a href="/tags/Hive/" style="font-size: 15px;">Hive</a> <a href="/tags/sqoop/" style="font-size: 15px;">sqoop</a> <a href="/tags/必然/" style="font-size: 15px;">必然</a> <a href="/tags/Thrift/" style="font-size: 15px;">Thrift</a> <a href="/tags/Yarn/" style="font-size: 15px;">Yarn</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-archive"> 归档</i></div><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a></li></ul></div></div></div></div><a id="totop" href="#top"></a><div id="footer"><div class="footer-info"><p><a href="/baidusitemap.xml">网站地图</a> |  <a href="/atom.xml">订阅</a> |  <a href="/about/">关于</a></p><p>本站总访问量：<i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>次</p><p><span> Copyright &copy;<a href="/." rel="nofollow">yaodataking.com.</a></span><span> Theme by<a rel="nofollow" target="_blank" href="https://github.com/chaooo/hexo-theme-BlueLake"> BlueLake.</a></span><span> Count by<a href="http://busuanzi.ibruce.info/"> busuanzi.</a></span><span> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a></span></p></div></div></div><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><script type="text/javascript" src="/js/search.json.js?v=2.0.1"></script><script type="text/javascript" src="/js/toctotop.js?v=2.0.1" async></script><script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["mshare","weixin","tsina","qzone","linkedin","fbook","twi","print","renren","sqq","evernotecn","bdysc","tqq","tqf","bdxc","kaixin001","tieba","douban","bdhome","thx","ibaidu","meilishuo","mogujie","diandian","huaban","duitang","hx","fx","youdao","sdo","qingbiji","people","xinhua","mail","isohu","yaolan","wealink","ty","iguba","h163","copy"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"],"viewText":"分享到：","viewSize":"16"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
 </script></body></html>
