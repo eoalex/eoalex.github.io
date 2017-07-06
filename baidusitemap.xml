@@ -4,6 +4,368 @@
 
     
   <url>
+    <loc>http://blog.yaodataking.com/2016/04/30/mycat-sourcecode-catlet-sharejoin/</loc>
+    <lastmod>2017-07-06T12:41:36.000Z</lastmod>
+    <data>
+        <display>
+        <title>Mycat源码分析之Catlet Sharejoin分析</title>
+        <pubTime>2016-04-30T15:47:48.000Z</pubTime>
+        
+        <tag>Mycat</tag>
+         
+        <tag>catlet</tag>
+         
+         
+           
+             
+              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/04/23/mycat-sourcecode-backend-response/</loc>
+    <lastmod>2017-07-06T12:36:51.000Z</lastmod>
+    <data>
+        <display>
+        <title>Mycat源码分析之后端连接处理</title>
+        <pubTime>2016-04-23T09:18:23.000Z</pubTime>
+        
+        <tag>Mycat</tag>
+         
+         
+           
+             
+              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/04/03/jconsole-remote-mycat/</loc>
+    <lastmod>2017-07-06T12:11:41.000Z</lastmod>
+    <data>
+        <display>
+        <title>JConsole远程监控Mycat示列</title>
+        <pubTime>2016-04-03T07:24:40.000Z</pubTime>
+        
+        <tag>JConsole</tag>
+         
+        <tag>Mycat</tag>
+         
+         
+           
+             
+              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+          
+             
+              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/%E8%BF%90%E7%BB%B4/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/06/26/openstack-python-sdk-createvm/</loc>
+    <lastmod>2017-07-05T14:51:21.000Z</lastmod>
+    <data>
+        <display>
+        <title>OpenStack入门之八:使用python SDK代码启动虚拟机实例</title>
+        <pubTime>2016-06-26T04:46:32.000Z</pubTime>
+        
+        <tag>openstack</tag>
+         
+        <tag>Python</tag>
+         
+         
+           
+             
+              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/06/21/openstack-live-migration-nfs/</loc>
+    <lastmod>2017-07-05T14:46:31.000Z</lastmod>
+    <data>
+        <display>
+        <title>OpenStack入门之七:基于NFS共享存储的在线迁移</title>
+        <pubTime>2016-06-21T01:14:22.000Z</pubTime>
+        
+        <tag>openstack</tag>
+         
+         
+           
+             
+              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/06/21/openstack-scheduler-live-migration/</loc>
+    <lastmod>2017-07-05T14:36:53.000Z</lastmod>
+    <data>
+        <display>
+        <title>OpenStack入门之六:调度服务与在线迁移实验</title>
+        <pubTime>2016-06-21T00:40:01.000Z</pubTime>
+        
+        <tag>openstack</tag>
+         
+         
+           
+             
+              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/06/21/openstack-lbaas-fwaas/</loc>
+    <lastmod>2017-07-05T14:12:31.000Z</lastmod>
+    <data>
+        <display>
+        <title>OpenStack入门之五:负载均衡和防火墙设置</title>
+        <pubTime>2016-06-21T00:03:49.000Z</pubTime>
+        
+        <tag>openstack</tag>
+         
+         
+           
+             
+              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/06/12/openstack-error-checking/</loc>
+    <lastmod>2017-07-05T13:47:35.000Z</lastmod>
+    <data>
+        <display>
+        <title>OpenStack入门之四:故障诊断实例</title>
+        <pubTime>2016-06-12T06:27:47.000Z</pubTime>
+        
+        <tag>openstack</tag>
+         
+         
+           
+             
+              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/06/11/openstack-kilo-centos/</loc>
+    <lastmod>2017-07-05T13:33:50.000Z</lastmod>
+    <data>
+        <display>
+        <title>OpenStack入门之三:Kilo版本centos 7平台搭建</title>
+        <pubTime>2016-06-11T15:14:22.000Z</pubTime>
+        
+        <tag>openstack</tag>
+         
+         
+           
+             
+              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/05/08/openstack-introduce/</loc>
+    <lastmod>2017-07-05T11:53:36.000Z</lastmod>
+    <data>
+        <display>
+        <title>OpenStack入门之一:OpenStack概述</title>
+        <pubTime>2016-05-08T15:51:33.000Z</pubTime>
+        
+        <tag>openstack</tag>
+         
+         
+           
+             
+              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/05/15/openstack-devstack/</loc>
+    <lastmod>2017-07-05T11:50:55.000Z</lastmod>
+    <data>
+        <display>
+        <title>OpenStack入门之二:devstack开发环境搭建</title>
+        <pubTime>2016-05-15T06:26:59.000Z</pubTime>
+        
+        <tag>devstack</tag>
+         
+        <tag>openstack</tag>
+         
+         
+           
+             
+              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/07/03/openstack-rest-api/</loc>
+    <lastmod>2017-07-05T11:32:57.000Z</lastmod>
+    <data>
+        <display>
+        <title>OpenStack入门之九:使用REST API启动虚拟机实例</title>
+        <pubTime>2016-07-03T15:01:35.000Z</pubTime>
+        
+        <tag>openstack</tag>
+         
+        <tag>Python</tag>
+         
+         
+           
+             
+              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/09/10/industry-4-0-jaylee/</loc>
+    <lastmod>2017-07-05T11:17:38.000Z</lastmod>
+    <data>
+        <display>
+        <title>《工业大数据：工业4.0时代的工业转型与价值创造》读书笔记</title>
+        <pubTime>2016-09-10T04:04:07.000Z</pubTime>
+        
+        <tag>工业4.0</tag>
+         
+         
+           
+             
+              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/09/28/growthhacker/</loc>
+    <lastmod>2017-07-05T11:08:42.000Z</lastmod>
+    <data>
+        <display>
+        <title>《增长黑客》思维导图</title>
+        <pubTime>2016-09-28T12:37:26.000Z</pubTime>
+        
+         
+           
+             
+              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/10/10/redis-wordpress/</loc>
+    <lastmod>2017-07-05T10:59:50.000Z</lastmod>
+    <data>
+        <display>
+        <title>Redis加速你的WordPress站点</title>
+        <pubTime>2016-10-10T12:25:15.000Z</pubTime>
+        
+        <tag>Redis</tag>
+         
+        <tag>WordPress</tag>
+         
+         
+           
+             
+              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+          
+             
+              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/%E8%BF%90%E7%BB%B4/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/10/15/data-lake-intro/</loc>
+    <lastmod>2017-07-05T10:47:14.000Z</lastmod>
+    <data>
+        <display>
+        <title>数据湖：提供大数据解决方案的架构</title>
+        <pubTime>2016-10-15T04:50:02.000Z</pubTime>
+        
+        <tag>big data</tag>
+         
+        <tag>data lake</tag>
+         
+        <tag>数据湖</tag>
+         
+         
+           
+             
+              <breadCrumb title="大数据" url="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/10/29/docker-oracle-xe-11g/</loc>
+    <lastmod>2017-07-05T10:43:09.000Z</lastmod>
+    <data>
+        <display>
+        <title>Docker快速搭建oracle xe 11g开发环境</title>
+        <pubTime>2016-10-29T09:01:44.000Z</pubTime>
+        
+        <tag>Docker</tag>
+         
+        <tag>Oracle</tag>
+         
+         
+           
+             
+              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://blog.yaodataking.com/2016/11/01/infopath-xml-ssis/</loc>
     <lastmod>2017-07-04T14:54:28.000Z</lastmod>
     <data>
@@ -1400,9 +1762,9 @@
         <title>Hadoop 2.7.1 实现HA集群部署</title>
         <pubTime>2015-10-27T03:14:52.000Z</pubTime>
         
-        <tag>hadoop</tag>
-         
         <tag>HA</tag>
+         
+        <tag>hadoop</tag>
          
         <tag>zookeeper</tag>
          
@@ -1459,166 +1821,12 @@
     
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/06/12/openstack-error-checking/</loc>
+    <loc>http://blog.yaodataking.com/2016/07/03/rome-story-5/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>OpenStack入门之四:故障诊断实例</title>
-        <pubTime>2016-06-12T06:27:47.000Z</pubTime>
-        
-        <tag>openstack</tag>
-         
-         
-           
-             
-              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/05/08/openstack-introduce/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>OpenStack入门之一:OpenStack概述</title>
-        <pubTime>2016-05-08T15:51:33.000Z</pubTime>
-        
-        <tag>openstack</tag>
-         
-         
-           
-             
-              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/05/15/openstack-devstack/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>OpenStack入门之二:devstack开发环境搭建</title>
-        <pubTime>2016-05-15T06:26:59.000Z</pubTime>
-        
-        <tag>devstack</tag>
-         
-        <tag>openstack</tag>
-         
-         
-           
-             
-              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/04/23/mycat-sourcecode-backend-response/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>Mycat源码分析之后端连接处理</title>
-        <pubTime>2016-04-23T09:18:23.000Z</pubTime>
-        
-        <tag>Mycat</tag>
-         
-         
-           
-             
-              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/04/30/mycat-sourcecode-catlet-sharejoin/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>Mycat源码分析之Catlet Sharejoin分析</title>
-        <pubTime>2016-04-30T15:47:48.000Z</pubTime>
-        
-        <tag>Mycat</tag>
-         
-        <tag>catlet</tag>
-         
-         
-           
-             
-              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/04/10/kubernetes-ku8eye/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>Kubernetes入门实战(6)：使用ku8eye快速构建Kubernetes集群</title>
-        <pubTime>2016-04-10T05:44:59.000Z</pubTime>
-        
-        <tag>Kubernetes</tag>
-         
-        <tag>ku8eye</tag>
-         
-         
-           
-             
-              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
-          
-             
-              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/%E8%BF%90%E7%BB%B4/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/10/10/redis-wordpress/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>Redis加速你的WordPress站点</title>
-        <pubTime>2016-10-10T12:25:15.000Z</pubTime>
-        
-        <tag>Redis</tag>
-         
-        <tag>WordPress</tag>
-         
-         
-           
-             
-              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
-          
-             
-              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/%E8%BF%90%E7%BB%B4/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/04/17/rome-story-1/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>《罗马人的故事1:罗马不是一天建成的》读书笔记</title>
-        <pubTime>2016-04-17T15:55:22.000Z</pubTime>
+        <title>《罗马人的故事5:凯撒时代（下）》读书笔记</title>
+        <pubTime>2016-07-03T12:41:13.000Z</pubTime>
         
         <tag>罗马</tag>
          
@@ -1633,37 +1841,12 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/04/03/jconsole-remote-mycat/</loc>
+    <loc>http://blog.yaodataking.com/2016/07/21/rome-story-6/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>JConsole远程监控Mycat示列</title>
-        <pubTime>2016-04-03T07:24:40.000Z</pubTime>
-        
-        <tag>JConsole</tag>
-         
-        <tag>Mycat</tag>
-         
-         
-           
-             
-              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
-          
-             
-              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/%E8%BF%90%E7%BB%B4/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/09/10/rome-story-10-html/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>《罗马人的故事10:条条大路通罗马》读书笔记</title>
-        <pubTime>2016-09-10T05:25:05.000Z</pubTime>
+        <title>《罗马人的故事6:罗马统治下的和平》读书笔记</title>
+        <pubTime>2016-07-21T13:33:12.000Z</pubTime>
         
         <tag>罗马</tag>
          
@@ -1678,12 +1861,52 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/09/28/rome-story-11/</loc>
+    <loc>http://blog.yaodataking.com/2016/08/07/rome-story-7/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>《罗马人的故事11:结局的开始》读书笔记</title>
-        <pubTime>2016-09-27T16:20:24.000Z</pubTime>
+        <title>《罗马人的故事7:臭名昭著的皇帝》读书笔记</title>
+        <pubTime>2016-08-07T00:36:42.000Z</pubTime>
+        
+        <tag>罗马</tag>
+         
+         
+           
+             
+              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/08/14/rome-story-8/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>《罗马人的故事8:危机与克服》读书笔记</title>
+        <pubTime>2016-08-14T05:10:53.000Z</pubTime>
+        
+        <tag>罗马</tag>
+         
+         
+           
+             
+              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/08/21/rome-story-9/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>《罗马人的故事9:贤君的世纪》读书笔记</title>
+        <pubTime>2016-08-21T05:04:19.000Z</pubTime>
         
         <tag>罗马</tag>
          
@@ -1718,12 +1941,12 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/10/28/rome-story-13/</loc>
+    <loc>http://blog.yaodataking.com/2016/04/17/rome-story-1/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>《罗马人的故事13:最后一搏》读书笔记</title>
-        <pubTime>2016-10-28T15:01:46.000Z</pubTime>
+        <title>《罗马人的故事1:罗马不是一天建成的》读书笔记</title>
+        <pubTime>2016-04-17T15:55:22.000Z</pubTime>
         
         <tag>罗马</tag>
          
@@ -1738,19 +1961,62 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/06/11/openstack-kilo-centos/</loc>
+    <loc>http://blog.yaodataking.com/2016/04/10/kubernetes-ku8eye/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>OpenStack入门之三:Kilo版本centos 7平台搭建</title>
-        <pubTime>2016-06-11T15:14:22.000Z</pubTime>
+        <title>Kubernetes入门实战(6)：使用ku8eye快速构建Kubernetes集群</title>
+        <pubTime>2016-04-10T05:44:59.000Z</pubTime>
         
-        <tag>openstack</tag>
+        <tag>Kubernetes</tag>
+         
+        <tag>ku8eye</tag>
          
          
            
              
               <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+          
+             
+              <breadCrumb title="运维" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/%E8%BF%90%E7%BB%B4/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2017/02/23/homo-tommorrow/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>《未来简史》读书笔记</title>
+        <pubTime>2017-02-23T14:52:16.000Z</pubTime>
+        
+         
+           
+             
+              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://blog.yaodataking.com/2016/10/28/rome-story-13/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>《罗马人的故事13:最后一搏》读书笔记</title>
+        <pubTime>2016-10-28T15:01:46.000Z</pubTime>
+        
+        <tag>罗马</tag>
+         
+         
+           
+             
+              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
           
         </display>
     </data>
@@ -1818,6 +2084,26 @@
 
     
   <url>
+    <loc>http://blog.yaodataking.com/2016/09/10/rome-story-10/</loc>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    <data>
+        <display>
+        <title>《罗马人的故事10:条条大路通罗马》读书笔记</title>
+        <pubTime>2016-09-10T05:25:05.000Z</pubTime>
+        
+        <tag>罗马</tag>
+         
+         
+           
+             
+              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://blog.yaodataking.com/2016/06/05/rome-story-4/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
@@ -1838,300 +2124,14 @@
 
     
   <url>
-    <loc>http://blog.yaodataking.com/2016/07/03/rome-story-5/</loc>
+    <loc>http://blog.yaodataking.com/2016/09/28/rome-story-11/</loc>
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     <data>
         <display>
-        <title>《罗马人的故事5:凯撒时代（下）》读书笔记</title>
-        <pubTime>2016-07-03T12:41:13.000Z</pubTime>
+        <title>《罗马人的故事11:结局的开始》读书笔记</title>
+        <pubTime>2016-09-27T16:20:24.000Z</pubTime>
         
         <tag>罗马</tag>
-         
-         
-           
-             
-              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/07/21/rome-story-6/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>《罗马人的故事6:罗马统治下的和平》读书笔记</title>
-        <pubTime>2016-07-21T13:33:12.000Z</pubTime>
-        
-        <tag>罗马</tag>
-         
-         
-           
-             
-              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/08/07/rome-story-7/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>《罗马人的故事7:臭名昭著的皇帝》读书笔记</title>
-        <pubTime>2016-08-07T00:36:42.000Z</pubTime>
-        
-        <tag>罗马</tag>
-         
-         
-           
-             
-              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/08/21/rome-story-9/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>《罗马人的故事9:贤君的世纪》读书笔记</title>
-        <pubTime>2016-08-21T05:04:19.000Z</pubTime>
-        
-        <tag>罗马</tag>
-         
-         
-           
-             
-              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/08/14/rome-story-8/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>《罗马人的故事8:危机与克服》读书笔记</title>
-        <pubTime>2016-08-14T05:10:53.000Z</pubTime>
-        
-        <tag>罗马</tag>
-         
-         
-           
-             
-              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2017/02/23/homo-tommorrow/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>《未来简史》读书笔记</title>
-        <pubTime>2017-02-23T14:52:16.000Z</pubTime>
-        
-         
-           
-             
-              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/06/26/openstack-python-sdk-createvm/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>OpenStack入门之八:使用python SDK代码启动虚拟机实例</title>
-        <pubTime>2016-06-26T04:46:32.000Z</pubTime>
-        
-        <tag>openstack</tag>
-         
-        <tag>Python</tag>
-         
-         
-           
-             
-              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/07/03/openstack-rest-api/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>OpenStack入门之九:使用REST API启动虚拟机实例</title>
-        <pubTime>2016-07-03T15:01:35.000Z</pubTime>
-        
-        <tag>openstack</tag>
-         
-        <tag>Python</tag>
-         
-         
-           
-             
-              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/06/21/openstack-scheduler-live-migration/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>OpenStack入门之六:调度服务与在线迁移实验</title>
-        <pubTime>2016-06-21T00:40:01.000Z</pubTime>
-        
-        <tag>openstack</tag>
-         
-         
-           
-             
-              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/06/21/openstack-lbaas-fwaas/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>OpenStack入门之五:负载均衡和防火墙设置</title>
-        <pubTime>2016-06-21T00:03:49.000Z</pubTime>
-        
-        <tag>openstack</tag>
-         
-         
-           
-             
-              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/09/28/growthhacker/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>《增长黑客》思维导图</title>
-        <pubTime>2016-09-28T12:37:26.000Z</pubTime>
-        
-         
-           
-             
-              <breadCrumb title="读书笔记" url="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/10/29/docker-oracle-xe-11g/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>Docker快速搭建oracle xe 11g开发环境</title>
-        <pubTime>2016-10-29T09:01:44.000Z</pubTime>
-        
-        <tag>Docker</tag>
-         
-        <tag>Oracle</tag>
-         
-         
-           
-             
-              <breadCrumb title="数据库" url="http://blog.yaodataking.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/10/15/data-lake-intro/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>数据湖：提供大数据解决方案的架构</title>
-        <pubTime>2016-10-15T04:50:02.000Z</pubTime>
-        
-        <tag>big data</tag>
-         
-        <tag>data lake</tag>
-         
-        <tag>数据湖</tag>
-         
-         
-           
-             
-              <breadCrumb title="大数据" url="http://blog.yaodataking.com/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/06/21/openstack-live-migration-nfs/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>OpenStack入门之七:基于NFS共享存储的在线迁移</title>
-        <pubTime>2016-06-21T01:14:22.000Z</pubTime>
-        
-        <tag>openstack</tag>
-         
-         
-           
-             
-              <breadCrumb title="云计算及虚拟化" url="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://blog.yaodataking.com/2016/09/10/industry-4-0-jaylee/</loc>
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    <data>
-        <display>
-        <title>《工业大数据：工业4.0时代的工业转型与价值创造》读书笔记</title>
-        <pubTime>2016-09-10T04:04:07.000Z</pubTime>
-        
-        <tag>工业4.0</tag>
          
          
            

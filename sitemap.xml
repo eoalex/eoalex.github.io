@@ -2,6 +2,125 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://blog.yaodataking.com/2016/04/30/mycat-sourcecode-catlet-sharejoin/</loc>
+    
+    <lastmod>2017-07-06T12:41:36.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/04/23/mycat-sourcecode-backend-response/</loc>
+    
+    <lastmod>2017-07-06T12:36:51.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/04/03/jconsole-remote-mycat/</loc>
+    
+    <lastmod>2017-07-06T12:11:41.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/06/26/openstack-python-sdk-createvm/</loc>
+    
+    <lastmod>2017-07-05T14:51:21.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/06/21/openstack-live-migration-nfs/</loc>
+    
+    <lastmod>2017-07-05T14:46:31.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/06/21/openstack-scheduler-live-migration/</loc>
+    
+    <lastmod>2017-07-05T14:36:53.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/06/21/openstack-lbaas-fwaas/</loc>
+    
+    <lastmod>2017-07-05T14:12:31.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/06/12/openstack-error-checking/</loc>
+    
+    <lastmod>2017-07-05T13:47:35.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/06/11/openstack-kilo-centos/</loc>
+    
+    <lastmod>2017-07-05T13:33:50.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/05/08/openstack-introduce/</loc>
+    
+    <lastmod>2017-07-05T11:53:36.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/05/15/openstack-devstack/</loc>
+    
+    <lastmod>2017-07-05T11:50:55.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/07/03/openstack-rest-api/</loc>
+    
+    <lastmod>2017-07-05T11:32:57.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/09/10/industry-4-0-jaylee/</loc>
+    
+    <lastmod>2017-07-05T11:17:38.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/09/28/growthhacker/</loc>
+    
+    <lastmod>2017-07-05T11:08:42.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/10/10/redis-wordpress/</loc>
+    
+    <lastmod>2017-07-05T10:59:50.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/10/15/data-lake-intro/</loc>
+    
+    <lastmod>2017-07-05T10:47:14.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/10/29/docker-oracle-xe-11g/</loc>
+    
+    <lastmod>2017-07-05T10:43:09.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://blog.yaodataking.com/2016/11/01/infopath-xml-ssis/</loc>
     
     <lastmod>2017-07-04T14:54:28.000Z</lastmod>
@@ -464,77 +583,35 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/06/12/openstack-error-checking/</loc>
+    <loc>http://blog.yaodataking.com/2016/07/03/rome-story-5/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/05/08/openstack-introduce/</loc>
+    <loc>http://blog.yaodataking.com/2016/07/21/rome-story-6/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/05/15/openstack-devstack/</loc>
+    <loc>http://blog.yaodataking.com/2016/08/07/rome-story-7/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/04/23/mycat-sourcecode-backend-response/</loc>
+    <loc>http://blog.yaodataking.com/2016/08/14/rome-story-8/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/04/30/mycat-sourcecode-catlet-sharejoin/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/04/10/kubernetes-ku8eye/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/10/10/redis-wordpress/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/04/17/rome-story-1/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/04/03/jconsole-remote-mycat/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/09/10/rome-story-10-html/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/09/28/rome-story-11/</loc>
+    <loc>http://blog.yaodataking.com/2016/08/21/rome-story-9/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
@@ -548,14 +625,28 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/10/28/rome-story-13/</loc>
+    <loc>http://blog.yaodataking.com/2016/04/17/rome-story-1/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/06/11/openstack-kilo-centos/</loc>
+    <loc>http://blog.yaodataking.com/2016/04/10/kubernetes-ku8eye/</loc>
+    
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2017/02/23/homo-tommorrow/</loc>
+    
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/10/28/rome-story-13/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
@@ -583,6 +674,13 @@
   </url>
   
   <url>
+    <loc>http://blog.yaodataking.com/2016/09/10/rome-story-10/</loc>
+    
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://blog.yaodataking.com/2016/06/05/rome-story-4/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
@@ -590,105 +688,7 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/07/03/rome-story-5/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/07/21/rome-story-6/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/08/07/rome-story-7/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/08/21/rome-story-9/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/08/14/rome-story-8/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2017/02/23/homo-tommorrow/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/06/26/openstack-python-sdk-createvm/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/07/03/openstack-rest-api/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/06/21/openstack-scheduler-live-migration/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/06/21/openstack-lbaas-fwaas/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/09/28/growthhacker/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/10/29/docker-oracle-xe-11g/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/10/15/data-lake-intro/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/06/21/openstack-live-migration-nfs/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/09/10/industry-4-0-jaylee/</loc>
+    <loc>http://blog.yaodataking.com/2016/09/28/rome-story-11/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     

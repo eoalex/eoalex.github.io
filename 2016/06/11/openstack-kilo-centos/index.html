@@ -1,204 +1,215 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="ss"><title>OpenStack入门之三:Kilo版本centos 7平台搭建 | Alex Wu's blog</title><link rel="stylesheet" type="text/css" href="//fonts.css.network/css?family=Source+Code+Pro"><link rel="stylesheet" type="text/css" href="/css/style.css?v=2.0.1"><link rel="stylesheet" type="text/css" href="/css/highlight.css?v=2.0.1"><link rel="Shortcut Icon" href="/favicon.ico"><link rel="bookmark" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">OpenStack入门之三:Kilo版本centos 7平台搭建</h1><a id="logo" href="/.">Alex Wu's blog</a><p class="description">THINK BIG, START SMALL, DELIVER VALUE TO THE BUSINESS</p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div><div id="search-form"><div id="result-mask" class="hide"></div><label><input id="search-key" type="text" autocomplete="off" placeholder="搜索..."></label><div id="result-wrap" class="hide"><div id="search-result"></div></div><div class="hide"><template id="search-tpl"><div class="item"><a href="/{path}" title="{title}"><div class="title">{title}</div><div class="time">{date}</div><div class="tags">{tags}</div></a></div></template></div></div></div><div id="layout" class="layout-g"><div class="layout-l"><div class="content_container"><div class="post"><h1 class="post-title">OpenStack入门之三:Kilo版本centos 7平台搭建</h1><div class="post-meta"><span class="date">Jun 11, 2016</span><span class="category"><a href="/categories/云计算及虚拟化/">云计算及虚拟化</a></span><span><i id="busuanzi_container_page_pv"><i id="busuanzi_value_page_pv"></i><i> Hits</i></i></span><a href="/2016/06/11/openstack-kilo-centos/#comments" class="comment-count">留言</a></div><div class="post-content"><h2 id="虚拟机环境"><a href="#虚拟机环境" class="headerlink" title="虚拟机环境"></a>虚拟机环境</h2><table width="553"><br><tbody><br><tr><br><td width="120">节点名称</td><br><td width="213">硬件配置</td><br><td width="120">功能/用途</td><br><td width="100">IP地址</td><br></tr><br><tr><br><td width="120">controller</td><br><td width="213">4G内存, 1块硬盘，1块网卡</td><br><td width="120">控制节点</td><br><td width="100">192.168.199.80</td><br></tr><br><tr><br><td width="120">compute-node-01</td><br><td width="213">2G内存, 1块硬盘，1块网卡</td><br><td width="120">计算节点</td><br><td width="100">192.168.199.81</td><br></tr><br><tr><br><td width="120">network-node-01</td><br><td width="213">1G内存, 1块硬盘，2块网卡</td><br><td width="120">网络节点</td><br><td width="100">192.168.199.82</td><br></tr><br><tr><br><td width="120">block-node-01</td><br><td width="213">1G内存, 2块硬盘，1块网卡</td><br><td width="120">块存储节点</td><br><td width="100">192.168.199.83</td><br></tr><br><tr><br><td width="120">object-node-01</td><br><td width="213">1G内存, 3块硬盘，1块网卡</td><br><td width="120">对象存储节点1</td><br><td width="100">192.168.199.84</td><br></tr><br><tr><br><td width="120">object-node-02</td><br><td width="213">1G内存, 3块硬盘，1块网卡</td><br><td width="120">对象存储节点2</td><br><td width="100">192.168.199.85</td><br></tr><br></tbody><br></table>
-
-<h2 id="组件节点分布"><a href="#组件节点分布" class="headerlink" title="组件节点分布"></a>组件节点分布</h2><p><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-12_9-43-08.jpg" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-12_9-43-08.jpg" alt="2016-06-12_9-43-08"></a></p>
-<h2 id="1-准备工作"><a href="#1-准备工作" class="headerlink" title="1.准备工作"></a>1.准备工作</h2><p>以下操作在每个节点上<br>1.1更新centos源</p>
-<p>#yum install wget</p>
-<p>#wget -O /etc/yum.repos.d/CentOS-Base.repo <a href="http://mirrors.aliyun.com/repo/Centos-7.repo" target="_blank" rel="external">http://mirrors.aliyun.com/repo/Centos-7.repo</a><br>1.2停止防火墙服务<br>systemctl stop firewalld.service<br>systemctl disable firewalld.service<br>1.3安装基础组件及源</p>
-<p>#yum install ntp -y</p>
-<p>#yum install yum-plugin-priorities -y</p>
-<p>#yum install <a href="http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-6.noarch.rpm" target="_blank" rel="external">http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-6.noarch.rpm</a> -y</p>
-<p>#yum install <a href="http://rdo.fedorapeople.org/openstack-kilo/rdo-release-kilo.rpm" target="_blank" rel="external">http://rdo.fedorapeople.org/openstack-kilo/rdo-release-kilo.rpm</a> -y</p>
-<p>#yum install <a href="https://repos.fedorapeople.org/repos/openstack/openstack-kilo/rdo-release-kilo-2.noarch.rpm" target="_blank" rel="external">https://repos.fedorapeople.org/repos/openstack/openstack-kilo/rdo-release-kilo-2.noarch.rpm</a> -y</p>
-<p>#yum upgrade -y</p>
-<p>#yum install openstack-selinux -y<br>1.4更新时区</p>
-<p>#cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime<br>1.5配置时钟同步(controller节点)<br>1.5.1备份配置文件</p>
-<p>#cp /etc/ntp.conf /etc/ntp.conf.bak<br>1.5.2添加参数</p>
-<p>#vi /etc/ntp.conf</p>
-<pre><code>server controller iburst
-restrict -4 default kod notrap nomodify
-restrict -6 default kod notrap nomodify
-`&lt;/pre&gt;
-1.5.3注释以下参数
-#restrict default nomodify notrap nopeer noquery
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="ss"><title>OpenStack入门之三:Kilo版本centos 7平台搭建 | Alex Wu's blog</title><link rel="stylesheet" type="text/css" href="//fonts.css.network/css?family=Source+Code+Pro"><link rel="stylesheet" type="text/css" href="/css/style.css?v=2.0.1"><link rel="stylesheet" type="text/css" href="/css/highlight.css?v=2.0.1"><link rel="Shortcut Icon" href="/favicon.ico"><link rel="bookmark" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">OpenStack入门之三:Kilo版本centos 7平台搭建</h1><a id="logo" href="/.">Alex Wu's blog</a><p class="description">THINK BIG, START SMALL, DELIVER VALUE TO THE BUSINESS</p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div><div id="search-form"><div id="result-mask" class="hide"></div><label><input id="search-key" type="text" autocomplete="off" placeholder="搜索..."></label><div id="result-wrap" class="hide"><div id="search-result"></div></div><div class="hide"><template id="search-tpl"><div class="item"><a href="/{path}" title="{title}"><div class="title">{title}</div><div class="time">{date}</div><div class="tags">{tags}</div></a></div></template></div></div></div><div id="layout" class="layout-g"><div class="layout-l"><div class="content_container"><div class="post"><h1 class="post-title">OpenStack入门之三:Kilo版本centos 7平台搭建</h1><div class="post-meta"><span class="date">Jun 11, 2016</span><span class="category"><a href="/categories/云计算及虚拟化/">云计算及虚拟化</a></span><span><i id="busuanzi_container_page_pv"><i id="busuanzi_value_page_pv"></i><i> Hits</i></i></span><a href="/2016/06/11/openstack-kilo-centos/#comments" class="comment-count">留言</a></div><div class="post-content"><h2 id="1-虚拟机环境"><a href="#1-虚拟机环境" class="headerlink" title="1. 虚拟机环境"></a>1. 虚拟机环境</h2><table>
+<thead>
+<tr>
+<th style="text-align:left">节点名称</th>
+<th style="text-align:left">硬件配置</th>
+<th style="text-align:left">功能/用途</th>
+<th style="text-align:left">IP地址</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">controller</td>
+<td style="text-align:left">4G内存, 1块硬盘，1块网卡</td>
+<td style="text-align:left">控制节点</td>
+<td style="text-align:left">192.168.199.80</td>
+</tr>
+<tr>
+<td style="text-align:left">compute-node-01</td>
+<td style="text-align:left">2G内存, 1块硬盘，1块网卡</td>
+<td style="text-align:left">计算节点</td>
+<td style="text-align:left">192.168.199.81</td>
+</tr>
+<tr>
+<td style="text-align:left">network-node-01</td>
+<td style="text-align:left">1G内存, 1块硬盘，2块网卡</td>
+<td style="text-align:left">网络节点</td>
+<td style="text-align:left">192.168.199.82</td>
+</tr>
+<tr>
+<td style="text-align:left">block-node-01</td>
+<td style="text-align:left">1G内存, 2块硬盘，1块网卡</td>
+<td style="text-align:left">块存储节点</td>
+<td style="text-align:left">192.168.199.83</td>
+</tr>
+<tr>
+<td style="text-align:left">object-node-01</td>
+<td style="text-align:left">1G内存, 3块硬盘，1块网卡</td>
+<td style="text-align:left">对象存储节点1</td>
+<td style="text-align:left">192.168.199.84</td>
+</tr>
+<tr>
+<td style="text-align:left">object-node-02</td>
+<td style="text-align:left">1G内存, 3块硬盘，1块网卡</td>
+<td style="text-align:left">对象存储节点2</td>
+<td style="text-align:left">192.168.199.85</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-组件节点分布"><a href="#2-组件节点分布" class="headerlink" title="2. 组件节点分布"></a>2. 组件节点分布</h2><p><a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-12_9-43-08.jpg" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-12_9-43-08.jpg" alt="2016-06-12_9-43-08"></a></p>
+<h2 id="3-准备工作"><a href="#3-准备工作" class="headerlink" title="3. 准备工作"></a>3. 准备工作</h2><p>以下操作在每个节点上</p>
+<h3 id="3-1-更新centos源"><a href="#3-1-更新centos源" class="headerlink" title="3.1 更新centos源"></a>3.1 更新centos源</h3><pre><code>#yum install wget
+#wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+</code></pre><h3 id="3-2-停止防火墙服务"><a href="#3-2-停止防火墙服务" class="headerlink" title="3.2 停止防火墙服务"></a>3.2 停止防火墙服务</h3><pre><code>systemctl stop firewalld.service
+systemctl disable firewalld.service
+</code></pre><h3 id="3-3-安装基础组件及源"><a href="#3-3-安装基础组件及源" class="headerlink" title="3.3 安装基础组件及源"></a>3.3 安装基础组件及源</h3><pre><code>#yum install ntp -y
+#yum install yum-plugin-priorities -y
+#yum install http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-6.noarch.rpm -y
+#yum install http://rdo.fedorapeople.org/openstack-kilo/rdo-release-kilo.rpm -y
+#yum install https://repos.fedorapeople.org/repos/openstack/openstack-kilo/rdo-release-kilo-2.noarch.rpm -y
+#yum upgrade -y
+#yum install openstack-selinux -y
+</code></pre><h3 id="3-4-更新时区"><a href="#3-4-更新时区" class="headerlink" title="3.4 更新时区"></a>3.4 更新时区</h3><pre><code>#cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+</code></pre><h3 id="3-5-配置时钟同步-controller节点"><a href="#3-5-配置时钟同步-controller节点" class="headerlink" title="3.5 配置时钟同步(controller节点)"></a>3.5 配置时钟同步(controller节点)</h3><h4 id="3-5-1-备份配置文件"><a href="#3-5-1-备份配置文件" class="headerlink" title="3.5.1 备份配置文件"></a>3.5.1 备份配置文件</h4><pre><code>#cp /etc/ntp.conf /etc/ntp.conf.bak
+</code></pre><h4 id="3-5-2-添加参数"><a href="#3-5-2-添加参数" class="headerlink" title="3.5.2 添加参数"></a>3.5.2 添加参数</h4><pre><code>#vi /etc/ntp.conf
+    server controller iburst
+    restrict -4 default kod notrap nomodify
+    restrict -6 default kod notrap nomodify
+</code></pre><h4 id="3-5-3-注释以下参数"><a href="#3-5-3-注释以下参数" class="headerlink" title="3.5.3 注释以下参数"></a>3.5.3 注释以下参数</h4><pre><code>#restrict default nomodify notrap nopeer noquery
 #restrict 127.0.0.1 
 #restrict ::1
-1.5.4启动时钟同步服务
-#systemctl enable ntpd.service
+</code></pre><h4 id="3-5-4-启动时钟同步服务"><a href="#3-5-4-启动时钟同步服务" class="headerlink" title="3.5.4 启动时钟同步服务"></a>3.5.4 启动时钟同步服务</h4><pre><code>#systemctl enable ntpd.service
 #systemctl start ntpd.service
-1.6配置时钟同步(其它节点)
-1.6.1备份配置文件
-#cp /etc/ntp.conf /etc/ntp.conf.bak
-1.6.2添加参数
-#vi /etc/ntp.conf
-&lt;pre&gt;`
-server controller iburst
-`&lt;/pre&gt;
-注释其他server项
-1.7本环境所涉及到组件密码。
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-  &lt;th&gt;用户名&lt;/th&gt;
-  &lt;th&gt;密码&lt;/th&gt;
-  &lt;th&gt;所属组件&lt;/th&gt;
-  &lt;th&gt;用途&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;&lt;tr&gt;
-  &lt;td&gt;openstack&lt;/td&gt;
-  &lt;td&gt;123456&lt;/td&gt;
-  &lt;td&gt;rabbitMQ&lt;/td&gt;
-  &lt;td&gt;Openstack组件间MQ消息通讯&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;td&gt;admin&lt;/td&gt;
-  &lt;td&gt;123456&lt;/td&gt;
-  &lt;td&gt;Keystone&lt;/td&gt;
-  &lt;td&gt;Keystone管理员&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;td&gt;demo&lt;/td&gt;
-  &lt;td&gt;123456&lt;/td&gt;
-  &lt;td&gt;Keystone&lt;/td&gt;
-  &lt;td&gt;访问租户项目demo&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;td&gt;glance&lt;/td&gt;
-  &lt;td&gt;123456&lt;/td&gt;
-  &lt;td&gt;Keystone&lt;/td&gt;
-  &lt;td&gt;glance用户&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;td&gt;nova&lt;/td&gt;
-  &lt;td&gt;123456&lt;/td&gt;
-  &lt;td&gt;Keystone&lt;/td&gt;
-  &lt;td&gt;nova用户&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;td&gt;neutron&lt;/td&gt;
-  &lt;td&gt;123456&lt;/td&gt;
-  &lt;td&gt;Keystone&lt;/td&gt;
-  &lt;td&gt;neutron用户&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;td&gt;cinder&lt;/td&gt;
-  &lt;td&gt;123456&lt;/td&gt;
-  &lt;td&gt;Keystone&lt;/td&gt;
-  &lt;td&gt;cinder用户&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;td&gt;swift&lt;/td&gt;
-  &lt;td&gt;123456&lt;/td&gt;
-  &lt;td&gt;Keystone&lt;/td&gt;
-  &lt;td&gt;swift用户&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;td&gt;root&lt;/td&gt;
-  &lt;td&gt;123456&lt;/td&gt;
-  &lt;td&gt;mysql&lt;/td&gt;
-  &lt;td&gt;mysql系统管理员&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;td&gt;keystone&lt;/td&gt;
-  &lt;td&gt;keystone&lt;/td&gt;
-  &lt;td&gt;mysql&lt;/td&gt;
-  &lt;td&gt;keystone组件访问mysql数据库&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;td&gt;glance&lt;/td&gt;
-  &lt;td&gt;glance&lt;/td&gt;
-  &lt;td&gt;mysql&lt;/td&gt;
-  &lt;td&gt;Glance组件访问mysql数据库&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;td&gt;nova&lt;/td&gt;
-  &lt;td&gt;nova&lt;/td&gt;
-  &lt;td&gt;mysql&lt;/td&gt;
-  &lt;td&gt;Nova组件访问mysql数据库&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;td&gt;neutron&lt;/td&gt;
-  &lt;td&gt;neutron&lt;/td&gt;
-  &lt;td&gt;mysql&lt;/td&gt;
-  &lt;td&gt;neutron组件访问mysql数据库&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;td&gt;cinder&lt;/td&gt;
-  &lt;td&gt;cinder&lt;/td&gt;
-  &lt;td&gt;mysql&lt;/td&gt;
-  &lt;td&gt;Cinder组件访问mysql数据库&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;&lt;/table&gt;
-
-## 2.controller节点安装
-
-2.1安装数据库
-2.1.1安装mariadb
-#yum install mariadb mariadb-server MySQL-python -y
-2.1.2备份配置文件
-#cp /etc/my.cnf /etc/my.cnf.bak
-2.1.3修改配置文件
-#vi /etc/my.cnf
-&lt;pre&gt;`
-[mysqld]
-bind-address = controller
-default-storage-engine = innodb
-innodb_file_per_table
-collation-server = utf8_general_ci
-init-connect = &apos;SET NAMES utf8&apos;
-character-set-server = utf8
-`&lt;/pre&gt;
-2.1.4启动数据库服务
-#systemctl enable mariadb.service
+</code></pre><h3 id="3-6-配置时钟同步-其它节点"><a href="#3-6-配置时钟同步-其它节点" class="headerlink" title="3.6 配置时钟同步(其它节点)"></a>3.6 配置时钟同步(其它节点)</h3><h4 id="3-6-1-备份配置文件"><a href="#3-6-1-备份配置文件" class="headerlink" title="3.6.1 备份配置文件"></a>3.6.1 备份配置文件</h4><pre><code>#cp /etc/ntp.conf /etc/ntp.conf.bak
+</code></pre><h4 id="3-6-2添加参数"><a href="#3-6-2添加参数" class="headerlink" title="3.6.2添加参数"></a>3.6.2添加参数</h4><pre><code>#vi /etc/ntp.conf
+    server controller iburst
+</code></pre><p>注释其他server项</p>
+<h3 id="3-7-本环境所涉及到组件密码。"><a href="#3-7-本环境所涉及到组件密码。" class="headerlink" title="3.7 本环境所涉及到组件密码。"></a>3.7 本环境所涉及到组件密码。</h3><table>
+<thead>
+<tr>
+<th style="text-align:left">用户名</th>
+<th style="text-align:left">密码</th>
+<th style="text-align:left">所属组件</th>
+<th style="text-align:left">用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">openstack</td>
+<td style="text-align:left">123456</td>
+<td style="text-align:left">rabbitMQ</td>
+<td style="text-align:left">Openstack组件间MQ消息通讯</td>
+</tr>
+<tr>
+<td style="text-align:left">admin</td>
+<td style="text-align:left">123456</td>
+<td style="text-align:left">Keystone</td>
+<td style="text-align:left">Keystone管理员</td>
+</tr>
+<tr>
+<td style="text-align:left">demo</td>
+<td style="text-align:left">123456</td>
+<td style="text-align:left">Keystone</td>
+<td style="text-align:left">访问租户项目demo</td>
+</tr>
+<tr>
+<td style="text-align:left">glance</td>
+<td style="text-align:left">123456</td>
+<td style="text-align:left">Keystone</td>
+<td style="text-align:left">glance用户</td>
+</tr>
+<tr>
+<td style="text-align:left">nova</td>
+<td style="text-align:left">123456</td>
+<td style="text-align:left">Keystone</td>
+<td style="text-align:left">nova用户</td>
+</tr>
+<tr>
+<td style="text-align:left">neutron</td>
+<td style="text-align:left">123456</td>
+<td style="text-align:left">Keystone</td>
+<td style="text-align:left">neutron用户</td>
+</tr>
+<tr>
+<td style="text-align:left">cinder</td>
+<td style="text-align:left">123456</td>
+<td style="text-align:left">Keystone</td>
+<td style="text-align:left">cinder用户</td>
+</tr>
+<tr>
+<td style="text-align:left">swift</td>
+<td style="text-align:left">123456</td>
+<td style="text-align:left">Keystone</td>
+<td style="text-align:left">swift用户</td>
+</tr>
+<tr>
+<td style="text-align:left">root</td>
+<td style="text-align:left">123456</td>
+<td style="text-align:left">mysql</td>
+<td style="text-align:left">mysql系统管理员</td>
+</tr>
+<tr>
+<td style="text-align:left">keystone</td>
+<td style="text-align:left">keystone</td>
+<td style="text-align:left">mysql</td>
+<td style="text-align:left">keystone组件访问mysql数据库</td>
+</tr>
+<tr>
+<td style="text-align:left">glance</td>
+<td style="text-align:left">glance</td>
+<td style="text-align:left">mysql</td>
+<td style="text-align:left">Glance组件访问mysql数据库</td>
+</tr>
+<tr>
+<td style="text-align:left">nova</td>
+<td style="text-align:left">nova</td>
+<td style="text-align:left">mysql</td>
+<td style="text-align:left">Nova组件访问mysql数据库</td>
+</tr>
+<tr>
+<td style="text-align:left">neutron</td>
+<td style="text-align:left">neutron</td>
+<td style="text-align:left">mysql</td>
+<td style="text-align:left">neutron组件访问mysql数据库</td>
+</tr>
+<tr>
+<td style="text-align:left">cinder</td>
+<td style="text-align:left">cinder</td>
+<td style="text-align:left">mysql</td>
+<td style="text-align:left">Cinder组件访问mysql数据库</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-controller节点安装"><a href="#4-controller节点安装" class="headerlink" title="4. controller节点安装"></a>4. controller节点安装</h2><h3 id="4-1-安装数据库"><a href="#4-1-安装数据库" class="headerlink" title="4.1 安装数据库"></a>4.1 安装数据库</h3><h4 id="4-1-1-安装mariadb"><a href="#4-1-1-安装mariadb" class="headerlink" title="4.1.1 安装mariadb"></a>4.1.1 安装mariadb</h4><pre><code>#yum install mariadb mariadb-server MySQL-python -y
+</code></pre><h4 id="4-1-2备份配置文件"><a href="#4-1-2备份配置文件" class="headerlink" title="4.1.2备份配置文件"></a>4.1.2备份配置文件</h4><pre><code>#cp /etc/my.cnf /etc/my.cnf.bak
+</code></pre><h4 id="4-1-3修改配置文件"><a href="#4-1-3修改配置文件" class="headerlink" title="4.1.3修改配置文件"></a>4.1.3修改配置文件</h4><pre><code>#vi /etc/my.cnf  
+       [mysqld]
+    bind-address = controller
+    default-storage-engine = innodb
+    innodb_file_per_table
+    collation-server = utf8_general_ci
+    init-connect = &apos;SET NAMES utf8&apos;
+    character-set-server = utf8
+</code></pre><h4 id="4-1-4-启动数据库服务"><a href="#4-1-4-启动数据库服务" class="headerlink" title="4.1.4 启动数据库服务"></a>4.1.4 启动数据库服务</h4><pre><code>#systemctl enable mariadb.service
 #systemctl start mariadb.service
-2.1.5配置数据库服务安全参数,设置root密码
-#mysql_secure_installation
-&lt;pre&gt;` 
+</code></pre><h4 id="2-1-5-配置数据库服务安全参数-设置root密码"><a href="#2-1-5-配置数据库服务安全参数-设置root密码" class="headerlink" title="2.1.5 配置数据库服务安全参数,设置root密码"></a>2.1.5 配置数据库服务安全参数,设置root密码</h4><pre><code>#mysql_secure_installation 
 Remove anonymous users? [Y/n] n
 Disallow root login remotely? [Y/n] Y
 Remove test database and access to it? [Y/n] n
 Reload privilege tables now? [Y/n] Y
-`&lt;/pre&gt;
-2.1.6验证mysql是否登录正常
-#mysql -uroot -p
-
-2.2安装rabbitmq
-2.2.1安装rabbitmq-server
-yum install rabbitmq-server -y
-2.2.2启动服务
-#systemctl enable rabbitmq-server.service
+</code></pre><h4 id="4-1-6-验证mysql是否登录正常"><a href="#4-1-6-验证mysql是否登录正常" class="headerlink" title="4.1.6 验证mysql是否登录正常"></a>4.1.6 验证mysql是否登录正常</h4><pre><code>#mysql -uroot -p
+</code></pre><h3 id="4-2-安装rabbitmq"><a href="#4-2-安装rabbitmq" class="headerlink" title="4.2 安装rabbitmq"></a>4.2 安装rabbitmq</h3><h4 id="4-2-1安装rabbitmq-server"><a href="#4-2-1安装rabbitmq-server" class="headerlink" title="4.2.1安装rabbitmq-server"></a>4.2.1安装rabbitmq-server</h4><pre><code>yum install rabbitmq-server -y
+</code></pre><h4 id="4-2-2启动服务"><a href="#4-2-2启动服务" class="headerlink" title="4.2.2启动服务"></a>4.2.2启动服务</h4><pre><code>#systemctl enable rabbitmq-server.service
 #systemctl start rabbitmq-server.service
-2.2.3添加用户，并允许远程访问
-#rabbitmqctl add_user openstack 123456
+</code></pre><h4 id="4-2-3添加用户，并允许远程访问"><a href="#4-2-3添加用户，并允许远程访问" class="headerlink" title="4.2.3添加用户，并允许远程访问"></a>4.2.3添加用户，并允许远程访问</h4><pre><code>#rabbitmqctl add_user openstack 123456
 #rabbitmqctl set_permissions openstack &quot;.*&quot; &quot;.*&quot; &quot;.*&quot;
-2.2.4验证
-默认端口5672
-#telent controller 5672
-或者
-#rabbitmqctl status
+</code></pre><h4 id="4-2-4验证"><a href="#4-2-4验证" class="headerlink" title="4.2.4验证"></a>4.2.4验证</h4><p>默认端口5672</p>
+<pre><code>#telent controller 5672
+</code></pre><p>或者</p>
+<pre><code>#rabbitmqctl status
+</code></pre><h3 id="4-3-安装keystone"><a href="#4-3-安装keystone" class="headerlink" title="4.3 安装keystone"></a>4.3 安装keystone</h3><h4 id="4-3-1-创建数据库keystone"><a href="#4-3-1-创建数据库keystone" class="headerlink" title="4.3.1 创建数据库keystone"></a>4.3.1 创建数据库keystone</h4><pre><code>#mysql -uroot -p123456
 
-2.3安装keystone
-2.3.1创建数据库keystone
-#mysql -uroot -p123456
-&lt;pre&gt;`
 create database keystone;
 GRANT ALL PRIVILEGES ON keystone.* TO &apos;keystone&apos;@&apos;localhost&apos; IDENTIFIED BY &apos;keystone&apos;;
 GRANT ALL PRIVILEGES ON keystone.* TO &apos;keystone&apos;@&apos;%&apos; IDENTIFIED BY &apos;keystone&apos;;
-`&lt;/pre&gt;
-2.3.2安装keystone组件
-#yum install openstack-keystone httpd mod_wsgi python-openstackclient memcached python-memcached -yh
-2.3.3启动memcached
-#systemctl enable memcached.service
+</code></pre><h4 id="4-3-2-安装keystone组件"><a href="#4-3-2-安装keystone组件" class="headerlink" title="4.3.2 安装keystone组件"></a>4.3.2 安装keystone组件</h4><pre><code>#yum install openstack-keystone httpd mod_wsgi python-openstackclient memcached python-memcached -yh
+</code></pre><h4 id="4-3-3-启动memcached"><a href="#4-3-3-启动memcached" class="headerlink" title="4.3.3 启动memcached"></a>4.3.3 启动memcached</h4><pre><code>#systemctl enable memcached.service
 #systemctl start memcached.service
-2.3.4配置keystone.conf
-2.3.4.1备份配置文件
-#cp /etc/keystone/keystone.conf /etc/keystone/keystone.conf.bak
-2.3.4.2生成token
-#openssl rand -hex 10
+</code></pre><h4 id="4-3-4-配置keystone-conf"><a href="#4-3-4-配置keystone-conf" class="headerlink" title="4.3.4 配置keystone.conf"></a>4.3.4 配置keystone.conf</h4><h5 id="4-3-4-1-备份配置文件"><a href="#4-3-4-1-备份配置文件" class="headerlink" title="4.3.4.1 备份配置文件"></a>4.3.4.1 备份配置文件</h5><pre><code>#cp /etc/keystone/keystone.conf /etc/keystone/keystone.conf.bak
+</code></pre><h5 id="4-3-4-2-生成token"><a href="#4-3-4-2-生成token" class="headerlink" title="4.3.4.2 生成token"></a>4.3.4.2 生成token</h5><pre><code>#openssl rand -hex 10
 &gt; 0cadc88a6437bc7da5cd
-2.3.4.3修改配置文件
-#vi /etc/keystone/keystone.conf
-&lt;pre&gt;`
+</code></pre><h5 id="4-3-4-3-修改配置文件"><a href="#4-3-4-3-修改配置文件" class="headerlink" title="4.3.4.3 修改配置文件"></a>4.3.4.3 修改配置文件</h5><pre><code>#vi /etc/keystone/keystone.conf
+
 [DEFAULT]
 admin_token = 0cadc88a6437bc7da5cd  --用你生成的token替换
 verbose = True
@@ -211,14 +222,9 @@ driver = keystone.contrib.revoke.backends.sql.Revoke
 [token]
 provider = keystone.token.providers.uuid.Provider
 driver = keystone.token.persistence.backends.memcache.Token
-`&lt;/pre&gt;
+</code></pre><h4 id="4-3-5初始化keystone数据库"><a href="#4-3-5初始化keystone数据库" class="headerlink" title="4.3.5初始化keystone数据库"></a>4.3.5初始化keystone数据库</h4><h5 id="4-3-5-1-执行创建表脚本"><a href="#4-3-5-1-执行创建表脚本" class="headerlink" title="4.3.5.1 执行创建表脚本"></a>4.3.5.1 执行创建表脚本</h5><pre><code>#su -s /bin/sh -c &quot;keystone-manage db_sync&quot; keystone
+</code></pre><h5 id="4-3-5-2-检查表是否均已创建完成"><a href="#4-3-5-2-检查表是否均已创建完成" class="headerlink" title="4.3.5.2 检查表是否均已创建完成"></a>4.3.5.2 检查表是否均已创建完成</h5><pre><code>MariaDB [keystone]&gt; show tables;
 
-2.3.5初始化keystone数据库
-2.3.5.1执行创建表脚本
-#su -s /bin/sh -c &quot;keystone-manage db_sync&quot; keystone
-2.3.5.2检查表是否均已创建完成
-MariaDB [keystone]&amp;gt; show tables;
-&lt;pre&gt;`
 +------------------------+
 | Tables_in_keystone     |
 +------------------------+
@@ -256,18 +262,12 @@ MariaDB [keystone]&amp;gt; show tables;
 | whitelisted_config     |
 +------------------------+
 32 rows in set (0.00 sec)
-`&lt;/pre&gt;
-2.3.6配置keystone的http服务
-2.3.6.1备份配置文件httpd.conf
-#cp /etc/httpd/conf/httpd.conf /etc/httpd/conf/httpd.conf.bak
-2.3.6.2修改配置文件httpd.conf
-#vi /etc/httpd/conf/httpd.conf
-&lt;pre&gt;`
+</code></pre><h4 id="2-3-6-配置keystone的http服务"><a href="#2-3-6-配置keystone的http服务" class="headerlink" title="2.3.6 配置keystone的http服务"></a>2.3.6 配置keystone的http服务</h4><h5 id="2-3-6-1-备份配置文件httpd-conf"><a href="#2-3-6-1-备份配置文件httpd-conf" class="headerlink" title="2.3.6.1 备份配置文件httpd.conf"></a>2.3.6.1 备份配置文件httpd.conf</h5><pre><code>#cp /etc/httpd/conf/httpd.conf /etc/httpd/conf/httpd.conf.bak
+</code></pre><h5 id="2-3-6-2-修改配置文件httpd-conf"><a href="#2-3-6-2-修改配置文件httpd-conf" class="headerlink" title="2.3.6.2 修改配置文件httpd.conf"></a>2.3.6.2 修改配置文件httpd.conf</h5><pre><code>#vi /etc/httpd/conf/httpd.conf
+
 ServerName controller
-`&lt;/pre&gt;
-2.3.6.3创建keystone的虚拟站点
-#vi /etc/httpd/conf.d/wsgi-keystone.conf
-&lt;pre&gt;`
+</code></pre><h5 id="2-3-6-3-创建keystone的虚拟站点"><a href="#2-3-6-3-创建keystone的虚拟站点" class="headerlink" title="2.3.6.3 创建keystone的虚拟站点"></a>2.3.6.3 创建keystone的虚拟站点</h5><pre><code>#vi /etc/httpd/conf.d/wsgi-keystone.conf
+
 Listen 5000
 Listen 35357
     WSGIDaemonProcess keystone-public processes=5 threads=1 user=keystone group=keystone display-name=%{GROUP}
@@ -289,84 +289,57 @@ Listen 35357
     ErrorLogFormat &quot;%{cu}t %M&quot;
     ErrorLog /var/log/httpd/keystone-error.log
     CustomLog /var/log/httpd/keystone-access.log combined
-`&lt;/pre&gt;
-2.3.6.4创建wsgi 目录
-#mkdir -p /var/www/cgi-bin/keystone
-2.3.6.5下载程序模板
-#curl http://git.openstack.org/cgit/openstack/keystone/plain/httpd/keystone.py?h=stable/kilo \
+</code></pre><h5 id="4-3-6-4-创建wsgi-目录"><a href="#4-3-6-4-创建wsgi-目录" class="headerlink" title="4.3.6.4 创建wsgi 目录"></a>4.3.6.4 创建wsgi 目录</h5><pre><code>#mkdir -p /var/www/cgi-bin/keystone
+</code></pre><h5 id="4-3-6-5-下载程序模板"><a href="#4-3-6-5-下载程序模板" class="headerlink" title="4.3.6.5 下载程序模板"></a>4.3.6.5 下载程序模板</h5><pre><code>#curl http://git.openstack.org/cgit/openstack/keystone/plain/httpd/keystone.py?h=stable/kilo \
 | tee /var/www/cgi-bin/keystone/main /var/www/cgi-bin/keystone/admin
-2.3.6.6修改文件夹及文件权限
-#chown -R keystone:keystone /var/www/cgi-bin/keystone
+</code></pre><h5 id="4-3-6-6-修改文件夹及文件权限"><a href="#4-3-6-6-修改文件夹及文件权限" class="headerlink" title="4.3.6.6 修改文件夹及文件权限"></a>4.3.6.6 修改文件夹及文件权限</h5><pre><code>#chown -R keystone:keystone /var/www/cgi-bin/keystone
 #chmod 755 /var/www/cgi-bin/keystone/*
-2.3.6.7启动httpServer
-#systemctl enable httpd.service
+</code></pre><h5 id="4-3-6-7-启动httpServer"><a href="#4-3-6-7-启动httpServer" class="headerlink" title="4.3.6.7 启动httpServer"></a>4.3.6.7 启动httpServer</h5><pre><code>#systemctl enable httpd.service
 #systemctl start httpd.service
-2.3.6.8检查http服务是否正常启动
-#systemctl status httpd.service
-2.3.7注册keystone api服务
-2.3.7.1配置系统环境变量(ADMIN_TOKEN为2.3.4.2步骤通过openssl命令生成的值)
-export OS_TOKEN=ADMIN_TOKEN
+</code></pre><h5 id="4-3-6-8-检查http服务是否正常启动"><a href="#4-3-6-8-检查http服务是否正常启动" class="headerlink" title="4.3.6.8 检查http服务是否正常启动"></a>4.3.6.8 检查http服务是否正常启动</h5><pre><code>#systemctl status httpd.service
+</code></pre><h4 id="4-3-7-注册keystone-api服务"><a href="#4-3-7-注册keystone-api服务" class="headerlink" title="4.3.7 注册keystone api服务"></a>4.3.7 注册keystone api服务</h4><h5 id="4-3-7-1-配置系统环境变量-ADMIN-TOKEN为2-3-4-2步骤通过openssl命令生成的值"><a href="#4-3-7-1-配置系统环境变量-ADMIN-TOKEN为2-3-4-2步骤通过openssl命令生成的值" class="headerlink" title="4.3.7.1 配置系统环境变量(ADMIN_TOKEN为2.3.4.2步骤通过openssl命令生成的值)"></a>4.3.7.1 配置系统环境变量(ADMIN_TOKEN为2.3.4.2步骤通过openssl命令生成的值)</h5><pre><code>export OS_TOKEN=ADMIN_TOKEN
 export OS_URL=http://controller:35357/v2.0
-2.3.7.2创建keystone服务信息
-openstack service create --name keystone --description &quot;OpenStack Identity&quot; identity
-2.3.7.3创建keystone服务实例
-#openstack endpoint create \
+</code></pre><h5 id="4-3-7-2-创建keystone服务信息"><a href="#4-3-7-2-创建keystone服务信息" class="headerlink" title="4.3.7.2 创建keystone服务信息"></a>4.3.7.2 创建keystone服务信息</h5><pre><code>openstack service create --name keystone --description &quot;OpenStack Identity&quot; identity
+</code></pre><h5 id="4-3-7-3-创建keystone服务实例"><a href="#4-3-7-3-创建keystone服务实例" class="headerlink" title="4.3.7.3 创建keystone服务实例"></a>4.3.7.3 创建keystone服务实例</h5><pre><code>#openstack endpoint create \
 --publicurl http://controller:5000/v2.0 \
 --internalurl http://controller:5000/v2.0 \
 --adminurl http://controller:35357/v2.0 \
 --region RegionOne \
 identity
-2.3.8创建项目、用户、角色等信息
-2.3.8.1 创建项目:admin
-#openstack project create --description &quot;Admin Project&quot; admin
-2.3.8.2 为项目admin创建用户：admin
-#openstack user create --password-prompt admin
-2.3.8.3 创建角色:admin
-#openstack role create admin
-2.3.8.4 将角色admin授权给用户admin
-#openstack role add --project admin --user admin admin
-2.3.9 同样创建项目demo及相关用户信息
-#openstack project create --description &quot;Demo Project&quot; demo
+</code></pre><h4 id="4-3-8-创建项目、用户、角色等信息"><a href="#4-3-8-创建项目、用户、角色等信息" class="headerlink" title="4.3.8 创建项目、用户、角色等信息"></a>4.3.8 创建项目、用户、角色等信息</h4><h5 id="4-3-8-1-创建项目-admin"><a href="#4-3-8-1-创建项目-admin" class="headerlink" title="4.3.8.1 创建项目:admin"></a>4.3.8.1 创建项目:admin</h5><pre><code>#openstack project create --description &quot;Admin Project&quot; admin
+</code></pre><h5 id="4-3-8-2-为项目admin创建用户：admin"><a href="#4-3-8-2-为项目admin创建用户：admin" class="headerlink" title="4.3.8.2 为项目admin创建用户：admin"></a>4.3.8.2 为项目admin创建用户：admin</h5><pre><code>#openstack user create --password-prompt admin
+</code></pre><h5 id="4-3-8-3-创建角色-admin"><a href="#4-3-8-3-创建角色-admin" class="headerlink" title="4.3.8.3 创建角色:admin"></a>4.3.8.3 创建角色:admin</h5><pre><code>#openstack role create admin
+</code></pre><h5 id="4-3-8-4-将角色admin授权给用户admin"><a href="#4-3-8-4-将角色admin授权给用户admin" class="headerlink" title="4.3.8.4 将角色admin授权给用户admin"></a>4.3.8.4 将角色admin授权给用户admin</h5><pre><code>#openstack role add --project admin --user admin admin
+</code></pre><h4 id="4-3-9-同样创建项目demo及相关用户信息"><a href="#4-3-9-同样创建项目demo及相关用户信息" class="headerlink" title="4.3.9 同样创建项目demo及相关用户信息"></a>4.3.9 同样创建项目demo及相关用户信息</h4><pre><code>#openstack project create --description &quot;Demo Project&quot; demo
 #openstack user create --password-prompt demo
 #openstack role create user
 #openstack role add --project demo --user demo user
-2.3.10 创建项目：service
-#openstack project create --description &quot;Service Project&quot; service
-2.3.11 验证keystone服务
-2.3.11.1 删除系统配置参数
-#unset OS_TOKEN
+</code></pre><h4 id="4-3-10-创建项目：service"><a href="#4-3-10-创建项目：service" class="headerlink" title="4.3.10 创建项目：service"></a>4.3.10 创建项目：service</h4><pre><code>#openstack project create --description &quot;Service Project&quot; service
+</code></pre><h4 id="4-3-11-验证keystone服务"><a href="#4-3-11-验证keystone服务" class="headerlink" title="4.3.11 验证keystone服务"></a>4.3.11 验证keystone服务</h4><h5 id="4-3-11-1-删除系统配置参数"><a href="#4-3-11-1-删除系统配置参数" class="headerlink" title="4.3.11.1 删除系统配置参数"></a>4.3.11.1 删除系统配置参数</h5><pre><code>#unset OS_TOKEN
 #unset OS_URL
-2.3.11.2备份并修改keystone-dist-paste.ini配置文件
-#cp /usr/share/keystone/keystone-dist-paste.ini /usr/share/keystone/keystone-dist-paste.ini.bak
-删除以下配置参数中的admin_token_auth字符串
-#vi /usr/share/keystone/keystone-dist-paste.ini
-2.3.11.3为项目admin配置环境变量脚本
-#vi /root/admin-openrc.sh
-&lt;pre&gt;`
-export OS_PROJECT_DOMAIN_ID=default
-export OS_USER_DOMAIN_ID=default
-export OS_PROJECT_NAME=admin
-export OS_TENANT_NAME=admin
-export OS_USERNAME=admin
-export OS_PASSWORD=123456
-export OS_AUTH_URL=http://controller:5000/v3
-`&lt;/pre&gt;
-2.3.11.4为项目demo配置环境变量脚本
-#vi /root/demo-openrc.sh
-&lt;pre&gt;`
-export OS_PROJECT_DOMAIN_ID=default
-export OS_USER_DOMAIN_ID=default
-export OS_PROJECT_NAME=demo
-export OS_TENANT_NAME=demo
-export OS_USERNAME=demo
-export OS_PASSWORD=123456
-export OS_AUTH_URL=http://controller:5000/v3
-`&lt;/pre&gt;
-2.3.11.5 使用admin用户查看项目列表
-[root@controller ~]#chmod  +x /root/admin-openrc.sh
+</code></pre><h5 id="4-3-11-2-备份并修改keystone-dist-paste-ini配置文件"><a href="#4-3-11-2-备份并修改keystone-dist-paste-ini配置文件" class="headerlink" title="4.3.11.2 备份并修改keystone-dist-paste.ini配置文件"></a>4.3.11.2 备份并修改keystone-dist-paste.ini配置文件</h5><pre><code>#cp /usr/share/keystone/keystone-dist-paste.ini /usr/share/keystone/keystone-dist-paste.ini.bak
+</code></pre><p>删除以下配置参数中的admin_token_auth字符串</p>
+<pre><code>#vi /usr/share/keystone/keystone-dist-paste.ini
+</code></pre><h5 id="4-3-11-3-为项目admin配置环境变量脚本"><a href="#4-3-11-3-为项目admin配置环境变量脚本" class="headerlink" title="4.3.11.3 为项目admin配置环境变量脚本"></a>4.3.11.3 为项目admin配置环境变量脚本</h5><pre><code>#vi /root/admin-openrc.sh
+    export OS_PROJECT_DOMAIN_ID=default
+    export OS_USER_DOMAIN_ID=default
+    export OS_PROJECT_NAME=admin
+    export OS_TENANT_NAME=admin
+    export OS_USERNAME=admin
+    export OS_PASSWORD=123456
+    export OS_AUTH_URL=http://controller:5000/v3
+</code></pre><h5 id="4-3-11-4-为项目demo配置环境变量脚本"><a href="#4-3-11-4-为项目demo配置环境变量脚本" class="headerlink" title="4.3.11.4 为项目demo配置环境变量脚本"></a>4.3.11.4 为项目demo配置环境变量脚本</h5><pre><code>#vi /root/demo-openrc.sh  
+    export OS_PROJECT_DOMAIN_ID=default
+    export OS_USER_DOMAIN_ID=default
+    export OS_PROJECT_NAME=demo
+    export OS_TENANT_NAME=demo
+    export OS_USERNAME=demo
+    export OS_PASSWORD=123456
+    export OS_AUTH_URL=http://controller:5000/v3
+</code></pre><h5 id="4-3-11-5-使用admin用户查看项目列表"><a href="#4-3-11-5-使用admin用户查看项目列表" class="headerlink" title="4.3.11.5 使用admin用户查看项目列表"></a>4.3.11.5 使用admin用户查看项目列表</h5><pre><code>[root@controller ~]#chmod  +x /root/admin-openrc.sh
 [root@controller ~]#source /root/admin-openrc.sh
 [root@controller ~]#openstack project list
-&lt;pre&gt;`
+
 +----------------------------------+---------+
 | ID                               | Name    |
 +----------------------------------+---------+
@@ -374,11 +347,9 @@ export OS_AUTH_URL=http://controller:5000/v3
 | 80c94cfaac6d4649b3cdb282cae6f406 | service |
 | dd3ebd91af2c40e7b2ddc411d8826321 | admin   |
 +----------------------------------+---------+
-`&lt;/pre&gt;
-2.3.11.6使用demo用户获取token
-[root@controller ~]# source demo-openrc.sh
+</code></pre><h5 id="4-3-11-6-使用demo用户获取token"><a href="#4-3-11-6-使用demo用户获取token" class="headerlink" title="4.3.11.6 使用demo用户获取token"></a>4.3.11.6 使用demo用户获取token</h5><pre><code>[root@controller ~]# source demo-openrc.sh
 [root@controller ~]# openstack token issue
-&lt;pre&gt;`
+
 +------------+----------------------------------+
 | Field      | Value                            |
 +------------+----------------------------------+
@@ -387,123 +358,93 @@ export OS_AUTH_URL=http://controller:5000/v3
 | project_id | 54b423c7655146e691207d5c2e91d464 |
 | user_id    | a8ebdcfb9d174e05b4d135a911aa5aad |
 +------------+----------------------------------+
-`&lt;/pre&gt;
-2.4安装镜像服务glance
-2.4.1创建数据库
-#mysql -uroot -p123456
-&lt;pre&gt;`
+</code></pre><h3 id="4-4-安装镜像服务glance"><a href="#4-4-安装镜像服务glance" class="headerlink" title="4.4 安装镜像服务glance"></a>4.4 安装镜像服务glance</h3><h4 id="4-4-1-创建数据库"><a href="#4-4-1-创建数据库" class="headerlink" title="4.4.1 创建数据库"></a>4.4.1 创建数据库</h4><pre><code>#mysql -uroot -p123456
+
 CREATE DATABASE glance;
 GRANT ALL PRIVILEGES ON glance.* TO &apos;glance&apos;@&apos;localhost&apos; IDENTIFIED BY &apos;glance&apos;;
 GRANT ALL PRIVILEGES ON glance.* TO &apos;glance&apos;@&apos;%&apos; IDENTIFIED BY &apos;glance&apos;;
-`&lt;/pre&gt;
-2.4.2创建用户：glance，并授权
-#source /root/admin-openrc.sh
+</code></pre><h4 id="4-4-2-创建用户：glance，并授权"><a href="#4-4-2-创建用户：glance，并授权" class="headerlink" title="4.4.2 创建用户：glance，并授权"></a>4.4.2 创建用户：glance，并授权</h4><pre><code>#source /root/admin-openrc.sh
 #openstack user create --password-prompt glance
 #openstack role add --project service --user glance admin
-2.4.3创建服务及服务实例
-#openstack service create --name glance --description &quot;OpenStack Image service&quot; image
+</code></pre><h4 id="4-4-3-创建服务及服务实例"><a href="#4-4-3-创建服务及服务实例" class="headerlink" title="4.4.3 创建服务及服务实例"></a>4.4.3 创建服务及服务实例</h4><pre><code>#openstack service create --name glance --description &quot;OpenStack Image service&quot; image
 #openstack endpoint create \
 --publicurl http://controller:9292 \
 --internalurl http://controller:9292 \
 --adminurl http://controller:9292 \
 --region RegionOne \
 image
-2.4.4安装glance
-#yum install openstack-glance python-glance python-glanceclient -y
-2.4.5配置glance api组件
-2.4.5.1备份配置文件
-#cp /etc/glance/glance-api.conf /etc/glance/glance-api.conf.bak
-2.4.5.2修改配置文件
-#vi /etc/glance/glance-api.conf
-&lt;pre&gt;`
-[DEFAULT]
-verbose = True
-notification_driver = noop
-[database]
-connection = mysql://glance:glance@localhost/glance
-[keystone_authtoken]
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
-project_name = service
-username = glance
-password = 123456
-[paste_deploy]
-flavor = keystone
-[glance_store]
-default_store = file
-filesystem_store_datadir = /var/lib/glance/images/
-`&lt;/pre&gt;
-2.4.6配置glance registry组件
-2.4.6.1备份配置文件
-#cp /etc/glance/glance-registry.conf /etc/glance/glance-registry.conf.bak
-2.4.6.2修改配置文件
-#vi /etc/glance/glance-registry.conf
-&lt;pre&gt;`
-[DEFAULT]
-verbose = True
-notification_driver = noop
-[database]
-connection = mysql://glance:glance@localhost/glance
-[keystone_authtoken]
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
-project_name = service
-username = glance
-password = 123456
-[paste_deploy]
-flavor = keystone
-`&lt;/pre&gt;
-2.4.7初始化glance数据库
-#su -s /bin/sh -c &quot;glance-manage db_sync&quot; glance
-2.4.8启动glance服务
-#systemctl enable openstack-glance-api.service openstack-glance-registry.service
+</code></pre><h4 id="4-4-4-安装glance"><a href="#4-4-4-安装glance" class="headerlink" title="4.4.4 安装glance"></a>4.4.4 安装glance</h4><pre><code>#yum install openstack-glance python-glance python-glanceclient -y
+</code></pre><h4 id="4-4-5-配置glance-api组件"><a href="#4-4-5-配置glance-api组件" class="headerlink" title="4.4.5 配置glance api组件"></a>4.4.5 配置glance api组件</h4><h5 id="4-4-5-1-备份配置文件"><a href="#4-4-5-1-备份配置文件" class="headerlink" title="4.4.5.1 备份配置文件"></a>4.4.5.1 备份配置文件</h5><pre><code>#cp /etc/glance/glance-api.conf /etc/glance/glance-api.conf.bak
+</code></pre><h5 id="4-4-5-2-修改配置文件"><a href="#4-4-5-2-修改配置文件" class="headerlink" title="4.4.5.2 修改配置文件"></a>4.4.5.2 修改配置文件</h5><pre><code>#vi /etc/glance/glance-api.conf
+
+    [DEFAULT]
+    verbose = True
+    notification_driver = noop
+    [database]
+    connection = mysql://glance:glance@localhost/glance
+    [keystone_authtoken]
+    auth_uri = http://controller:5000
+    auth_url = http://controller:35357
+    auth_plugin = password
+    project_domain_id = default
+    user_domain_id = default
+    project_name = service
+    username = glance
+    password = 123456
+    [paste_deploy]
+    flavor = keystone
+    [glance_store]
+    default_store = file
+    filesystem_store_datadir = /var/lib/glance/images/
+</code></pre><h4 id="4-4-6-配置glance-registry组件"><a href="#4-4-6-配置glance-registry组件" class="headerlink" title="4.4.6 配置glance registry组件"></a>4.4.6 配置glance registry组件</h4><h5 id="4-4-6-1-备份配置文件"><a href="#4-4-6-1-备份配置文件" class="headerlink" title="4.4.6.1 备份配置文件"></a>4.4.6.1 备份配置文件</h5><pre><code>#cp /etc/glance/glance-registry.conf /etc/glance/glance-registry.conf.bak
+</code></pre><h5 id="4-4-6-2-修改配置文件"><a href="#4-4-6-2-修改配置文件" class="headerlink" title="4.4.6.2 修改配置文件"></a>4.4.6.2 修改配置文件</h5><pre><code>#vi /etc/glance/glance-registry.conf
+
+    [DEFAULT]
+    verbose = True
+    notification_driver = noop
+    [database]
+    connection = mysql://glance:glance@localhost/glance
+    [keystone_authtoken]
+    auth_uri = http://controller:5000
+    auth_url = http://controller:35357
+    auth_plugin = password
+    project_domain_id = default
+    user_domain_id = default
+    project_name = service
+    username = glance
+    password = 123456
+    [paste_deploy]
+    flavor = keystone
+</code></pre><h4 id="4-4-7-初始化glance数据库"><a href="#4-4-7-初始化glance数据库" class="headerlink" title="4.4.7 初始化glance数据库"></a>4.4.7 初始化glance数据库</h4><pre><code>#su -s /bin/sh -c &quot;glance-manage db_sync&quot; glance
+</code></pre><h4 id="4-4-8-启动glance服务"><a href="#4-4-8-启动glance服务" class="headerlink" title="4.4.8 启动glance服务"></a>4.4.8 启动glance服务</h4><pre><code>#systemctl enable openstack-glance-api.service openstack-glance-registry.service
 #systemctl start openstack-glance-api.service openstack-glance-registry.service
-2.4.9验证glance服务
-#echo &quot;export OS_IMAGE_API_VERSION=2&quot; | tee -a admin-openrc.sh \
+</code></pre><h4 id="4-4-9-验证glance服务"><a href="#4-4-9-验证glance服务" class="headerlink" title="4.4.9 验证glance服务"></a>4.4.9 验证glance服务</h4><pre><code>#echo &quot;export OS_IMAGE_API_VERSION=2&quot; | tee -a admin-openrc.sh \
 demo-openrc.sh
 #source /root/admin-openrc.sh
 #glance image-create --name &quot;cirros-0.3.4-x86_64&quot; \
 --file /root/cirros-0.3.4-x86_64-disk.img \
 --disk-format qcow2 --container-format bare --visibility public --progress
-使用openstack image list查看镜像是否上传完成。
+</code></pre><p>使用openstack image list查看镜像是否上传完成。</p>
+<h2 id="5-Nova组件安装"><a href="#5-Nova组件安装" class="headerlink" title="5. Nova组件安装"></a>5. Nova组件安装</h2><h3 id="5-1-在controller节点安装"><a href="#5-1-在controller节点安装" class="headerlink" title="5.1 在controller节点安装"></a>5.1 在controller节点安装</h3><h4 id="5-1-1-创建数据库"><a href="#5-1-1-创建数据库" class="headerlink" title="5.1.1 创建数据库"></a>5.1.1 创建数据库</h4><pre><code>#mysql -uroot -p123456
 
-## 3\. Nova组件安装
-
-3.1在controller节点安装
-3.1.1创建数据库
-#mysql -uroot -p123456
-&lt;pre&gt;`
 CREATE DATABASE nova;
 GRANT ALL PRIVILEGES ON nova.* TO &apos;nova&apos;@&apos;localhost&apos; IDENTIFIED BY &apos;nova&apos;;
 GRANT ALL PRIVILEGES ON nova.* TO &apos;nova&apos;@&apos;%&apos; IDENTIFIED BY &apos;nova&apos;;
-`&lt;/pre&gt;
-3.1.2创建用户：nova，并授权用户权限
-#openstack user create --password-prompt nova
+</code></pre><h4 id="5-1-2-创建用户：nova，并授权用户权限"><a href="#5-1-2-创建用户：nova，并授权用户权限" class="headerlink" title="5.1.2 创建用户：nova，并授权用户权限"></a>5.1.2 创建用户：nova，并授权用户权限</h4><pre><code>#openstack user create --password-prompt nova
 #openstack role add --project service --user nova admin
-3.1.3创建服务及服务实例
-#openstack service create --name nova \
+</code></pre><h4 id="5-1-3-创建服务及服务实例"><a href="#5-1-3-创建服务及服务实例" class="headerlink" title="5.1.3 创建服务及服务实例"></a>5.1.3 创建服务及服务实例</h4><pre><code>#openstack service create --name nova \
 --description &quot;OpenStack Compute&quot; compute
 #openstack endpoint create --publicurl http://controller:8774/v2/%\(tenant_id\)s \
 --internalurl http://controller:8774/v2/%\(tenant_id\)s \
 --adminurl http://controller:8774/v2/%\(tenant_id\)s \
 --region RegionOne \
 compute
-3.1.4安装nova组件
-#yum install openstack-nova-api openstack-nova-cert openstack-nova-conductor \
+</code></pre><h4 id="5-1-4-安装nova组件"><a href="#5-1-4-安装nova组件" class="headerlink" title="5.1.4 安装nova组件"></a>5.1.4 安装nova组件</h4><pre><code>#yum install openstack-nova-api openstack-nova-cert openstack-nova-conductor \
 openstack-nova-console openstack-nova-novncproxy openstack-nova-scheduler \
 python-novaclient -y
-3.1.5配置nova.conf
-3.1.5.1备份配置文件
-#cp /etc/nova/nova.conf /etc/nova/nova.conf.bak
-3.1.5.2修改配置文件
-#vi /etc/nova/nova.conf
-&lt;pre&gt;`
+</code></pre><h4 id="5-1-5-配置nova-conf"><a href="#5-1-5-配置nova-conf" class="headerlink" title="5.1.5 配置nova.conf"></a>5.1.5 配置nova.conf</h4><h5 id="5-1-5-1-备份配置文件"><a href="#5-1-5-1-备份配置文件" class="headerlink" title="5.1.5.1 备份配置文件"></a>5.1.5.1 备份配置文件</h5><pre><code>#cp /etc/nova/nova.conf /etc/nova/nova.conf.bak
+</code></pre><h5 id="5-1-5-2-修改配置文件"><a href="#5-1-5-2-修改配置文件" class="headerlink" title="5.1.5.2 修改配置文件"></a>5.1.5.2 修改配置文件</h5><pre><code>#vi /etc/nova/nova.conf
+
 [DEFAULT]
 verbose = True
 rpc_backend = rabbit
@@ -531,26 +472,17 @@ host = controller
 lock_path = /var/lib/nova/tmp
 [database]
 connection = mysql://nova:nova@localhost/nova
-`&lt;/pre&gt;
-3.1.6初始化nova数据库
-#su -s /bin/sh -c &quot;nova-manage db sync&quot; nova
-3.1.7启动nova
-#systemctl enable openstack-nova-api.service openstack-nova-cert.service \
+</code></pre><h4 id="5-1-6-初始化nova数据库"><a href="#5-1-6-初始化nova数据库" class="headerlink" title="5.1.6 初始化nova数据库"></a>5.1.6 初始化nova数据库</h4><pre><code>#su -s /bin/sh -c &quot;nova-manage db sync&quot; nova
+</code></pre><h4 id="5-1-7-启动nova"><a href="#5-1-7-启动nova" class="headerlink" title="5.1.7 启动nova"></a>5.1.7 启动nova</h4><pre><code>#systemctl enable openstack-nova-api.service openstack-nova-cert.service \
 openstack-nova-consoleauth.service openstack-nova-scheduler.service \
 openstack-nova-conductor.service openstack-nova-novncproxy.service
 #systemctl start openstack-nova-api.service openstack-nova-cert.service \
 openstack-nova-consoleauth.service openstack-nova-scheduler.service \
 openstack-nova-conductor.service openstack-nova-novncproxy.service
+</code></pre><h3 id="5-2-compute-node-01安装"><a href="#5-2-compute-node-01安装" class="headerlink" title="5.2 compute-node-01安装"></a>5.2 compute-node-01安装</h3><h4 id="5-2-1-安装nova组件"><a href="#5-2-1-安装nova组件" class="headerlink" title="5.2.1 安装nova组件"></a>5.2.1 安装nova组件</h4><pre><code>#yum install openstack-nova-compute sysfsutils -y
+</code></pre><h4 id="5-2-2-配置nova"><a href="#5-2-2-配置nova" class="headerlink" title="5.2.2 配置nova"></a>5.2.2 配置nova</h4><h5 id="5-2-2-1备份配置文件"><a href="#5-2-2-1备份配置文件" class="headerlink" title="5.2.2.1备份配置文件"></a>5.2.2.1备份配置文件</h5><pre><code>#cp /etc/nova/nova.conf /etc/nova/nova.conf.bak
+</code></pre><h5 id="5-2-2-2修改配置文件"><a href="#5-2-2-2修改配置文件" class="headerlink" title="5.2.2.2修改配置文件"></a>5.2.2.2修改配置文件</h5><pre><code>#vi /etc/nova/nova.conf
 
-3.2compute-node-01安装
-3.2.1安装nova组件
-#yum install openstack-nova-compute sysfsutils -y
-3.2.2配置nova
-3.2.2.1备份配置文件
-#cp /etc/nova/nova.conf /etc/nova/nova.conf.bak
-3.2.2.2修改配置文件
-#vi /etc/nova/nova.conf
-&lt;pre&gt;`
 [DEFAULT]
 verbose = True
 rpc_backend = rabbit
@@ -579,15 +511,12 @@ host = controller
 lock_path = /var/lib/nova/tmp
 [libvirt]
 virt_type = qemu
-`&lt;/pre&gt;
-3.2.3启动nova
-#systemctl enable libvirtd.service openstack-nova-compute.service
+</code></pre><h4 id="5-2-3-启动nova"><a href="#5-2-3-启动nova" class="headerlink" title="5.2.3 启动nova"></a>5.2.3 启动nova</h4><pre><code>#systemctl enable libvirtd.service openstack-nova-compute.service
 #systemctl start libvirtd.service openstack-nova-compute.service
-3.2.4验证
-以下操作均在controller节点上操作
-[root@controller ~]# source /root/admin-openrc.sh
+</code></pre><h4 id="5-2-4验证"><a href="#5-2-4验证" class="headerlink" title="5.2.4验证"></a>5.2.4验证</h4><p>以下操作均在controller节点上操作</p>
+<pre><code>[root@controller ~]# source /root/admin-openrc.sh
 [root@controller ~]# nova service-list
-&lt;pre&gt;`
+
 +----+------------------+-----------------+----------+---------+-------+----------------------------+-----------------+
 | Id | Binary           | Host            | Zone     | Status  | State | Updated_at                 | Disabled Reason |
 +----+------------------+-----------------+----------+---------+-------+----------------------------+-----------------+
@@ -597,31 +526,22 @@ virt_type = qemu
 | 4  | nova-cert        | controller      | internal | enabled | up    | 2016-05-07T13:55:43.000000 | -               |
 | 5  | nova-compute     | compute-node-01 | nova     | enabled | up    | 2016-05-07T13:55:44.000000 | -               |
 +----+------------------+-----------------+----------+---------+-------+----------------------------+-----------------+
-`&lt;/pre&gt;
+
 [root@controller ~]# nova image-list
-&lt;pre&gt;`
+
 +--------------------------------------+---------------------+--------+--------+
 | ID                                   | Name                | Status | Server |
 +--------------------------------------+---------------------+--------+--------+
 | 66f03a7f-cdb2-4111-84c0-0af53327329e | cirros-0.3.4-x86_64 | ACTIVE |        |
 +--------------------------------------+---------------------+--------+--------+
-`&lt;/pre&gt;
+</code></pre><h2 id="6-Neutron组件安装"><a href="#6-Neutron组件安装" class="headerlink" title="6. Neutron组件安装"></a>6. Neutron组件安装</h2><h3 id="6-1-在controller节点安装"><a href="#6-1-在controller节点安装" class="headerlink" title="6.1 在controller节点安装"></a>6.1 在controller节点安装</h3><h4 id="6-1-1-创建数据库"><a href="#6-1-1-创建数据库" class="headerlink" title="6.1.1 创建数据库"></a>6.1.1 创建数据库</h4><pre><code>#mysql -uroot -p123456
 
-## 4.Neutron组件安装
-
-4.1在controller节点安装
-4.1.1创建数据库
-#mysql -uroot -p123456
-&lt;pre&gt;`
 create database neutron;
 GRANT ALL PRIVILEGES ON neutron.* TO &apos;neutron&apos;@&apos;localhost&apos; IDENTIFIED BY &apos;neutron&apos;;
 GRANT ALL PRIVILEGES ON neutron.* TO &apos;neutron&apos;@&apos;%&apos; IDENTIFIED BY &apos;neutron&apos;;
-`&lt;/pre&gt;
-4.1.2创建用户：neutron，并授权用户权限
-#openstack user create --password-prompt neutron
+</code></pre><h4 id="6-1-2-创建用户：neutron，并授权用户权限"><a href="#6-1-2-创建用户：neutron，并授权用户权限" class="headerlink" title="6.1.2 创建用户：neutron，并授权用户权限"></a>6.1.2 创建用户：neutron，并授权用户权限</h4><pre><code>#openstack user create --password-prompt neutron
 #openstack role add --project service --user neutron admin
-4.1.3注册服务及服务实例
-#openstack service create --name neutron \
+</code></pre><h4 id="6-1-3-注册服务及服务实例"><a href="#6-1-3-注册服务及服务实例" class="headerlink" title="6.1.3 注册服务及服务实例"></a>6.1.3 注册服务及服务实例</h4><pre><code>#openstack service create --name neutron \
 --description &quot;OpenStack Networking&quot; network
 #openstack endpoint create \
 --publicurl http://controller:9696 \
@@ -629,16 +549,11 @@ GRANT ALL PRIVILEGES ON neutron.* TO &apos;neutron&apos;@&apos;%&apos; IDENTIFIE
 --internalurl http://controller:9696 \
 --region RegionOne \
 network
-4.1.4安装neutron组件
-#yum install openstack-neutron openstack-neutron-ml2 \
+</code></pre><h4 id="6-1-4-安装neutron组件"><a href="#6-1-4-安装neutron组件" class="headerlink" title="6.1.4 安装neutron组件"></a>6.1.4 安装neutron组件</h4><pre><code>#yum install openstack-neutron openstack-neutron-ml2 \
 python-neutronclientwhich -y
+</code></pre><h4 id="6-1-5-配置neutron-conf"><a href="#6-1-5-配置neutron-conf" class="headerlink" title="6.1.5 配置neutron.conf"></a>6.1.5 配置neutron.conf</h4><h5 id="6-1-5-1-备份"><a href="#6-1-5-1-备份" class="headerlink" title="6.1.5.1 备份"></a>6.1.5.1 备份</h5><pre><code>#cp /etc/neutron/neutron.conf /etc/neutron/neutron.conf.bak
+</code></pre><h5 id="6-1-5-2-修改配置文件"><a href="#6-1-5-2-修改配置文件" class="headerlink" title="6.1.5.2 修改配置文件"></a>6.1.5.2 修改配置文件</h5><pre><code>#vi /etc/neutron/neutron.conf 
 
-4.1.5配置neutron.conf
-4.1.5.1备份
-#cp /etc/neutron/neutron.conf /etc/neutron/neutron.conf.bak
-4.1.5.2修改配置文件
-#vi /etc/neutron/neutron.conf 
-&lt;pre&gt;`
 [DEFAULT]
 verbose = True
 rpc_backend = rabbit
@@ -677,13 +592,9 @@ region_name = RegionOne
 project_name = service
 username = nova
 password = 123456
-`&lt;/pre&gt;
-4.1.6配置ml2插件
-4.1.6.1备份
-#cp /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugins/ml2/ml2_conf.ini.bak
-4.1.6.2配置
-#vi /etc/neutron/plugins/ml2/ml2_conf.ini
-&lt;pre&gt;`
+</code></pre><h4 id="6-1-6-配置ml2插件"><a href="#6-1-6-配置ml2插件" class="headerlink" title="6.1.6 配置ml2插件"></a>6.1.6 配置ml2插件</h4><h5 id="6-1-6-1-备份"><a href="#6-1-6-1-备份" class="headerlink" title="6.1.6.1 备份"></a>6.1.6.1 备份</h5><pre><code>#cp /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugins/ml2/ml2_conf.ini.bak
+</code></pre><h5 id="6-1-6-2-配置"><a href="#6-1-6-2-配置" class="headerlink" title="6.1.6.2 配置"></a>6.1.6.2 配置</h5><pre><code>#vi /etc/neutron/plugins/ml2/ml2_conf.ini
+
 [ml2]
 type_drivers = flat,vlan,gre,vxlan
 tenant_network_types = gre
@@ -696,15 +607,10 @@ tunnel_id_ranges = 1:1000
 enable_security_group = True
 enable_ipset = True
 firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
-`&lt;/pre&gt;
-4.1.6.3建立link文件
-#ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
-4.1.7配置nova.conf
-4.1.7.1备份
-#cp /etc/nova/nova.conf /etc/nova/nova.conf.bak1
-4.1.7.2配置
-#vi /etc/nova/nova.conf
-&lt;pre&gt;`
+</code></pre><h5 id="6-1-6-3-建立link文件"><a href="#6-1-6-3-建立link文件" class="headerlink" title="6.1.6.3 建立link文件"></a>6.1.6.3 建立link文件</h5><pre><code>#ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
+</code></pre><h4 id="6-1-7-配置nova-conf"><a href="#6-1-7-配置nova-conf" class="headerlink" title="6.1.7 配置nova.conf"></a>6.1.7 配置nova.conf</h4><h5 id="6-1-7-1-备份"><a href="#6-1-7-1-备份" class="headerlink" title="6.1.7.1 备份"></a>6.1.7.1 备份</h5><pre><code>#cp /etc/nova/nova.conf /etc/nova/nova.conf.bak1
+</code></pre><h5 id="6-1-7-2-配置"><a href="#6-1-7-2-配置" class="headerlink" title="6.1.7.2 配置"></a>6.1.7.2 配置</h5><pre><code>#vi /etc/nova/nova.conf
+
 [DEFAULT]
 network_api_class = nova.network.neutronv2.api.API
 security_group_api = neutron
@@ -718,20 +624,15 @@ admin_auth_url = http://controller:35357/v2.0
 admin_tenant_name = service
 admin_username = neutron
 admin_password = 123456
-`&lt;/pre&gt;
-4.1.8初始化数据库
-#su -s /bin/sh -c &quot;neutron-db-manage --config-file /etc/neutron/neutron.conf \
+</code></pre><h4 id="6-1-8-初始化数据库"><a href="#6-1-8-初始化数据库" class="headerlink" title="6.1.8 初始化数据库"></a>6.1.8 初始化数据库</h4><pre><code>#su -s /bin/sh -c &quot;neutron-db-manage --config-file /etc/neutron/neutron.conf \
 --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head&quot; neutron
-4.1.9重启nova服务
-#systemctl restart openstack-nova-api.service openstack-nova-scheduler.service \
+</code></pre><h4 id="6-1-9-重启nova服务"><a href="#6-1-9-重启nova服务" class="headerlink" title="6.1.9 重启nova服务"></a>6.1.9 重启nova服务</h4><pre><code>#systemctl restart openstack-nova-api.service openstack-nova-scheduler.service \
 openstack-nova-conductor.service
-4.1.10启动neutron服务
-#systemctl enable neutron-server.service
+</code></pre><h4 id="6-1-10-启动neutron服务"><a href="#6-1-10-启动neutron服务" class="headerlink" title="6.1.10 启动neutron服务"></a>6.1.10 启动neutron服务</h4><pre><code>#systemctl enable neutron-server.service
 #systemctl start neutron-server.service
-4.1.11验证
-[root@controller ~]#source /root/admin-openrc.sh
+</code></pre><h4 id="6-1-11-验证"><a href="#6-1-11-验证" class="headerlink" title="6.1.11 验证"></a>6.1.11 验证</h4><pre><code>[root@controller ~]#source /root/admin-openrc.sh
 [root@controller ~]# neutron ext-list
-&lt;pre&gt;`
+
 +-----------------------+-----------------------------------------------+
 | alias                 | name                                          |
 +-----------------------+-----------------------------------------------+
@@ -754,29 +655,18 @@ openstack-nova-conductor.service
 | extra_dhcp_opt        | Neutron Extra DHCP opts                       |
 | dvr                   | Distributed Virtual Router                    |
 +-----------------------+-----------------------------------------------+
-`&lt;/pre&gt;
-4.2在network-node-01节点安装
-4.2.1启用IP转发功能
-4.2.1.1备份配置文件
-#cp /etc/sysctl.conf /etc/sysctl.conf.bak
-4.2.1.2修改配置
-#vi /etc/sysctl.conf
-&lt;pre&gt;`
+</code></pre><h3 id="6-2-在network-node-01节点安装"><a href="#6-2-在network-node-01节点安装" class="headerlink" title="6.2 在network-node-01节点安装"></a>6.2 在network-node-01节点安装</h3><h4 id="6-2-1-启用IP转发功能"><a href="#6-2-1-启用IP转发功能" class="headerlink" title="6.2.1 启用IP转发功能"></a>6.2.1 启用IP转发功能</h4><h5 id="6-2-1-1-备份配置文件"><a href="#6-2-1-1-备份配置文件" class="headerlink" title="6.2.1.1 备份配置文件"></a>6.2.1.1 备份配置文件</h5><pre><code>#cp /etc/sysctl.conf /etc/sysctl.conf.bak
+</code></pre><h5 id="6-2-1-2-修改配置"><a href="#6-2-1-2-修改配置" class="headerlink" title="6.2.1.2 修改配置"></a>6.2.1.2 修改配置</h5><pre><code>#vi /etc/sysctl.conf
+
 net.ipv4.ip_forward=1
 net.ipv4.conf.all.rp_filter=0
 net.ipv4.conf.default.rp_filter=0
-`&lt;/pre&gt;
-4.2.1.3启用配置
-#sysctl -p
-4.2.2安装neutron组件
-#yum install openstack-neutron openstack-neutron-ml2 \
+</code></pre><h5 id="6-2-1-3-启用配置"><a href="#6-2-1-3-启用配置" class="headerlink" title="6.2.1.3 启用配置"></a>6.2.1.3 启用配置</h5><pre><code>#sysctl -p
+</code></pre><h4 id="6-2-2-安装neutron组件"><a href="#6-2-2-安装neutron组件" class="headerlink" title="6.2.2 安装neutron组件"></a>6.2.2 安装neutron组件</h4><pre><code>#yum install openstack-neutron openstack-neutron-ml2 \
 openstack-neutron-openvswitch -y
-4.2.3配置neutron.conf
-4.2.3.1备份
-#cp /etc/neutron/neutron.conf /etc/neutron/neutron.conf.bak
-4.2.3.2配置
-#vi /etc/neutron/neutron.conf
-&lt;pre&gt;`
+</code></pre><h4 id="6-2-3-配置neutron-conf"><a href="#6-2-3-配置neutron-conf" class="headerlink" title="6.2.3 配置neutron.conf"></a>6.2.3 配置neutron.conf</h4><h5 id="6-2-3-1-备份"><a href="#6-2-3-1-备份" class="headerlink" title="6.2.3.1 备份"></a>6.2.3.1 备份</h5><pre><code>#cp /etc/neutron/neutron.conf /etc/neutron/neutron.conf.bak
+</code></pre><h5 id="6-2-3-2-配置"><a href="#6-2-3-2-配置" class="headerlink" title="6.2.3.2 配置"></a>6.2.3.2 配置</h5><pre><code>#vi /etc/neutron/neutron.conf
+
 [DEFAULT]
 verbose = True
 rpc_backend = rabbit
@@ -799,14 +689,10 @@ user_domain_id = default
 project_name = service
 username = neutron
 password = 123456
-`&lt;/pre&gt;
-4.2.4配置ML2插件
-备注：配置【OVS】段中的IP为network-node-01节点的桥接网卡的地址，br-ex为虚拟网桥
-4.2.4.1备份
-#cp /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugins/ml2/ml2_conf.ini.bak
-4.2.4.2配置
-#vi /etc/neutron/plugins/ml2/ml2_conf.ini
-&lt;pre&gt;`
+</code></pre><h4 id="6-2-4-配置ML2插件"><a href="#6-2-4-配置ML2插件" class="headerlink" title="6.2.4 配置ML2插件"></a>6.2.4 配置ML2插件</h4><pre><code>备注：配置【OVS】段中的IP为network-node-01节点的桥接网卡的地址，br-ex为虚拟网桥
+</code></pre><h5 id="6-2-4-1-备份"><a href="#6-2-4-1-备份" class="headerlink" title="6.2.4.1 备份"></a>6.2.4.1 备份</h5><pre><code>#cp /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugins/ml2/ml2_conf.ini.bak
+</code></pre><h5 id="6-2-4-2-配置"><a href="#6-2-4-2-配置" class="headerlink" title="6.2.4.2 配置"></a>6.2.4.2 配置</h5><pre><code>#vi /etc/neutron/plugins/ml2/ml2_conf.ini
+
 [ml2]
 type_drivers = flat,vlan,gre,vxlan
 tenant_network_types = gre
@@ -829,47 +715,30 @@ bridge_mappings = external:br-ex
 
 [agent]
 tunnel_types = gre
-`&lt;/pre&gt;
-4.2.5创建链接文件
-#ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
-4.2.6配置ML3插件
-4.2.6.1备份
-#cp /etc/neutron/l3_agent.ini /etc/neutron/l3_agent.ini.bak
-4.2.6.2配置
-#vi /etc/neutron/l3_agent.ini
-&lt;pre&gt;`
+</code></pre><h4 id="6-2-5-创建链接文件"><a href="#6-2-5-创建链接文件" class="headerlink" title="6.2.5 创建链接文件"></a>6.2.5 创建链接文件</h4><pre><code>#ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
+</code></pre><h4 id="6-2-6-配置ML3插件"><a href="#6-2-6-配置ML3插件" class="headerlink" title="6.2.6 配置ML3插件"></a>6.2.6 配置ML3插件</h4><h5 id="6-2-6-1-备份"><a href="#6-2-6-1-备份" class="headerlink" title="6.2.6.1 备份"></a>6.2.6.1 备份</h5><pre><code>#cp /etc/neutron/l3_agent.ini /etc/neutron/l3_agent.ini.bak
+</code></pre><h5 id="6-2-6-2-配置"><a href="#6-2-6-2-配置" class="headerlink" title="6.2.6.2 配置"></a>6.2.6.2 配置</h5><pre><code>#vi /etc/neutron/l3_agent.ini
+
 [DEFAULT]
 verbose = True
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
 router_delete_namespaces = True
-`&lt;/pre&gt;
-4.2.7配置DHCP插件
-4.2.7.1备份
-#cp /etc/neutron/dhcp_agent.ini /etc/neutron/dhcp_agent.ini.bak
-4.2.7.2配置
-#vi /etc/neutron/dhcp_agent.ini
-&lt;pre&gt;`
+</code></pre><h4 id="6-2-7-配置DHCP插件"><a href="#6-2-7-配置DHCP插件" class="headerlink" title="6.2.7 配置DHCP插件"></a>6.2.7 配置DHCP插件</h4><h5 id="6-2-7-1-备份"><a href="#6-2-7-1-备份" class="headerlink" title="6.2.7.1 备份"></a>6.2.7.1 备份</h5><pre><code>#cp /etc/neutron/dhcp_agent.ini /etc/neutron/dhcp_agent.ini.bak
+</code></pre><h5 id="6-2-7-2-配置"><a href="#6-2-7-2-配置" class="headerlink" title="6.2.7.2 配置"></a>6.2.7.2 配置</h5><pre><code>#vi /etc/neutron/dhcp_agent.ini
+
 verbose = True
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
 dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
 dhcp_delete_namespaces = True
 dnsmasq_config_file = /etc/neutron/dnsmasq-neutron.conf
-`&lt;/pre&gt;
-4.2.7.3创建dnsmasq-neutron.conf并添加以下参数：
-#vi /etc/neutron/dnsmasq-neutron.conf
-&lt;pre&gt;`
+</code></pre><h5 id="6-2-7-3-创建dnsmasq-neutron-conf并添加以下参数："><a href="#6-2-7-3-创建dnsmasq-neutron-conf并添加以下参数：" class="headerlink" title="6.2.7.3 创建dnsmasq-neutron.conf并添加以下参数："></a>6.2.7.3 创建dnsmasq-neutron.conf并添加以下参数：</h5><pre><code>#vi /etc/neutron/dnsmasq-neutron.conf
+
 dhcp-option-force=26,1454
-`&lt;/pre&gt;
-4.2.8配置元数据插件
-备注：metadata_proxy_shared_secret密码可以根据需求自行设置
-4.2.8.1备份
-#cp /etc/neutron/metadata_agent.ini /etc/neutron/metadata_agent.ini.bak
-4.2.8.2配置
-#vi /etc/neutron/metadata_agent.ini
-a.删除[DEFAULT]段中的默认配置
-b.在[DEFAULT]段中增加以下内容
-&lt;pre&gt;`
-verbose = True
+</code></pre><h4 id="6-2-8-配置元数据插件"><a href="#6-2-8-配置元数据插件" class="headerlink" title="6.2.8 配置元数据插件"></a>6.2.8 配置元数据插件</h4><pre><code>备注：metadata_proxy_shared_secret密码可以根据需求自行设置
+</code></pre><h5 id="6-2-8-1-备份"><a href="#6-2-8-1-备份" class="headerlink" title="6.2.8.1 备份"></a>6.2.8.1 备份</h5><pre><code>#cp /etc/neutron/metadata_agent.ini /etc/neutron/metadata_agent.ini.bak
+</code></pre><h5 id="6-2-8-2-配置"><a href="#6-2-8-2-配置" class="headerlink" title="6.2.8.2 配置"></a>6.2.8.2 配置</h5><pre><code>#vi /etc/neutron/metadata_agent.ini
+</code></pre><p>删除[DEFAULT]段中的默认配置<br>在[DEFAULT]段中增加以下内容</p>
+<pre><code>verbose = True
 auth_uri = http://controller:5000
 auth_url = http://controller:35357
 auth_region = RegionOne
@@ -881,39 +750,26 @@ username = neutron
 password = 123456
 nova_metadata_ip = controller
 metadata_proxy_shared_secret = 123456
-`&lt;/pre&gt;
-4.2.9配置nova.conf(在controller节点配置)
-备注：metadata_proxy_shared_secret密码为4.2.8.2节配置的密码
-4.2.9.1备份
-#cp /etc/nova/nova.conf /etc/nova/nova.conf.bak2
-4.2.9.2在[neutron]节点中增加以下内容
-#vi /etc/nova/nova.conf
-&lt;pre&gt;`
+</code></pre><h4 id="6-2-9-配置nova-conf-在controller节点配置"><a href="#6-2-9-配置nova-conf-在controller节点配置" class="headerlink" title="6.2.9 配置nova.conf(在controller节点配置)"></a>6.2.9 配置nova.conf(在controller节点配置)</h4><p>备注：metadata_proxy_shared_secret密码为4.2.8.2节配置的密码</p>
+<h5 id="6-2-9-1-备份"><a href="#6-2-9-1-备份" class="headerlink" title="6.2.9.1 备份"></a>6.2.9.1 备份</h5><pre><code>#cp /etc/nova/nova.conf /etc/nova/nova.conf.bak2
+</code></pre><h5 id="6-2-9-2-在-neutron-节点中增加以下内容"><a href="#6-2-9-2-在-neutron-节点中增加以下内容" class="headerlink" title="6.2.9.2 在[neutron]节点中增加以下内容"></a>6.2.9.2 在[neutron]节点中增加以下内容</h5><pre><code>#vi /etc/nova/nova.conf
+
 service_metadata_proxy = True
 metadata_proxy_shared_secret = 123456
-`&lt;/pre&gt;
-4.2.9.3重启nova服务
-#systemctl restart openstack-nova-api.service openstack-nova-scheduler.service \
+</code></pre><h5 id="6-2-9-3-重启nova服务"><a href="#6-2-9-3-重启nova服务" class="headerlink" title="6.2.9.3 重启nova服务"></a>6.2.9.3 重启nova服务</h5><pre><code>#systemctl restart openstack-nova-api.service openstack-nova-scheduler.service \
 openstack-nova-conductor.service
-4.2.10启动服务
-#systemctl enable openvswitch.service
+</code></pre><h4 id="6-2-10启动服务"><a href="#6-2-10启动服务" class="headerlink" title="6.2.10启动服务"></a>6.2.10启动服务</h4><pre><code>#systemctl enable openvswitch.service
 #systemctl start openvswitch.service
-4.2.11创建虚拟路由器
-4.2.11.1创建虚拟路由器
-#ovs-vsctl add-br br-ex
-4.2.11.2添加网卡到虚拟路由器（enp0s8为网络节点第二块网卡名，设备名称先通过ifconfig命令查看，另外这块网卡不需要分配IP地址）
-#ovs-vsctl add-port br-ex enp0s8
-4.2.11.3禁止GRO
-#ethtool -K enp0s8 gro off
-4.2.12启动服务
-#systemctl enable neutron-openvswitch-agent.service neutron-l3-agent.service \
+</code></pre><h4 id="6-2-11-创建虚拟路由器"><a href="#6-2-11-创建虚拟路由器" class="headerlink" title="6.2.11 创建虚拟路由器"></a>6.2.11 创建虚拟路由器</h4><h5 id="6-2-11-1-创建虚拟路由器"><a href="#6-2-11-1-创建虚拟路由器" class="headerlink" title="6.2.11.1 创建虚拟路由器"></a>6.2.11.1 创建虚拟路由器</h5><pre><code>#ovs-vsctl add-br br-ex
+</code></pre><h5 id="6-2-11-2-添加网卡到虚拟路由器（enp0s8为网络节点第二块网卡名，设备名称先通过ifconfig命令查看，另外这块网卡不需要分配IP地址）"><a href="#6-2-11-2-添加网卡到虚拟路由器（enp0s8为网络节点第二块网卡名，设备名称先通过ifconfig命令查看，另外这块网卡不需要分配IP地址）" class="headerlink" title="6.2.11.2 添加网卡到虚拟路由器（enp0s8为网络节点第二块网卡名，设备名称先通过ifconfig命令查看，另外这块网卡不需要分配IP地址）"></a>6.2.11.2 添加网卡到虚拟路由器（enp0s8为网络节点第二块网卡名，设备名称先通过ifconfig命令查看，另外这块网卡不需要分配IP地址）</h5><pre><code>#ovs-vsctl add-port br-ex enp0s8
+</code></pre><h5 id="6-2-11-3-禁止GRO"><a href="#6-2-11-3-禁止GRO" class="headerlink" title="6.2.11.3 禁止GRO"></a>6.2.11.3 禁止GRO</h5><pre><code>#ethtool -K enp0s8 gro off
+</code></pre><h4 id="6-2-12-启动服务"><a href="#6-2-12-启动服务" class="headerlink" title="6.2.12 启动服务"></a>6.2.12 启动服务</h4><pre><code>#systemctl enable neutron-openvswitch-agent.service neutron-l3-agent.service \
 neutron-dhcp-agent.service neutron-metadata-agent.service neutron-ovs-cleanup.service
 #systemctl start neutron-openvswitch-agent.service neutron-l3-agent.service \
 neutron-dhcp-agent.service neutron-metadata-agent.service
-4.2.13验证(在controller节点)
-[root@controller ~]# source /root/admin-openrc.sh
+</code></pre><h4 id="6-2-13-验证-在controller节点"><a href="#6-2-13-验证-在controller节点" class="headerlink" title="6.2.13 验证(在controller节点)"></a>6.2.13 验证(在controller节点)</h4><pre><code>[root@controller ~]# source /root/admin-openrc.sh
 [root@controller ~]# neutron agent-list
-&lt;pre&gt;`
+
 +--------------------------------------+--------------------+-----------------+-------+----------------+---------------------------+
 | id                                   | agent_type         | host            | alive | admin_state_up | binary                    |
 +--------------------------------------+--------------------+-----------------+-------+----------------+---------------------------+
@@ -922,31 +778,20 @@ neutron-dhcp-agent.service neutron-metadata-agent.service
 | 8dc9de3c-723d-4e17-9da9-44671401f349 | Metadata agent     | network-node-01 | :-)   | True           | neutron-metadata-agent    |
 | a34a75b7-c3a1-4809-9b22-151604ea1e28 | DHCP agent         | network-node-01 | :-)   | True           | neutron-dhcp-agent        |
 +--------------------------------------+--------------------+-----------------+-------+----------------+---------------------------+
-`&lt;/pre&gt;
-4.3在compute-node-01节点安装
-4.3.1配置IP转发
-4.3.1.1备份
-#cp /etc/sysctl.conf /etc/sysctl.conf.bak
-4.3.1.2配置
-#vi /etc/sysctl.conf
-&lt;pre&gt;`
+</code></pre><h3 id="6-3-在compute-node-01节点安装"><a href="#6-3-在compute-node-01节点安装" class="headerlink" title="6.3 在compute-node-01节点安装"></a>6.3 在compute-node-01节点安装</h3><h4 id="6-3-1-配置IP转发"><a href="#6-3-1-配置IP转发" class="headerlink" title="6.3.1 配置IP转发"></a>6.3.1 配置IP转发</h4><h5 id="6-3-1-1-备份"><a href="#6-3-1-1-备份" class="headerlink" title="6.3.1.1 备份"></a>6.3.1.1 备份</h5><pre><code>#cp /etc/sysctl.conf /etc/sysctl.conf.bak
+</code></pre><h5 id="6-3-1-2-配置"><a href="#6-3-1-2-配置" class="headerlink" title="6.3.1.2 配置"></a>6.3.1.2 配置</h5><pre><code>#vi /etc/sysctl.conf
+
 net.ipv4.conf.all.rp_filter=0
 net.ipv4.conf.default.rp_filter=0
 net.bridge.bridge-nf-call-iptables=1
 net.bridge.bridge-nf-call-ip6tables=1
-`&lt;/pre&gt;
-4.3.1.3生效配置
-#sysctl -p
+</code></pre><h5 id="6-3-1-3-生效配置"><a href="#6-3-1-3-生效配置" class="headerlink" title="6.3.1.3 生效配置"></a>6.3.1.3 生效配置</h5><pre><code>#sysctl -p
 #modprobe bridge
-4.3.2安装
-#yum install openstack-neutron openstack-neutron-ml2 \
+</code></pre><h4 id="6-3-2安装"><a href="#6-3-2安装" class="headerlink" title="6.3.2安装"></a>6.3.2安装</h4><pre><code>#yum install openstack-neutron openstack-neutron-ml2 \
 openstack-neutron-openvswitch -y
-4.3.3配置neutron
-4.3.3.1备份
-#cp /etc/neutron/neutron.conf /etc/neutron/neutron.conf.bak
-4.3.3.2配置（需要删除[keystone_authtoken]中已存在的配置）
-#vi /etc/neutron/neutron.conf
-&lt;pre&gt;`
+</code></pre><h4 id="6-3-3-配置neutron"><a href="#6-3-3-配置neutron" class="headerlink" title="6.3.3 配置neutron"></a>6.3.3 配置neutron</h4><h5 id="6-3-3-1-备份"><a href="#6-3-3-1-备份" class="headerlink" title="6.3.3.1 备份"></a>6.3.3.1 备份</h5><pre><code>#cp /etc/neutron/neutron.conf /etc/neutron/neutron.conf.bak
+</code></pre><h5 id="6-3-3-2-配置（需要删除-keystone-authtoken-中已存在的配置）"><a href="#6-3-3-2-配置（需要删除-keystone-authtoken-中已存在的配置）" class="headerlink" title="6.3.3.2 配置（需要删除[keystone_authtoken]中已存在的配置）"></a>6.3.3.2 配置（需要删除[keystone_authtoken]中已存在的配置）</h5><pre><code>#vi /etc/neutron/neutron.conf
+
 [DEFAULT]
 verbose = True
 rpc_backend = rabbit
@@ -969,14 +814,10 @@ user_domain_id = default
 project_name = service
 username = neutron
 password = 123456
-`&lt;/pre&gt;
-4.3.4配置ml2插件
-备注：配置【OVS】段中的IP为compute-node-01节点的桥接网卡的地址，br-ex为虚拟网桥
-4.3.4.1备份
-#cp /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugins/ml2/ml2_conf.ini.bak
-4.3.4.2配置
-#vi /etc/neutron/plugins/ml2/ml2_conf.ini
-&lt;pre&gt;`
+</code></pre><h4 id="6-3-4-配置ml2插件"><a href="#6-3-4-配置ml2插件" class="headerlink" title="6.3.4 配置ml2插件"></a>6.3.4 配置ml2插件</h4><pre><code>备注：配置【OVS】段中的IP为compute-node-01节点的桥接网卡的地址，br-ex为虚拟网桥
+</code></pre><h5 id="6-3-4-1-备份"><a href="#6-3-4-1-备份" class="headerlink" title="6.3.4.1 备份"></a>6.3.4.1 备份</h5><pre><code>#cp /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugins/ml2/ml2_conf.ini.bak
+</code></pre><h5 id="6-3-4-2-配置"><a href="#6-3-4-2-配置" class="headerlink" title="6.3.4.2 配置"></a>6.3.4.2 配置</h5><pre><code>#vi /etc/neutron/plugins/ml2/ml2_conf.ini
+
 [ml2]
 type_drivers = flat,vlan,gre,vxlan
 tenant_network_types = gre
@@ -995,15 +836,10 @@ local_ip = 192.168.199.81
 
 [agent]
 tunnel_types = gre
-`&lt;/pre&gt;
-4.3.5创建link文件
-#ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
-4.3.6配置nova.conf
-4.3.6.1备份
-#cp /etc/nova/nova.conf /etc/nova/nova.conf.bak1
-4.3.6.2配置
-vi /etc/nova/nova.conf 
-&lt;pre&gt;`
+</code></pre><h4 id="6-3-5-创建link文件"><a href="#6-3-5-创建link文件" class="headerlink" title="6.3.5 创建link文件"></a>6.3.5 创建link文件</h4><pre><code>#ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
+</code></pre><h4 id="6-3-6-配置nova-conf"><a href="#6-3-6-配置nova-conf" class="headerlink" title="6.3.6 配置nova.conf"></a>6.3.6 配置nova.conf</h4><h5 id="6-3-6-1-备份"><a href="#6-3-6-1-备份" class="headerlink" title="6.3.6.1 备份"></a>6.3.6.1 备份</h5><pre><code>#cp /etc/nova/nova.conf /etc/nova/nova.conf.bak1
+</code></pre><h5 id="6-3-6-2-配置"><a href="#6-3-6-2-配置" class="headerlink" title="6.3.6.2 配置"></a>6.3.6.2 配置</h5><pre><code>vi /etc/nova/nova.conf 
+
 [DEFAULT]
 network_api_class = nova.network.neutronv2.api.API
 security_group_api = neutron
@@ -1017,16 +853,12 @@ admin_auth_url = http://controller:35357/v2.0
 admin_tenant_name = service
 admin_username = neutron
 admin_password = 123456
-`&lt;/pre&gt;
-4.3.7启动
-#systemctl enable openvswitch.service
+</code></pre><h4 id="6-3-7-启动"><a href="#6-3-7-启动" class="headerlink" title="6.3.7 启动"></a>6.3.7 启动</h4><pre><code>#systemctl enable openvswitch.service
 #systemctl start openvswitch.service
 #systemctl enable neutron-openvswitch-agent.service
 #systemctl start neutron-openvswitch-agent.service
+</code></pre><h4 id="6-3-8-验证-在controller节点"><a href="#6-3-8-验证-在controller节点" class="headerlink" title="6.3.8 验证(在controller节点)"></a>6.3.8 验证(在controller节点)</h4><pre><code>[root@controller ~]# neutron agent-list
 
-4.3.8验证(在controller节点)
-[root@controller ~]# neutron agent-list
-&lt;pre&gt;`
 +--------------------------------------+--------------------+-----------------+-------+----------------+---------------------------+
 | id                                   | agent_type         | host            | alive | admin_state_up | binary                    |
 +--------------------------------------+--------------------+-----------------+-------+----------------+---------------------------+
@@ -1036,39 +868,26 @@ admin_password = 123456
 | 8dc9de3c-723d-4e17-9da9-44671401f349 | Metadata agent     | network-node-01 | :-)   | True           | neutron-metadata-agent    |
 | a34a75b7-c3a1-4809-9b22-151604ea1e28 | DHCP agent         | network-node-01 | :-)   | True           | neutron-dhcp-agent        |
 +--------------------------------------+--------------------+-----------------+-------+----------------+---------------------------+
-`&lt;/pre&gt;
-4.4 创建网络
-4.4.1创建扩展网络
-#neutron net-create ext-net --router:external \
+</code></pre><h3 id="6-4-创建网络"><a href="#6-4-创建网络" class="headerlink" title="6.4 创建网络"></a>6.4 创建网络</h3><h4 id="6-4-1-创建扩展网络"><a href="#6-4-1-创建扩展网络" class="headerlink" title="6.4.1 创建扩展网络"></a>6.4.1 创建扩展网络</h4><pre><code>#neutron net-create ext-net --router:external \
 --provider:physical_network external --provider:network_type flat
-4.4.2创建扩展网络子网
-#neutron subnet-create ext-net 192.168.56.0/24 --name ext-subnet \
+</code></pre><h4 id="6-4-2-创建扩展网络子网"><a href="#6-4-2-创建扩展网络子网" class="headerlink" title="6.4.2 创建扩展网络子网"></a>6.4.2 创建扩展网络子网</h4><pre><code>#neutron subnet-create ext-net 192.168.56.0/24 --name ext-subnet \
 --allocation-pool start=192.168.56.101,end=192.168.56.200 \
 --disable-dhcp --gateway 192.168.56.1
-4.4.3创建租户网络
-#source /root/demo-openrc.sh
+</code></pre><h4 id="6-4-3-创建租户网络"><a href="#6-4-3-创建租户网络" class="headerlink" title="6.4.3 创建租户网络"></a>6.4.3 创建租户网络</h4><pre><code>#source /root/demo-openrc.sh
 #neutron net-create demo-net
 #neutron subnet-create demo-net 192.168.2.0/24 \
 --name demo-subnet  --gateway 192.168.2.1
-4.4.4创建路由器
-#neutron router-create demo-router
+</code></pre><h4 id="6-4-4-创建路由器"><a href="#6-4-4-创建路由器" class="headerlink" title="6.4.4 创建路由器"></a>6.4.4 创建路由器</h4><pre><code>#neutron router-create demo-router
 #neutron router-interface-add demo-router demo-subnet
 #neutron router-gateway-set demo-router ext-net
-4.4.5.设置安全组规则
-#nova secgroup-add-rule default icmp -1 -1 0.0.0.0/0
+</code></pre><h4 id="6-4-5-设置安全组规则"><a href="#6-4-5-设置安全组规则" class="headerlink" title="6.4.5 设置安全组规则"></a>6.4.5 设置安全组规则</h4><pre><code>#nova secgroup-add-rule default icmp -1 -1 0.0.0.0/0
 #nova secgroup-add-rule default tcp 22 22 0.0.0.0/0
-4.4.6.验证
-#source /root/admin-openrc.sh
+</code></pre><h4 id="6-4-6-验证"><a href="#6-4-6-验证" class="headerlink" title="6.4.6.验证"></a>6.4.6.验证</h4><pre><code>#source /root/admin-openrc.sh
 #neutron router-list
-4.5 controller节点安装Dashboard
-4.5.1安装
-#yum install openstack-dashboard -y
-4.5.2配置
-4.5.2.1备份
-cp /etc/openstack-dashboard/local_settings /etc/openstack-dashboard/local_settings.bak
-4.5.2.2配置
-vi /etc/openstack-dashboard/local_settings 
-&lt;pre&gt;`
+</code></pre><h3 id="6-5-controller节点安装Dashboard"><a href="#6-5-controller节点安装Dashboard" class="headerlink" title="6.5 controller节点安装Dashboard"></a>6.5 controller节点安装Dashboard</h3><h4 id="6-5-1-安装"><a href="#6-5-1-安装" class="headerlink" title="6.5.1 安装"></a>6.5.1 安装</h4><pre><code>#yum install openstack-dashboard -y
+</code></pre><h4 id="6-5-2-配置"><a href="#6-5-2-配置" class="headerlink" title="6.5.2 配置"></a>6.5.2 配置</h4><h5 id="6-5-2-1-备份"><a href="#6-5-2-1-备份" class="headerlink" title="6.5.2.1 备份"></a>6.5.2.1 备份</h5><pre><code>cp /etc/openstack-dashboard/local_settings /etc/openstack-dashboard/local_settings.bak
+</code></pre><h5 id="6-5-2-2-配置"><a href="#6-5-2-2-配置" class="headerlink" title="6.5.2.2 配置"></a>6.5.2.2 配置</h5><pre><code>vi /etc/openstack-dashboard/local_settings 
+
 import sys
 reload(sys)
 sys.setdefaultencoding(&apos;utf8&apos;)
@@ -1083,28 +902,18 @@ CACHES = {
 }
 OPENSTACK_KEYSTONE_DEFAULT_ROLE = &quot;user&quot;
 TIME_ZONE = &quot;Asia/Shanghai&quot;
-`&lt;/pre&gt;
-4.5.3系统权限配置
-#setsebool -P httpd_can_network_connect on
+</code></pre><h4 id="6-5-3-系统权限配置"><a href="#6-5-3-系统权限配置" class="headerlink" title="6.5.3 系统权限配置"></a>6.5.3 系统权限配置</h4><pre><code>#setsebool -P httpd_can_network_connect on
 #chown -R apache:apache /usr/share/openstack-dashboard/static
 #systemctl restart httpd.service memcached.service
-4.5.4验证
-http://192.168.199.80/dashboard
+</code></pre><h4 id="6-5-4-验证"><a href="#6-5-4-验证" class="headerlink" title="6.5.4 验证"></a>6.5.4 验证</h4><pre><code>http://192.168.199.80/dashboard
 demo/123456
-[![2016-05-07_23-19-10](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-05-07_23-19-10.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-05-07_23-19-10.jpg)
+</code></pre><p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-05-07_23-19-10.jpg" alt="2016-05-07_23-19-10"></p>
+<h2 id="7-Cinder组件安装"><a href="#7-Cinder组件安装" class="headerlink" title="7. Cinder组件安装"></a>7. Cinder组件安装</h2><h3 id="7-1-Controller节点安装"><a href="#7-1-Controller节点安装" class="headerlink" title="7.1 Controller节点安装"></a>7.1 Controller节点安装</h3><h4 id="7-1-1-创建数据库"><a href="#7-1-1-创建数据库" class="headerlink" title="7.1.1 创建数据库"></a>7.1.1 创建数据库</h4><pre><code>#mysql -uroot -p123456
 
-## 5.Cinder组件安装
-
-5.1Controller节点安装
-5.1.1创建数据库
-#mysql -uroot -p123456
-&lt;pre&gt;`
 CREATE DATABASE cinder;
 GRANT ALL PRIVILEGES ON cinder.* TO &apos;cinder&apos;@&apos;localhost&apos; IDENTIFIED BY &apos;cinder&apos;;
 GRANT ALL PRIVILEGES ON cinder.* TO &apos;cinder&apos;@&apos;%&apos; IDENTIFIED BY &apos;cinder&apos;;
-`&lt;/pre&gt;
-5.1.2创建账号及服务
-#source /root/admin-openrc.sh
+</code></pre><h4 id="7-1-2-创建账号及服务"><a href="#7-1-2-创建账号及服务" class="headerlink" title="7.1.2 创建账号及服务"></a>7.1.2 创建账号及服务</h4><pre><code>#source /root/admin-openrc.sh
 #openstack user create --password-prompt cinder
 #openstack role add --project service --user cinder admin
 #openstack service create --name cinder \
@@ -1123,55 +932,45 @@ volume
 --adminurl http://controller:8776/v2/%\(tenant_id\)s \
 --region RegionOne \
 volumev2
-5.1.3安装Cinder组件
-#yum install openstack-cinder python-cinderclient python-oslo-db -y
-5.1.4配置
-备注：my_ip为本机IP
-#cp /usr/share/cinder/cinder-dist.conf /etc/cinder/cinder.conf
+</code></pre><h4 id="7-1-3-安装Cinder组件"><a href="#7-1-3-安装Cinder组件" class="headerlink" title="7.1.3 安装Cinder组件"></a>7.1.3 安装Cinder组件</h4><pre><code>#yum install openstack-cinder python-cinderclient python-oslo-db -y
+</code></pre><h4 id="7-1-4-配置"><a href="#7-1-4-配置" class="headerlink" title="7.1.4 配置"></a>7.1.4 配置</h4><p>备注：my_ip为本机IP</p>
+<pre><code>#cp /usr/share/cinder/cinder-dist.conf /etc/cinder/cinder.conf
 #chown -R cinder:cinder /etc/cinder/cinder.conf
 #vi /etc/cinder/cinder.conf
-&lt;pre&gt;`[DEFAULT]
-verbose = True
-rpc_backend = rabbit
-auth_strategy = keystone
-my_ip = 192.168.199.80
+    [DEFAULT]
+    verbose = True
+    rpc_backend = rabbit
+    auth_strategy = keystone
+    my_ip = 192.168.199.80
 
-[database]
-connection = mysql://cinder:cinder@localhost/cinder
+    [database]
+    connection = mysql://cinder:cinder@localhost/cinder
 
-[oslo_messaging_rabbit]
-rabbit_host = controller
-rabbit_userid = openstack
-rabbit_password = 123456
+    [oslo_messaging_rabbit]
+    rabbit_host = controller
+    rabbit_userid = openstack
+    rabbit_password = 123456
 
-[keystone_authtoken]
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
-project_name = service
-username = cinder
-password = 123456
+    [keystone_authtoken]
+    auth_uri = http://controller:5000
+    auth_url = http://controller:35357
+    auth_plugin = password
+    project_domain_id = default
+    user_domain_id = default
+    project_name = service
+    username = cinder
+    password = 123456
 
-[oslo_concurrency]
-lock_path = /var/lock/cinder
-`&lt;/pre&gt;
-5.1.5数据初始化
-#su -s /bin/sh -c &quot;cinder-manage db sync&quot; cinder
-5.1.6启动服务
-#systemctl enable openstack-cinder-api.service openstack-cinder-scheduler.service
+    [oslo_concurrency]
+    lock_path = /var/lock/cinder
+</code></pre><h4 id="7-1-5-数据初始化"><a href="#7-1-5-数据初始化" class="headerlink" title="7.1.5 数据初始化"></a>7.1.5 数据初始化</h4><pre><code>#su -s /bin/sh -c &quot;cinder-manage db sync&quot; cinder
+</code></pre><h4 id="7-1-6-启动服务"><a href="#7-1-6-启动服务" class="headerlink" title="7.1.6 启动服务"></a>7.1.6 启动服务</h4><pre><code>#systemctl enable openstack-cinder-api.service openstack-cinder-scheduler.service
 #systemctl start openstack-cinder-api.service openstack-cinder-scheduler.service
-5.2在block-node-01节点上安装
-5.2.1安装支持包
-5.2.1.1安装
-#yum install qemu lvm2 -y
-5.2.1.2启动
-#systemctl enable lvm2-lvmetad.service
+</code></pre><h3 id="7-2-在block-node-01节点上安装"><a href="#7-2-在block-node-01节点上安装" class="headerlink" title="7.2 在block-node-01节点上安装"></a>7.2 在block-node-01节点上安装</h3><h4 id="7-2-1-安装支持包"><a href="#7-2-1-安装支持包" class="headerlink" title="7.2.1 安装支持包"></a>7.2.1 安装支持包</h4><h5 id="7-2-1-1-安装"><a href="#7-2-1-1-安装" class="headerlink" title="7.2.1.1 安装"></a>7.2.1.1 安装</h5><pre><code>#yum install qemu lvm2 -y
+</code></pre><h5 id="7-2-1-2-启动"><a href="#7-2-1-2-启动" class="headerlink" title="7.2.1.2 启动"></a>7.2.1.2 启动</h5><pre><code>#systemctl enable lvm2-lvmetad.service
 #systemctl start lvm2-lvmetad.service
-5.2.2创建逻辑卷
-#fdisk /dev/sdb
-&lt;pre&gt;`
+</code></pre><h4 id="7-2-2-创建逻辑卷"><a href="#7-2-2-创建逻辑卷" class="headerlink" title="7.2.2 创建逻辑卷"></a>7.2.2 创建逻辑卷</h4><pre><code>#fdisk /dev/sdb
+
 [root@block-node-01 ~]# fdisk /dev/sdb
 Welcome to fdisk (util-linux 2.23.2).
 
@@ -1213,31 +1012,19 @@ Disk identifier: 0xb091be35
 Command (m for help):w
 Calling ioctl() to re-read partition table.
 Syncing disks.
-`&lt;/pre&gt;
-5.2.3更新内核中的分区表
-#partprobe
-5.2.4创建物理卷及卷组
-#pvcreate /dev/sdb1
+</code></pre><h4 id="7-2-3-更新内核中的分区表"><a href="#7-2-3-更新内核中的分区表" class="headerlink" title="7.2.3 更新内核中的分区表"></a>7.2.3 更新内核中的分区表</h4><pre><code>#partprobe
+</code></pre><h4 id="7-2-4-创建物理卷及卷组"><a href="#7-2-4-创建物理卷及卷组" class="headerlink" title="7.2.4 创建物理卷及卷组"></a>7.2.4 创建物理卷及卷组</h4><pre><code>#pvcreate /dev/sdb1
 #vgcreate cinder-volumes /dev/sdb1
-5.2.5修改lvm服务配置
-5.2.5.1备份
-#cp /etc/lvm/lvm.conf /etc/lvm/lvm.conf.bak
-5.2.5.2修改
-#vi /etc/lvm/lvm.conf
-&lt;pre&gt;` 
+</code></pre><h4 id="7-2-5-修改lvm服务配置"><a href="#7-2-5-修改lvm服务配置" class="headerlink" title="7.2.5 修改lvm服务配置"></a>7.2.5 修改lvm服务配置</h4><h5 id="7-2-5-1-备份"><a href="#7-2-5-1-备份" class="headerlink" title="7.2.5.1 备份"></a>7.2.5.1 备份</h5><pre><code>#cp /etc/lvm/lvm.conf /etc/lvm/lvm.conf.bak
+</code></pre><h5 id="7-2-5-2-修改"><a href="#7-2-5-2-修改" class="headerlink" title="7.2.5.2 修改"></a>7.2.5.2 修改</h5><pre><code>#vi /etc/lvm/lvm.conf
+
 devices {
 filter = [ &quot;a/sda/&quot;, &quot;a/sdb/&quot;, &quot;r/.*/&quot;]
-`&lt;/pre&gt;
-5.2.5.3重启lvm服务
-#systemctl restart lvm2-lvmetad.service
-5.2.6安装cinder组件
-#yum install openstack-cinder targetcli python-oslo-db python-oslo-log MySQL-python -y
-5.2.7配置cinder
-5.2.7.1备份
-#cp /etc/cinder/cinder.conf /etc/cinder/cinder.conf.bak
-5.2.7.2配置cinder.conf
-#vi /etc/cinder/cinder.conf
-&lt;pre&gt;`[DEFAULT]
+</code></pre><h5 id="7-2-5-3-重启lvm服务"><a href="#7-2-5-3-重启lvm服务" class="headerlink" title="7.2.5.3 重启lvm服务"></a>7.2.5.3 重启lvm服务</h5><pre><code>#systemctl restart lvm2-lvmetad.service
+</code></pre><h4 id="7-2-6-安装cinder组件"><a href="#7-2-6-安装cinder组件" class="headerlink" title="7.2.6 安装cinder组件"></a>7.2.6 安装cinder组件</h4><pre><code>#yum install openstack-cinder targetcli python-oslo-db python-oslo-log MySQL-python -y
+</code></pre><h4 id="7-2-7-配置cinder"><a href="#7-2-7-配置cinder" class="headerlink" title="7.2.7 配置cinder"></a>7.2.7 配置cinder</h4><h5 id="7-2-7-1-备份"><a href="#7-2-7-1-备份" class="headerlink" title="7.2.7.1 备份"></a>7.2.7.1 备份</h5><pre><code>#cp /etc/cinder/cinder.conf /etc/cinder/cinder.conf.bak
+</code></pre><h5 id="7-2-7-2-配置cinder-conf"><a href="#7-2-7-2-配置cinder-conf" class="headerlink" title="7.2.7.2 配置cinder.conf"></a>7.2.7.2 配置cinder.conf</h5><pre><code>#vi /etc/cinder/cinder.conf
+[DEFAULT]
 rpc_backend = rabbit
 auth_strategy = keystone
 my_ip = 192.168.199.83
@@ -1271,16 +1058,13 @@ iscsi_helper = lioadm
 
 [oslo_concurrency]
 lock_path = /var/lock/cinder
-`&lt;/pre&gt;
-5.2.7.3创建文件夹
-#mkdir -p /var/lock/cinder
+</code></pre><h5 id="7-2-7-3-创建文件夹"><a href="#7-2-7-3-创建文件夹" class="headerlink" title="7.2.7.3 创建文件夹"></a>7.2.7.3 创建文件夹</h5><pre><code>#mkdir -p /var/lock/cinder
 #chown cinder:cinder /var/lock/cinder
-5.2.8启动cinder服务
-#systemctl enable openstack-cinder-volume.service target.service
+</code></pre><h4 id="7-2-8-启动cinder服务"><a href="#7-2-8-启动cinder服务" class="headerlink" title="7.2.8 启动cinder服务"></a>7.2.8 启动cinder服务</h4><pre><code>#systemctl enable openstack-cinder-volume.service target.service
 #systemctl start openstack-cinder-volume.service target.service
-5.2.9验证(在controller节点)
-#echo &quot;export OS_VOLUME_API_VERSION=2&quot; | tee -a admin-openrc.sh demo-openrc.sh
-&lt;pre&gt;`[root@controller ~]# source /root/admin-openrc.sh
+</code></pre><h4 id="7-2-9-验证-在controller节点"><a href="#7-2-9-验证-在controller节点" class="headerlink" title="7.2.9 验证(在controller节点)"></a>7.2.9 验证(在controller节点)</h4><pre><code>#echo &quot;export OS_VOLUME_API_VERSION=2&quot; | tee -a admin-openrc.sh demo-openrc.sh
+
+[root@controller ~]# source /root/admin-openrc.sh
 [root@controller ~]# cinder service-list
 +------------------+-------------------+------+---------+-------+----------------------------+-----------------+
 |      Binary      |        Host       | Zone |  Status | State |         Updated_at         | Disabled Reason |
@@ -1321,13 +1105,7 @@ lock_path = /var/lock/cinder
 +--------------------------------------+-----------+--------------+------+-------------+----------+-------------+
 | 75ed439d-9d42-4ae9-8615-c4f1b8ff9ae0 | available | demo-volume1 |  1   |      -      |  false   |             |
 +--------------------------------------+-----------+--------------+------+-------------+----------+-------------+
-`&lt;/pre&gt;
-
-## 6.Swift组件安装
-
-6.1在controller节点安装
-6.1.1创建账号及服务
-#source /root/admin-openrc.sh
+</code></pre><h2 id="8-Swift组件安装"><a href="#8-Swift组件安装" class="headerlink" title="8. Swift组件安装"></a>8. Swift组件安装</h2><h3 id="8-1-在controller节点安装"><a href="#8-1-在controller节点安装" class="headerlink" title="8.1 在controller节点安装"></a>8.1 在controller节点安装</h3><h4 id="8-1-1-创建账号及服务"><a href="#8-1-1-创建账号及服务" class="headerlink" title="8.1.1 创建账号及服务"></a>8.1.1 创建账号及服务</h4><pre><code>#source /root/admin-openrc.sh
 #openstack user create --password-prompt swift
 #openstack role add --project service --user swift admin
 #openstack service create --name swift \
@@ -1338,24 +1116,18 @@ lock_path = /var/lock/cinder
 --adminurl http://controller:8080 \
 --region RegionOne \
 object-store
-6.1.2安装swift组件
-#yum install openstack-swift-proxy python-swiftclient python-keystoneclient \
+</code></pre><h4 id="8-1-2-安装swift组件"><a href="#8-1-2-安装swift组件" class="headerlink" title="8.1.2 安装swift组件"></a>8.1.2 安装swift组件</h4><pre><code>#yum install openstack-swift-proxy python-swiftclient python-keystoneclient \
 python-keystonemiddleware memcached -y
-6.1.3配置proxy-server
-6.1.3.1下载配置文件模板
-#curl -o /etc/swift/proxy-server.conf \
+</code></pre><h4 id="8-1-3-配置proxy-server"><a href="#8-1-3-配置proxy-server" class="headerlink" title="8.1.3 配置proxy-server"></a>8.1.3 配置proxy-server</h4><h5 id="8-1-3-1-下载配置文件模板"><a href="#8-1-3-1-下载配置文件模板" class="headerlink" title="8.1.3.1 下载配置文件模板"></a>8.1.3.1 下载配置文件模板</h5><pre><code>#curl -o /etc/swift/proxy-server.conf \
 https://git.openstack.org/cgit/openstack/swift/plain/etc/proxy-server.conf-sample?h=stable/kilo
-&lt;pre&gt;`
+
 [root@controller ~]# curl -o /etc/swift/proxy-server.conf \
-&amp;gt; https://git.openstack.org/cgit/openstack/swift/plain/etc/proxy-server.conf-sample?h=stable/kilo
+&gt; https://git.openstack.org/cgit/openstack/swift/plain/etc/proxy-server.conf-sample?h=stable/kilo
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100 28586  100 28586    0     0  13043      0  0:00:02  0:00:02 --:--:-- 13047
+</code></pre><h5 id="8-1-3-2-修改配置文件"><a href="#8-1-3-2-修改配置文件" class="headerlink" title="8.1.3.2 修改配置文件"></a>8.1.3.2 修改配置文件</h5><pre><code>#vi /etc/swift/proxy-server.conf
 
-`&lt;/pre&gt;
-6.1.3.2修改配置文件
-#vi /etc/swift/proxy-server.conf
-&lt;pre&gt;`
 [DEFAULT]
 bind_port = 8080
 user = swift
@@ -1386,31 +1158,21 @@ delay_auth_decision = true
 
 [filter:cache]
 memcache_servers = 127.0.0.1:11211
-`&lt;/pre&gt;
-6.2在object-node-01节点安装
-6.2.1系统配置
-6.2.1.1安装系统组件
-#yum install xfsprogs rsync -y
-6.2.1.2格式化磁盘
-#fdisk /dev/sdb
+</code></pre><h3 id="8-2-在object-node-01节点安装"><a href="#8-2-在object-node-01节点安装" class="headerlink" title="8.2 在object-node-01节点安装"></a>8.2 在object-node-01节点安装</h3><h4 id="8-2-1-系统配置"><a href="#8-2-1-系统配置" class="headerlink" title="8.2.1 系统配置"></a>8.2.1 系统配置</h4><h5 id="8-2-1-1-安装系统组件"><a href="#8-2-1-1-安装系统组件" class="headerlink" title="8.2.1.1 安装系统组件"></a>8.2.1.1 安装系统组件</h5><pre><code>#yum install xfsprogs rsync -y
+</code></pre><h5 id="8-2-1-2-格式化磁盘"><a href="#8-2-1-2-格式化磁盘" class="headerlink" title="8.2.1.2 格式化磁盘"></a>8.2.1.2 格式化磁盘</h5><pre><code>#fdisk /dev/sdb
 #fdisk /dev/sdc
 #mkfs.xfs /dev/sdb1
 #mkfs.xfs /dev/sdc1
-6.2.1.3创建文件夹
-#mkdir -p /srv/node/sdb1
+</code></pre><h5 id="8-2-1-3-创建文件夹"><a href="#8-2-1-3-创建文件夹" class="headerlink" title="8.2.1.3 创建文件夹"></a>8.2.1.3 创建文件夹</h5><pre><code>#mkdir -p /srv/node/sdb1
 #mkdir -p /srv/node/sdc1
-6.2.1.4修改fstab
-#vi /etc/fstab
-&lt;pre&gt;`/dev/sdb1 /srv/node/sdb1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 2
+</code></pre><h5 id="8-2-1-4-修改fstab"><a href="#8-2-1-4-修改fstab" class="headerlink" title="8.2.1.4 修改fstab"></a>8.2.1.4 修改fstab</h5><pre><code>#vi /etc/fstab
+/dev/sdb1 /srv/node/sdb1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 2
 /dev/sdc1 /srv/node/sdc1 xfs noatime,nodiratime,nobarrier,logbufs=8 0 2
-`&lt;/pre&gt;
-6.2.1.5挂载磁盘到文件夹
-#mount /srv/node/sdb1
+</code></pre><h5 id="8-2-1-5-挂载磁盘到文件夹"><a href="#8-2-1-5-挂载磁盘到文件夹" class="headerlink" title="8.2.1.5 挂载磁盘到文件夹"></a>8.2.1.5 挂载磁盘到文件夹</h5><pre><code>#mount /srv/node/sdb1
 #mount /srv/node/sdc1
-6.2.1.6修改文件同步服务
-#cp /etc/rsyncd.conf /etc/rsyncd.conf.bak
+</code></pre><h5 id="8-2-1-6-修改文件同步服务"><a href="#8-2-1-6-修改文件同步服务" class="headerlink" title="8.2.1.6 修改文件同步服务"></a>8.2.1.6 修改文件同步服务</h5><pre><code>#cp /etc/rsyncd.conf /etc/rsyncd.conf.bak
 #vi /etc/rsyncd.conf
-&lt;pre&gt;`
+
 uid = swift
 gid = swift
 log file = /var/log/rsyncd.log
@@ -1431,16 +1193,11 @@ max connections = 2
 path = /srv/node/
 read only = false
 lock file = /var/lock/object.lock
-`&lt;/pre&gt;
-6.2.1.7启动文件同步服务
-#systemctl enable rsyncd.service
+</code></pre><h5 id="8-2-1-7-启动文件同步服务"><a href="#8-2-1-7-启动文件同步服务" class="headerlink" title="8.2.1.7 启动文件同步服务"></a>8.2.1.7 启动文件同步服务</h5><pre><code>#systemctl enable rsyncd.service
 #systemctl start rsyncd.service
-6.2.2安装
-#yum install openstack-swift-account openstack-swift-container \
+</code></pre><h4 id="8-2-2-安装"><a href="#8-2-2-安装" class="headerlink" title="8.2.2 安装"></a>8.2.2 安装</h4><pre><code>#yum install openstack-swift-account openstack-swift-container \
 openstack-swift-object -y
-6.2.3配置swift
-6.2.3.1下载配置文件模板
-#curl -o /etc/swift/account-server.conf \
+</code></pre><h4 id="8-2-3-配置swift"><a href="#8-2-3-配置swift" class="headerlink" title="8.2.3 配置swift"></a>8.2.3 配置swift</h4><h5 id="8-2-3-1-下载配置文件模板"><a href="#8-2-3-1-下载配置文件模板" class="headerlink" title="8.2.3.1 下载配置文件模板"></a>8.2.3.1 下载配置文件模板</h5><pre><code>#curl -o /etc/swift/account-server.conf \
 https://git.openstack.org/cgit/openstack/swift/plain/etc/account-server.conf-sample?h=stable/kilo
 #curl -o /etc/swift/container-server.conf \
 https://git.openstack.org/cgit/openstack/swift/plain/etc/container-server.conf-sample?h=stable/kilo
@@ -1452,9 +1209,7 @@ https://git.openstack.org/cgit/openstack/swift/plain/etc/container-reconciler.co
 https://git.openstack.org/cgit/openstack/swift/plain/etc/object-expirer.conf-sample?h=stable/kilo
 #curl -o /etc/swift/swift.conf \
 https://git.openstack.org/cgit/openstack/swift/plain/etc/swift.conf-sample?h=stable/kilo
-6.2.3.2修改/etc/swift/account-server.conf
-&lt;pre&gt;`
-[DEFAULT]
+</code></pre><h5 id="8-2-3-2-修改-etc-swift-account-server-conf"><a href="#8-2-3-2-修改-etc-swift-account-server-conf" class="headerlink" title="8.2.3.2 修改/etc/swift/account-server.conf"></a>8.2.3.2 修改/etc/swift/account-server.conf</h5><pre><code>[DEFAULT]
 bind_ip = 192.168.199.84
 bind_port = 6002
 user = swift
@@ -1468,10 +1223,7 @@ use = egg:swift#healthcheck
 [filter:recon]
 use = egg:swift#recon
 recon_cache_path = /var/cache/swift
-`&lt;/pre&gt;
-6.2.3.3修改/etc/swift/container-server.conf
-&lt;pre&gt;`
-[DEFAULT]
+</code></pre><h5 id="8-2-3-3-修改-etc-swift-container-server-conf"><a href="#8-2-3-3-修改-etc-swift-container-server-conf" class="headerlink" title="8.2.3.3 修改/etc/swift/container-server.conf"></a>8.2.3.3 修改/etc/swift/container-server.conf</h5><pre><code>[DEFAULT]
 bind_ip = 192.168.199.84
 bind_port = 6001
 user = swift
@@ -1485,10 +1237,7 @@ use = egg:swift#healthcheck
 [filter:recon]
 use = egg:swift#recon
 recon_cache_path = /var/cache/swift
-`&lt;/pre&gt;
-6.2.3.4修改/etc/swift/object-server.conf
-&lt;pre&gt;`
-[DEFAULT]
+</code></pre><h5 id="8-2-3-4-修改-etc-swift-object-server-conf"><a href="#8-2-3-4-修改-etc-swift-object-server-conf" class="headerlink" title="8.2.3.4 修改/etc/swift/object-server.conf"></a>8.2.3.4 修改/etc/swift/object-server.conf</h5><pre><code>[DEFAULT]
 bind_ip = 192.168.199.84
 bind_port = 6000
 user = swift
@@ -1503,30 +1252,57 @@ use = egg:swift#healthcheck
 use = egg:swift#recon
 recon_cache_path = /var/cache/swift
 recon_lock_path = /var/lock
-`&lt;/pre&gt;
-6.2.3.5修改/etc/swift/swift.conf
-备注：HASH_PATH_SUFFIX 和 HASH_PATH_PREFIX 分别用openssl rand -hex 10命令生成。
-&lt;pre&gt;`[swift-hash]
+</code></pre><h5 id="8-2-3-5-修改-etc-swift-swift-conf"><a href="#8-2-3-5-修改-etc-swift-swift-conf" class="headerlink" title="8.2.3.5 修改/etc/swift/swift.conf"></a>8.2.3.5 修改/etc/swift/swift.conf</h5><p>备注：HASH_PATH_SUFFIX 和 HASH_PATH_PREFIX 分别用openssl rand -hex 10命令生成。</p>
+<pre><code>[swift-hash]
 swift_hash_path_suffix = HASH_PATH_SUFFIX
 swift_hash_path_prefix = HASH_PATH_PREFIX
 
 [storage-policy:0]
 name = Policy-0
 default = yes
-</code></pre><p>6.2.3.6文件夹授权</p>
-<p>#chown -R swift:swift /srv/node</p>
-<p>#mkdir -p /var/cache/swift</p>
-<p>#chown -R swift:swift /var/cache/swift</p>
-<p>#chown -R swift:swift /etc/swift</p>
-<p>6.3在object-node-02节点安装<br>参照6.2章节安装。配置文件可以自己从object-node-01节点拷贝过来，只需要修改配置文件中的IP地址即可。<br>6.4controller节点创建环（Ring）<br>备注：IP地址分别为object-node-01和object-node-02所对应的IP<br>6.4.1创建账号环（Account Ring）<br>swift-ring-builder account.builder create 10 3 1<br>swift-ring-builder account.builder add r1z1-192.168.199.84:6002/sdb1 100<br>swift-ring-builder account.builder add r1z1-192.168.199.84:6002/sdc1 100<br>swift-ring-builder account.builder add r1z2-192.168.199.85:6002/sdb1 100<br>swift-ring-builder account.builder add r1z2-192.168.199.85:6002/sdc1 100<br>swift-ring-builder account.builder<br>swift-ring-builder account.builder rebalance<br>6.4.2创建容器环（Container Ring)<br>swift-ring-builder container.builder create 10 3 1<br>swift-ring-builder container.builder create 10 3 1<br>swift-ring-builder container.builder add r1z1-192.168.199.84:6001/sdb1 100<br>swift-ring-builder container.builder add r1z1-192.168.199.84:6001/sdc1 100<br>swift-ring-builder container.builder add r1z2-192.168.199.85:6001/sdb1 100<br>swift-ring-builder container.builder add r1z2-192.168.199.85:6001/sdc1 100<br>swift-ring-builder container.builder<br>swift-ring-builder container.builder rebalance<br>6.4.3创建对象环（Object Ring)<br>swift-ring-builder object.builder create 10 3 1<br>swift-ring-builder object.builder create 10 3 1<br>swift-ring-builder object.builder add r1z1-192.168.199.84:6000/sdb1 100<br>swift-ring-builder object.builder add r1z1-192.168.199.84:6000/sdc1 100<br>swift-ring-builder object.builder add r1z2-192.168.199.85:6000/sdb1 100<br>swift-ring-builder object.builder add r1z2-192.168.199.85:6000/sdc1 100<br>swift-ring-builder object.builder<br>swift-ring-builder object.builder rebalance<br>6.4.4启动服务(controller节点执行)</p>
-<p>#systemctl enable openstack-swift-proxy.service</p>
-<p>#systemctl start openstack-swift-proxy.service</p>
-<p>#systemctl restart memcached.service<br>6.5启动服务（object-node-01, object-node-02节点执行）</p>
-<p>#systemctl enable openstack-swift-account.service openstack-swift-account-auditor.service \<br>openstack-swift-account-reaper.service openstack-swift-account-replicator.service</p>
-<p>#systemctl start openstack-swift-account.service openstack-swift-account-auditor.service \<br>openstack-swift-account-reaper.service openstack-swift-account-replicator.service</p>
-<p>#systemctl enable openstack-swift-container.service openstack-swift-container-auditor.service \<br>openstack-swift-container-replicator.service openstack-swift-container-updater.service</p>
-<p>#systemctl start openstack-swift-container.service openstack-swift-container-auditor.service \<br>openstack-swift-container-replicator.service openstack-swift-container-updater.service</p>
-<p>#systemctl enable openstack-swift-object.service openstack-swift-object-auditor.service \<br>openstack-swift-object-replicator.service openstack-swift-object-updater.service</p>
-<p>#systemctl start openstack-swift-object.service openstack-swift-object-auditor.service \<br>openstack-swift-object-replicator.service openstack-swift-object-updater.service</p>
-</div><div class="tags"><a href="/tags/openstack/">openstack</a></div><div class="post-share"><div class="bdsharebuttonbox"><span style="float:left;line-height: 28px;height: 28px;font-size:16px;font-weight:blod">分享到：</span><a href="#" data-cmd="more" class="bds_more"></a><a href="#" data-cmd="mshare" title="分享到一键分享" class="bds_mshare"></a><a href="#" data-cmd="fbook" title="分享到Facebook" class="bds_fbook"></a><a href="#" data-cmd="twi" title="分享到Twitter" class="bds_twi"></a><a href="#" data-cmd="linkedin" title="分享到linkedin" class="bds_linkedin"></a><a href="#" data-cmd="youdao" title="分享到有道云笔记" class="bds_youdao"></a><a href="#" data-cmd="evernotecn" title="分享到印象笔记" class="bds_evernotecn"></a><a href="#" data-cmd="weixin" title="分享到微信" class="bds_weixin"></a><a href="#" data-cmd="qzone" title="分享到QQ空间" class="bds_qzone"></a><a href="#" data-cmd="tsina" title="分享到新浪微博" class="bds_tsina"></a></div></div><div class="post-nav"><a href="/2016/06/12/openstack-error-checking/" class="pre">OpenStack入门之四:故障诊断实例</a><a href="/2016/06/05/rome-story-4/" class="next">《罗马人的故事4:凯撒时代（上）》读书笔记</a></div><div id="comments"></div></div></div></div><div class="layout-r"><div id="sidebar"><div class="search-pla"></div><div id="toc" class="widget"><div class="widget-title"><i class="fa fa-fei">文章目录</i></div><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#虚拟机环境"><span class="toc-text">虚拟机环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#组件节点分布"><span class="toc-text">组件节点分布</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-准备工作"><span class="toc-text">1.准备工作</span></a></li></ol></div><div class="widget"><div class="widget-title"><i class="fa fa-xie"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/05/15/storm-3/">Storm与kafka集成(上)</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/09/docker-ps/">docker ps 命令详解</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/26/machine-learning-3/">机器学习之三：降维技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/storm-2/">Storm的基本概念和组件</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/28/machine-learning-2/">机器学习之二：回归分析</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/homo-tommorrow/">《未来简史》读书笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/storm-1/">使用Docker快速安装简单Storm集群环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/machine-learning-1/">机器学习之一：什么是机器学习？</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/blockchain-1/">关于区块链的一点思考</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/reading-2016/">2016 阅读书单</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-gui"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/">云计算及虚拟化</a><span class="category-list-count">34</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/运维/">运维</a><span class="category-list-count">16</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/">商业智能</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/数据库/">数据库</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/">大数据</a><span class="category-list-count">13</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/运维/">运维</a><span class="category-list-count">3</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">18</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/运维/">运维</a><span class="category-list-count">6</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/读书笔记/">读书笔记</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/运维/">运维</a><span class="category-list-count">3</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-biao"> 标签</i></div><div class="tagcloud"><a href="/tags/docker-compose/" style="font-size: 15px;">docker-compose</a> <a href="/tags/BigInSights/" style="font-size: 15px;">BigInSights</a> <a href="/tags/flume/" style="font-size: 15px;">flume</a> <a href="/tags/区块链/" style="font-size: 15px;">区块链</a> <a href="/tags/postgresql/" style="font-size: 15px;">postgresql</a> <a href="/tags/Container/" style="font-size: 15px;">Container</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/容器/" style="font-size: 15px;">容器</a> <a href="/tags/big-data/" style="font-size: 15px;">big data</a> <a href="/tags/data-lake/" style="font-size: 15px;">data lake</a> <a href="/tags/数据湖/" style="font-size: 15px;">数据湖</a> <a href="/tags/Cognos/" style="font-size: 15px;">Cognos</a> <a href="/tags/open-vswitch/" style="font-size: 15px;">open vswitch</a> <a href="/tags/Oracle/" style="font-size: 15px;">Oracle</a> <a href="/tags/userland-proxy/" style="font-size: 15px;">userland-proxy</a> <a href="/tags/Registry/" style="font-size: 15px;">Registry</a> <a href="/tags/Shipyard/" style="font-size: 15px;">Shipyard</a> <a href="/tags/swarm/" style="font-size: 15px;">swarm</a> <a href="/tags/hadoop/" style="font-size: 15px;">hadoop</a> <a href="/tags/HA/" style="font-size: 15px;">HA</a> <a href="/tags/zookeeper/" style="font-size: 15px;">zookeeper</a> <a href="/tags/Hbase/" style="font-size: 15px;">Hbase</a> <a href="/tags/工业4-0/" style="font-size: 15px;">工业4.0</a> <a href="/tags/ETL/" style="font-size: 15px;">ETL</a> <a href="/tags/InfoPath/" style="font-size: 15px;">InfoPath</a> <a href="/tags/SSIS/" style="font-size: 15px;">SSIS</a> <a href="/tags/XML/" style="font-size: 15px;">XML</a> <a href="/tags/JConsole/" style="font-size: 15px;">JConsole</a> <a href="/tags/Mycat/" style="font-size: 15px;">Mycat</a> <a href="/tags/Kafka/" style="font-size: 15px;">Kafka</a> <a href="/tags/Kafka-Manager/" style="font-size: 15px;">Kafka Manager</a> <a href="/tags/KERBEROS/" style="font-size: 15px;">KERBEROS</a> <a href="/tags/Kettle/" style="font-size: 15px;">Kettle</a> <a href="/tags/keepalived/" style="font-size: 15px;">keepalived</a> <a href="/tags/lvs/" style="font-size: 15px;">lvs</a> <a href="/tags/Kubernetes/" style="font-size: 15px;">Kubernetes</a> <a href="/tags/Mysql/" style="font-size: 15px;">Mysql</a> <a href="/tags/flannel/" style="font-size: 15px;">flannel</a> <a href="/tags/Quagga/" style="font-size: 15px;">Quagga</a> <a href="/tags/Redis/" style="font-size: 15px;">Redis</a> <a href="/tags/ku8eye/" style="font-size: 15px;">ku8eye</a> <a href="/tags/eclipse/" style="font-size: 15px;">eclipse</a> <a href="/tags/maven/" style="font-size: 15px;">maven</a> <a href="/tags/机器学习/" style="font-size: 15px;">机器学习</a> <a href="/tags/HAproxy/" style="font-size: 15px;">HAproxy</a> <a href="/tags/catlet/" style="font-size: 15px;">catlet</a> <a href="/tags/devstack/" style="font-size: 15px;">devstack</a> <a href="/tags/openstack/" style="font-size: 15px;">openstack</a> <a href="/tags/Python/" style="font-size: 15px;">Python</a> <a href="/tags/pgbench/" style="font-size: 15px;">pgbench</a> <a href="/tags/pgCluu/" style="font-size: 15px;">pgCluu</a> <a href="/tags/trigger/" style="font-size: 15px;">trigger</a> <a href="/tags/uuid/" style="font-size: 15px;">uuid</a> <a href="/tags/阅读书单/" style="font-size: 15px;">阅读书单</a> <a href="/tags/WordPress/" style="font-size: 15px;">WordPress</a> <a href="/tags/罗马/" style="font-size: 15px;">罗马</a> <a href="/tags/Hive/" style="font-size: 15px;">Hive</a> <a href="/tags/sqoop/" style="font-size: 15px;">sqoop</a> <a href="/tags/Storm/" style="font-size: 15px;">Storm</a> <a href="/tags/Yarn/" style="font-size: 15px;">Yarn</a> <a href="/tags/必然/" style="font-size: 15px;">必然</a> <a href="/tags/Thrift/" style="font-size: 15px;">Thrift</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-archive"> 归档</i></div><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a></li></ul></div></div></div></div><a id="totop" href="#top"></a><div id="footer"><div class="footer-info"><p><a href="/baidusitemap.xml">网站地图</a> |  <a href="/atom.xml">订阅</a> |  <a href="/about/">关于</a></p><p>本站总访问量：<i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>次</p><p><span> Copyright &copy;<a href="/." rel="nofollow">yaodataking.com.</a></span><span> Theme by<a rel="nofollow" target="_blank" href="https://github.com/chaooo/hexo-theme-BlueLake"> BlueLake.</a></span><span> Count by<a href="http://busuanzi.ibruce.info/"> busuanzi.</a></span><span> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a></span></p></div></div></div><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><script type="text/javascript" src="/js/search.json.js?v=2.0.1"></script><script type="text/javascript" src="/js/toctotop.js?v=2.0.1" async></script><script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["mshare","weixin","tsina","qzone","linkedin","fbook","twi","print","renren","sqq","evernotecn","bdysc","tqq","tqf","bdxc","kaixin001","tieba","douban","bdhome","thx","ibaidu","meilishuo","mogujie","diandian","huaban","duitang","hx","fx","youdao","sdo","qingbiji","people","xinhua","mail","isohu","yaolan","wealink","ty","iguba","h163","copy"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"],"viewText":"分享到：","viewSize":"16"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</code></pre><h5 id="8-2-3-6-文件夹授权"><a href="#8-2-3-6-文件夹授权" class="headerlink" title="8.2.3.6 文件夹授权"></a>8.2.3.6 文件夹授权</h5><pre><code>#chown -R swift:swift /srv/node
+#mkdir -p /var/cache/swift
+#chown -R swift:swift /var/cache/swift
+#chown -R swift:swift /etc/swift
+</code></pre><h3 id="8-3-在object-node-02节点安装"><a href="#8-3-在object-node-02节点安装" class="headerlink" title="8.3 在object-node-02节点安装"></a>8.3 在object-node-02节点安装</h3><p>参照6.2章节安装。配置文件可以自己从object-node-01节点拷贝过来，只需要修改配置文件中的IP地址即可。</p>
+<h3 id="8-4-controller节点创建环（Ring）"><a href="#8-4-controller节点创建环（Ring）" class="headerlink" title="8.4 controller节点创建环（Ring）"></a>8.4 controller节点创建环（Ring）</h3><p>备注：IP地址分别为object-node-01和object-node-02所对应的IP</p>
+<h4 id="8-4-1-创建账号环（Account-Ring）"><a href="#8-4-1-创建账号环（Account-Ring）" class="headerlink" title="8.4.1 创建账号环（Account Ring）"></a>8.4.1 创建账号环（Account Ring）</h4><pre><code>swift-ring-builder account.builder create 10 3 1
+swift-ring-builder account.builder add r1z1-192.168.199.84:6002/sdb1 100
+swift-ring-builder account.builder add r1z1-192.168.199.84:6002/sdc1 100
+swift-ring-builder account.builder add r1z2-192.168.199.85:6002/sdb1 100
+swift-ring-builder account.builder add r1z2-192.168.199.85:6002/sdc1 100
+swift-ring-builder account.builder
+swift-ring-builder account.builder rebalance
+</code></pre><h4 id="8-4-2-创建容器环（Container-Ring"><a href="#8-4-2-创建容器环（Container-Ring" class="headerlink" title="8.4.2 创建容器环（Container Ring)"></a>8.4.2 创建容器环（Container Ring)</h4><pre><code>swift-ring-builder container.builder create 10 3 1
+swift-ring-builder container.builder create 10 3 1
+swift-ring-builder container.builder add r1z1-192.168.199.84:6001/sdb1 100
+swift-ring-builder container.builder add r1z1-192.168.199.84:6001/sdc1 100
+swift-ring-builder container.builder add r1z2-192.168.199.85:6001/sdb1 100
+swift-ring-builder container.builder add r1z2-192.168.199.85:6001/sdc1 100
+swift-ring-builder container.builder
+swift-ring-builder container.builder rebalance
+</code></pre><h4 id="8-4-3-创建对象环（Object-Ring"><a href="#8-4-3-创建对象环（Object-Ring" class="headerlink" title="8.4.3 创建对象环（Object Ring)"></a>8.4.3 创建对象环（Object Ring)</h4><pre><code>swift-ring-builder object.builder create 10 3 1
+swift-ring-builder object.builder create 10 3 1
+swift-ring-builder object.builder add r1z1-192.168.199.84:6000/sdb1 100
+swift-ring-builder object.builder add r1z1-192.168.199.84:6000/sdc1 100
+swift-ring-builder object.builder add r1z2-192.168.199.85:6000/sdb1 100
+swift-ring-builder object.builder add r1z2-192.168.199.85:6000/sdc1 100
+swift-ring-builder object.builder
+swift-ring-builder object.builder rebalance
+</code></pre><h4 id="8-4-4-启动服务-controller节点执行"><a href="#8-4-4-启动服务-controller节点执行" class="headerlink" title="8.4.4 启动服务(controller节点执行)"></a>8.4.4 启动服务(controller节点执行)</h4><pre><code>#systemctl enable openstack-swift-proxy.service
+#systemctl start openstack-swift-proxy.service
+#systemctl restart memcached.service
+</code></pre><h3 id="8-5-启动服务（object-node-01-object-node-02节点执行）"><a href="#8-5-启动服务（object-node-01-object-node-02节点执行）" class="headerlink" title="8.5 启动服务（object-node-01, object-node-02节点执行）"></a>8.5 启动服务（object-node-01, object-node-02节点执行）</h3><pre><code>#systemctl enable openstack-swift-account.service openstack-swift-account-auditor.service \
+openstack-swift-account-reaper.service openstack-swift-account-replicator.service
+#systemctl start openstack-swift-account.service openstack-swift-account-auditor.service \
+openstack-swift-account-reaper.service openstack-swift-account-replicator.service
+#systemctl enable openstack-swift-container.service openstack-swift-container-auditor.service \    
+openstack-swift-container-replicator.service openstack-swift-container-updater.service
+#systemctl start openstack-swift-container.service openstack-swift-container-auditor.service \
+openstack-swift-container-replicator.service openstack-swift-container-updater.service
+#systemctl enable openstack-swift-object.service openstack-swift-object-auditor.service \
+openstack-swift-object-replicator.service openstack-swift-object-updater.service
+#systemctl start openstack-swift-object.service openstack-swift-object-auditor.service \
+openstack-swift-object-replicator.service openstack-swift-object-updater.service
+</code></pre></div><div class="tags"><a href="/tags/openstack/">openstack</a></div><div class="post-share"><div class="bdsharebuttonbox"><span style="float:left;line-height: 28px;height: 28px;font-size:16px;font-weight:blod">分享到：</span><a href="#" data-cmd="more" class="bds_more"></a><a href="#" data-cmd="mshare" title="分享到一键分享" class="bds_mshare"></a><a href="#" data-cmd="fbook" title="分享到Facebook" class="bds_fbook"></a><a href="#" data-cmd="twi" title="分享到Twitter" class="bds_twi"></a><a href="#" data-cmd="linkedin" title="分享到linkedin" class="bds_linkedin"></a><a href="#" data-cmd="youdao" title="分享到有道云笔记" class="bds_youdao"></a><a href="#" data-cmd="evernotecn" title="分享到印象笔记" class="bds_evernotecn"></a><a href="#" data-cmd="weixin" title="分享到微信" class="bds_weixin"></a><a href="#" data-cmd="qzone" title="分享到QQ空间" class="bds_qzone"></a><a href="#" data-cmd="tsina" title="分享到新浪微博" class="bds_tsina"></a></div></div><div class="post-nav"><a href="/2016/06/12/openstack-error-checking/" class="pre">OpenStack入门之四:故障诊断实例</a><a href="/2016/06/05/rome-story-4/" class="next">《罗马人的故事4:凯撒时代（上）》读书笔记</a></div><div id="comments"></div></div></div></div><div class="layout-r"><div id="sidebar"><div class="search-pla"></div><div id="toc" class="widget"><div class="widget-title"><i class="fa fa-fei">文章目录</i></div><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-虚拟机环境"><span class="toc-text">1. 虚拟机环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-组件节点分布"><span class="toc-text">2. 组件节点分布</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-准备工作"><span class="toc-text">3. 准备工作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-更新centos源"><span class="toc-text">3.1 更新centos源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-停止防火墙服务"><span class="toc-text">3.2 停止防火墙服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-安装基础组件及源"><span class="toc-text">3.3 安装基础组件及源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-更新时区"><span class="toc-text">3.4 更新时区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-配置时钟同步-controller节点"><span class="toc-text">3.5 配置时钟同步(controller节点)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-5-1-备份配置文件"><span class="toc-text">3.5.1 备份配置文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-5-2-添加参数"><span class="toc-text">3.5.2 添加参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-5-3-注释以下参数"><span class="toc-text">3.5.3 注释以下参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-5-4-启动时钟同步服务"><span class="toc-text">3.5.4 启动时钟同步服务</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-配置时钟同步-其它节点"><span class="toc-text">3.6 配置时钟同步(其它节点)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-6-1-备份配置文件"><span class="toc-text">3.6.1 备份配置文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-6-2添加参数"><span class="toc-text">3.6.2添加参数</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-7-本环境所涉及到组件密码。"><span class="toc-text">3.7 本环境所涉及到组件密码。</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-controller节点安装"><span class="toc-text">4. controller节点安装</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-安装数据库"><span class="toc-text">4.1 安装数据库</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-1-安装mariadb"><span class="toc-text">4.1.1 安装mariadb</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-2备份配置文件"><span class="toc-text">4.1.2备份配置文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-3修改配置文件"><span class="toc-text">4.1.3修改配置文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-4-启动数据库服务"><span class="toc-text">4.1.4 启动数据库服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-5-配置数据库服务安全参数-设置root密码"><span class="toc-text">2.1.5 配置数据库服务安全参数,设置root密码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-6-验证mysql是否登录正常"><span class="toc-text">4.1.6 验证mysql是否登录正常</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-安装rabbitmq"><span class="toc-text">4.2 安装rabbitmq</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-1安装rabbitmq-server"><span class="toc-text">4.2.1安装rabbitmq-server</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-2启动服务"><span class="toc-text">4.2.2启动服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-3添加用户，并允许远程访问"><span class="toc-text">4.2.3添加用户，并允许远程访问</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-4验证"><span class="toc-text">4.2.4验证</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-安装keystone"><span class="toc-text">4.3 安装keystone</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-1-创建数据库keystone"><span class="toc-text">4.3.1 创建数据库keystone</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-2-安装keystone组件"><span class="toc-text">4.3.2 安装keystone组件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-3-启动memcached"><span class="toc-text">4.3.3 启动memcached</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-4-配置keystone-conf"><span class="toc-text">4.3.4 配置keystone.conf</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-4-1-备份配置文件"><span class="toc-text">4.3.4.1 备份配置文件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-4-2-生成token"><span class="toc-text">4.3.4.2 生成token</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-4-3-修改配置文件"><span class="toc-text">4.3.4.3 修改配置文件</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-5初始化keystone数据库"><span class="toc-text">4.3.5初始化keystone数据库</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-5-1-执行创建表脚本"><span class="toc-text">4.3.5.1 执行创建表脚本</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-5-2-检查表是否均已创建完成"><span class="toc-text">4.3.5.2 检查表是否均已创建完成</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-6-配置keystone的http服务"><span class="toc-text">2.3.6 配置keystone的http服务</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#2-3-6-1-备份配置文件httpd-conf"><span class="toc-text">2.3.6.1 备份配置文件httpd.conf</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-3-6-2-修改配置文件httpd-conf"><span class="toc-text">2.3.6.2 修改配置文件httpd.conf</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-3-6-3-创建keystone的虚拟站点"><span class="toc-text">2.3.6.3 创建keystone的虚拟站点</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-6-4-创建wsgi-目录"><span class="toc-text">4.3.6.4 创建wsgi 目录</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-6-5-下载程序模板"><span class="toc-text">4.3.6.5 下载程序模板</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-6-6-修改文件夹及文件权限"><span class="toc-text">4.3.6.6 修改文件夹及文件权限</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-6-7-启动httpServer"><span class="toc-text">4.3.6.7 启动httpServer</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-6-8-检查http服务是否正常启动"><span class="toc-text">4.3.6.8 检查http服务是否正常启动</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-7-注册keystone-api服务"><span class="toc-text">4.3.7 注册keystone api服务</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-7-1-配置系统环境变量-ADMIN-TOKEN为2-3-4-2步骤通过openssl命令生成的值"><span class="toc-text">4.3.7.1 配置系统环境变量(ADMIN_TOKEN为2.3.4.2步骤通过openssl命令生成的值)</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-7-2-创建keystone服务信息"><span class="toc-text">4.3.7.2 创建keystone服务信息</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-7-3-创建keystone服务实例"><span class="toc-text">4.3.7.3 创建keystone服务实例</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-8-创建项目、用户、角色等信息"><span class="toc-text">4.3.8 创建项目、用户、角色等信息</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-8-1-创建项目-admin"><span class="toc-text">4.3.8.1 创建项目:admin</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-8-2-为项目admin创建用户：admin"><span class="toc-text">4.3.8.2 为项目admin创建用户：admin</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-8-3-创建角色-admin"><span class="toc-text">4.3.8.3 创建角色:admin</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-8-4-将角色admin授权给用户admin"><span class="toc-text">4.3.8.4 将角色admin授权给用户admin</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-9-同样创建项目demo及相关用户信息"><span class="toc-text">4.3.9 同样创建项目demo及相关用户信息</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-10-创建项目：service"><span class="toc-text">4.3.10 创建项目：service</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-11-验证keystone服务"><span class="toc-text">4.3.11 验证keystone服务</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-11-1-删除系统配置参数"><span class="toc-text">4.3.11.1 删除系统配置参数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-11-2-备份并修改keystone-dist-paste-ini配置文件"><span class="toc-text">4.3.11.2 备份并修改keystone-dist-paste.ini配置文件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-11-3-为项目admin配置环境变量脚本"><span class="toc-text">4.3.11.3 为项目admin配置环境变量脚本</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-11-4-为项目demo配置环境变量脚本"><span class="toc-text">4.3.11.4 为项目demo配置环境变量脚本</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-11-5-使用admin用户查看项目列表"><span class="toc-text">4.3.11.5 使用admin用户查看项目列表</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-3-11-6-使用demo用户获取token"><span class="toc-text">4.3.11.6 使用demo用户获取token</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-安装镜像服务glance"><span class="toc-text">4.4 安装镜像服务glance</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-4-1-创建数据库"><span class="toc-text">4.4.1 创建数据库</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-4-2-创建用户：glance，并授权"><span class="toc-text">4.4.2 创建用户：glance，并授权</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-4-3-创建服务及服务实例"><span class="toc-text">4.4.3 创建服务及服务实例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-4-4-安装glance"><span class="toc-text">4.4.4 安装glance</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-4-5-配置glance-api组件"><span class="toc-text">4.4.5 配置glance api组件</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#4-4-5-1-备份配置文件"><span class="toc-text">4.4.5.1 备份配置文件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-4-5-2-修改配置文件"><span class="toc-text">4.4.5.2 修改配置文件</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-4-6-配置glance-registry组件"><span class="toc-text">4.4.6 配置glance registry组件</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#4-4-6-1-备份配置文件"><span class="toc-text">4.4.6.1 备份配置文件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-4-6-2-修改配置文件"><span class="toc-text">4.4.6.2 修改配置文件</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-4-7-初始化glance数据库"><span class="toc-text">4.4.7 初始化glance数据库</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-4-8-启动glance服务"><span class="toc-text">4.4.8 启动glance服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-4-9-验证glance服务"><span class="toc-text">4.4.9 验证glance服务</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Nova组件安装"><span class="toc-text">5. Nova组件安装</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-在controller节点安装"><span class="toc-text">5.1 在controller节点安装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-1-创建数据库"><span class="toc-text">5.1.1 创建数据库</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-2-创建用户：nova，并授权用户权限"><span class="toc-text">5.1.2 创建用户：nova，并授权用户权限</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-3-创建服务及服务实例"><span class="toc-text">5.1.3 创建服务及服务实例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-4-安装nova组件"><span class="toc-text">5.1.4 安装nova组件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-5-配置nova-conf"><span class="toc-text">5.1.5 配置nova.conf</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#5-1-5-1-备份配置文件"><span class="toc-text">5.1.5.1 备份配置文件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#5-1-5-2-修改配置文件"><span class="toc-text">5.1.5.2 修改配置文件</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-6-初始化nova数据库"><span class="toc-text">5.1.6 初始化nova数据库</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-7-启动nova"><span class="toc-text">5.1.7 启动nova</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-compute-node-01安装"><span class="toc-text">5.2 compute-node-01安装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-1-安装nova组件"><span class="toc-text">5.2.1 安装nova组件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-2-配置nova"><span class="toc-text">5.2.2 配置nova</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#5-2-2-1备份配置文件"><span class="toc-text">5.2.2.1备份配置文件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#5-2-2-2修改配置文件"><span class="toc-text">5.2.2.2修改配置文件</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-3-启动nova"><span class="toc-text">5.2.3 启动nova</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-4验证"><span class="toc-text">5.2.4验证</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Neutron组件安装"><span class="toc-text">6. Neutron组件安装</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-在controller节点安装"><span class="toc-text">6.1 在controller节点安装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-1-创建数据库"><span class="toc-text">6.1.1 创建数据库</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-2-创建用户：neutron，并授权用户权限"><span class="toc-text">6.1.2 创建用户：neutron，并授权用户权限</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-3-注册服务及服务实例"><span class="toc-text">6.1.3 注册服务及服务实例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-4-安装neutron组件"><span class="toc-text">6.1.4 安装neutron组件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-5-配置neutron-conf"><span class="toc-text">6.1.5 配置neutron.conf</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-1-5-1-备份"><span class="toc-text">6.1.5.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-1-5-2-修改配置文件"><span class="toc-text">6.1.5.2 修改配置文件</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-6-配置ml2插件"><span class="toc-text">6.1.6 配置ml2插件</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-1-6-1-备份"><span class="toc-text">6.1.6.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-1-6-2-配置"><span class="toc-text">6.1.6.2 配置</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-1-6-3-建立link文件"><span class="toc-text">6.1.6.3 建立link文件</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-7-配置nova-conf"><span class="toc-text">6.1.7 配置nova.conf</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-1-7-1-备份"><span class="toc-text">6.1.7.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-1-7-2-配置"><span class="toc-text">6.1.7.2 配置</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-8-初始化数据库"><span class="toc-text">6.1.8 初始化数据库</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-9-重启nova服务"><span class="toc-text">6.1.9 重启nova服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-10-启动neutron服务"><span class="toc-text">6.1.10 启动neutron服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-11-验证"><span class="toc-text">6.1.11 验证</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-在network-node-01节点安装"><span class="toc-text">6.2 在network-node-01节点安装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-1-启用IP转发功能"><span class="toc-text">6.2.1 启用IP转发功能</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-1-1-备份配置文件"><span class="toc-text">6.2.1.1 备份配置文件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-1-2-修改配置"><span class="toc-text">6.2.1.2 修改配置</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-1-3-启用配置"><span class="toc-text">6.2.1.3 启用配置</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-2-安装neutron组件"><span class="toc-text">6.2.2 安装neutron组件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-3-配置neutron-conf"><span class="toc-text">6.2.3 配置neutron.conf</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-3-1-备份"><span class="toc-text">6.2.3.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-3-2-配置"><span class="toc-text">6.2.3.2 配置</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-4-配置ML2插件"><span class="toc-text">6.2.4 配置ML2插件</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-4-1-备份"><span class="toc-text">6.2.4.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-4-2-配置"><span class="toc-text">6.2.4.2 配置</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-5-创建链接文件"><span class="toc-text">6.2.5 创建链接文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-6-配置ML3插件"><span class="toc-text">6.2.6 配置ML3插件</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-6-1-备份"><span class="toc-text">6.2.6.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-6-2-配置"><span class="toc-text">6.2.6.2 配置</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-7-配置DHCP插件"><span class="toc-text">6.2.7 配置DHCP插件</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-7-1-备份"><span class="toc-text">6.2.7.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-7-2-配置"><span class="toc-text">6.2.7.2 配置</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-7-3-创建dnsmasq-neutron-conf并添加以下参数："><span class="toc-text">6.2.7.3 创建dnsmasq-neutron.conf并添加以下参数：</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-8-配置元数据插件"><span class="toc-text">6.2.8 配置元数据插件</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-8-1-备份"><span class="toc-text">6.2.8.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-8-2-配置"><span class="toc-text">6.2.8.2 配置</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-9-配置nova-conf-在controller节点配置"><span class="toc-text">6.2.9 配置nova.conf(在controller节点配置)</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-9-1-备份"><span class="toc-text">6.2.9.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-9-2-在-neutron-节点中增加以下内容"><span class="toc-text">6.2.9.2 在[neutron]节点中增加以下内容</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-9-3-重启nova服务"><span class="toc-text">6.2.9.3 重启nova服务</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-10启动服务"><span class="toc-text">6.2.10启动服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-11-创建虚拟路由器"><span class="toc-text">6.2.11 创建虚拟路由器</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-11-1-创建虚拟路由器"><span class="toc-text">6.2.11.1 创建虚拟路由器</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-11-2-添加网卡到虚拟路由器（enp0s8为网络节点第二块网卡名，设备名称先通过ifconfig命令查看，另外这块网卡不需要分配IP地址）"><span class="toc-text">6.2.11.2 添加网卡到虚拟路由器（enp0s8为网络节点第二块网卡名，设备名称先通过ifconfig命令查看，另外这块网卡不需要分配IP地址）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-2-11-3-禁止GRO"><span class="toc-text">6.2.11.3 禁止GRO</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-12-启动服务"><span class="toc-text">6.2.12 启动服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-13-验证-在controller节点"><span class="toc-text">6.2.13 验证(在controller节点)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-在compute-node-01节点安装"><span class="toc-text">6.3 在compute-node-01节点安装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-1-配置IP转发"><span class="toc-text">6.3.1 配置IP转发</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-3-1-1-备份"><span class="toc-text">6.3.1.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-3-1-2-配置"><span class="toc-text">6.3.1.2 配置</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-3-1-3-生效配置"><span class="toc-text">6.3.1.3 生效配置</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-2安装"><span class="toc-text">6.3.2安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-3-配置neutron"><span class="toc-text">6.3.3 配置neutron</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-3-3-1-备份"><span class="toc-text">6.3.3.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-3-3-2-配置（需要删除-keystone-authtoken-中已存在的配置）"><span class="toc-text">6.3.3.2 配置（需要删除[keystone_authtoken]中已存在的配置）</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-4-配置ml2插件"><span class="toc-text">6.3.4 配置ml2插件</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-3-4-1-备份"><span class="toc-text">6.3.4.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-3-4-2-配置"><span class="toc-text">6.3.4.2 配置</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-5-创建link文件"><span class="toc-text">6.3.5 创建link文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-6-配置nova-conf"><span class="toc-text">6.3.6 配置nova.conf</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-3-6-1-备份"><span class="toc-text">6.3.6.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-3-6-2-配置"><span class="toc-text">6.3.6.2 配置</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-7-启动"><span class="toc-text">6.3.7 启动</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-8-验证-在controller节点"><span class="toc-text">6.3.8 验证(在controller节点)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-创建网络"><span class="toc-text">6.4 创建网络</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-4-1-创建扩展网络"><span class="toc-text">6.4.1 创建扩展网络</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-4-2-创建扩展网络子网"><span class="toc-text">6.4.2 创建扩展网络子网</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-4-3-创建租户网络"><span class="toc-text">6.4.3 创建租户网络</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-4-4-创建路由器"><span class="toc-text">6.4.4 创建路由器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-4-5-设置安全组规则"><span class="toc-text">6.4.5 设置安全组规则</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-4-6-验证"><span class="toc-text">6.4.6.验证</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-5-controller节点安装Dashboard"><span class="toc-text">6.5 controller节点安装Dashboard</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-5-1-安装"><span class="toc-text">6.5.1 安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-5-2-配置"><span class="toc-text">6.5.2 配置</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#6-5-2-1-备份"><span class="toc-text">6.5.2.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-5-2-2-配置"><span class="toc-text">6.5.2.2 配置</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-5-3-系统权限配置"><span class="toc-text">6.5.3 系统权限配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-5-4-验证"><span class="toc-text">6.5.4 验证</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Cinder组件安装"><span class="toc-text">7. Cinder组件安装</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-Controller节点安装"><span class="toc-text">7.1 Controller节点安装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#7-1-1-创建数据库"><span class="toc-text">7.1.1 创建数据库</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-1-2-创建账号及服务"><span class="toc-text">7.1.2 创建账号及服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-1-3-安装Cinder组件"><span class="toc-text">7.1.3 安装Cinder组件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-1-4-配置"><span class="toc-text">7.1.4 配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-1-5-数据初始化"><span class="toc-text">7.1.5 数据初始化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-1-6-启动服务"><span class="toc-text">7.1.6 启动服务</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-在block-node-01节点上安装"><span class="toc-text">7.2 在block-node-01节点上安装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#7-2-1-安装支持包"><span class="toc-text">7.2.1 安装支持包</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#7-2-1-1-安装"><span class="toc-text">7.2.1.1 安装</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#7-2-1-2-启动"><span class="toc-text">7.2.1.2 启动</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-2-2-创建逻辑卷"><span class="toc-text">7.2.2 创建逻辑卷</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-2-3-更新内核中的分区表"><span class="toc-text">7.2.3 更新内核中的分区表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-2-4-创建物理卷及卷组"><span class="toc-text">7.2.4 创建物理卷及卷组</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-2-5-修改lvm服务配置"><span class="toc-text">7.2.5 修改lvm服务配置</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#7-2-5-1-备份"><span class="toc-text">7.2.5.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#7-2-5-2-修改"><span class="toc-text">7.2.5.2 修改</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#7-2-5-3-重启lvm服务"><span class="toc-text">7.2.5.3 重启lvm服务</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-2-6-安装cinder组件"><span class="toc-text">7.2.6 安装cinder组件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-2-7-配置cinder"><span class="toc-text">7.2.7 配置cinder</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#7-2-7-1-备份"><span class="toc-text">7.2.7.1 备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#7-2-7-2-配置cinder-conf"><span class="toc-text">7.2.7.2 配置cinder.conf</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#7-2-7-3-创建文件夹"><span class="toc-text">7.2.7.3 创建文件夹</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-2-8-启动cinder服务"><span class="toc-text">7.2.8 启动cinder服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-2-9-验证-在controller节点"><span class="toc-text">7.2.9 验证(在controller节点)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Swift组件安装"><span class="toc-text">8. Swift组件安装</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-在controller节点安装"><span class="toc-text">8.1 在controller节点安装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#8-1-1-创建账号及服务"><span class="toc-text">8.1.1 创建账号及服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-1-2-安装swift组件"><span class="toc-text">8.1.2 安装swift组件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-1-3-配置proxy-server"><span class="toc-text">8.1.3 配置proxy-server</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#8-1-3-1-下载配置文件模板"><span class="toc-text">8.1.3.1 下载配置文件模板</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#8-1-3-2-修改配置文件"><span class="toc-text">8.1.3.2 修改配置文件</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-在object-node-01节点安装"><span class="toc-text">8.2 在object-node-01节点安装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#8-2-1-系统配置"><span class="toc-text">8.2.1 系统配置</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#8-2-1-1-安装系统组件"><span class="toc-text">8.2.1.1 安装系统组件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#8-2-1-2-格式化磁盘"><span class="toc-text">8.2.1.2 格式化磁盘</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#8-2-1-3-创建文件夹"><span class="toc-text">8.2.1.3 创建文件夹</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#8-2-1-4-修改fstab"><span class="toc-text">8.2.1.4 修改fstab</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#8-2-1-5-挂载磁盘到文件夹"><span class="toc-text">8.2.1.5 挂载磁盘到文件夹</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#8-2-1-6-修改文件同步服务"><span class="toc-text">8.2.1.6 修改文件同步服务</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#8-2-1-7-启动文件同步服务"><span class="toc-text">8.2.1.7 启动文件同步服务</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-2-2-安装"><span class="toc-text">8.2.2 安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-2-3-配置swift"><span class="toc-text">8.2.3 配置swift</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#8-2-3-1-下载配置文件模板"><span class="toc-text">8.2.3.1 下载配置文件模板</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#8-2-3-2-修改-etc-swift-account-server-conf"><span class="toc-text">8.2.3.2 修改/etc/swift/account-server.conf</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#8-2-3-3-修改-etc-swift-container-server-conf"><span class="toc-text">8.2.3.3 修改/etc/swift/container-server.conf</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#8-2-3-4-修改-etc-swift-object-server-conf"><span class="toc-text">8.2.3.4 修改/etc/swift/object-server.conf</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#8-2-3-5-修改-etc-swift-swift-conf"><span class="toc-text">8.2.3.5 修改/etc/swift/swift.conf</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#8-2-3-6-文件夹授权"><span class="toc-text">8.2.3.6 文件夹授权</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-在object-node-02节点安装"><span class="toc-text">8.3 在object-node-02节点安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-controller节点创建环（Ring）"><span class="toc-text">8.4 controller节点创建环（Ring）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#8-4-1-创建账号环（Account-Ring）"><span class="toc-text">8.4.1 创建账号环（Account Ring）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-4-2-创建容器环（Container-Ring"><span class="toc-text">8.4.2 创建容器环（Container Ring)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-4-3-创建对象环（Object-Ring"><span class="toc-text">8.4.3 创建对象环（Object Ring)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-4-4-启动服务-controller节点执行"><span class="toc-text">8.4.4 启动服务(controller节点执行)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-5-启动服务（object-node-01-object-node-02节点执行）"><span class="toc-text">8.5 启动服务（object-node-01, object-node-02节点执行）</span></a></li></ol></li></ol></div><div class="widget"><div class="widget-title"><i class="fa fa-xie"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/05/15/storm-3/">Storm与kafka集成(上)</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/04/09/docker-ps/">docker ps 命令详解</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/26/machine-learning-3/">机器学习之三：降维技术</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/storm-2/">Storm的基本概念和组件</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/28/machine-learning-2/">机器学习之二：回归分析</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/homo-tommorrow/">《未来简史》读书笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/02/23/storm-1/">使用Docker快速安装简单Storm集群环境</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/machine-learning-1/">机器学习之一：什么是机器学习？</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/01/17/blockchain-1/">关于区块链的一点思考</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/12/30/reading-2016/">2016 阅读书单</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-gui"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/">云计算及虚拟化</a><span class="category-list-count">34</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/云计算及虚拟化/运维/">运维</a><span class="category-list-count">16</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/">商业智能</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/商业智能/数据库/">数据库</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/">大数据</a><span class="category-list-count">13</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/大数据/运维/">运维</a><span class="category-list-count">3</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/">数据库</a><span class="category-list-count">18</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/数据库/运维/">运维</a><span class="category-list-count">6</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/读书笔记/">读书笔记</a><span class="category-list-count">23</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/运维/">运维</a><span class="category-list-count">3</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-biao"> 标签</i></div><div class="tagcloud"><a href="/tags/docker-compose/" style="font-size: 15px;">docker-compose</a> <a href="/tags/BigInSights/" style="font-size: 15px;">BigInSights</a> <a href="/tags/flume/" style="font-size: 15px;">flume</a> <a href="/tags/区块链/" style="font-size: 15px;">区块链</a> <a href="/tags/postgresql/" style="font-size: 15px;">postgresql</a> <a href="/tags/big-data/" style="font-size: 15px;">big data</a> <a href="/tags/data-lake/" style="font-size: 15px;">data lake</a> <a href="/tags/数据湖/" style="font-size: 15px;">数据湖</a> <a href="/tags/Container/" style="font-size: 15px;">Container</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/open-vswitch/" style="font-size: 15px;">open vswitch</a> <a href="/tags/Cognos/" style="font-size: 15px;">Cognos</a> <a href="/tags/容器/" style="font-size: 15px;">容器</a> <a href="/tags/Oracle/" style="font-size: 15px;">Oracle</a> <a href="/tags/userland-proxy/" style="font-size: 15px;">userland-proxy</a> <a href="/tags/Registry/" style="font-size: 15px;">Registry</a> <a href="/tags/Shipyard/" style="font-size: 15px;">Shipyard</a> <a href="/tags/swarm/" style="font-size: 15px;">swarm</a> <a href="/tags/HA/" style="font-size: 15px;">HA</a> <a href="/tags/hadoop/" style="font-size: 15px;">hadoop</a> <a href="/tags/zookeeper/" style="font-size: 15px;">zookeeper</a> <a href="/tags/Hbase/" style="font-size: 15px;">Hbase</a> <a href="/tags/工业4-0/" style="font-size: 15px;">工业4.0</a> <a href="/tags/ETL/" style="font-size: 15px;">ETL</a> <a href="/tags/InfoPath/" style="font-size: 15px;">InfoPath</a> <a href="/tags/SSIS/" style="font-size: 15px;">SSIS</a> <a href="/tags/XML/" style="font-size: 15px;">XML</a> <a href="/tags/JConsole/" style="font-size: 15px;">JConsole</a> <a href="/tags/Mycat/" style="font-size: 15px;">Mycat</a> <a href="/tags/Kafka/" style="font-size: 15px;">Kafka</a> <a href="/tags/Kafka-Manager/" style="font-size: 15px;">Kafka Manager</a> <a href="/tags/KERBEROS/" style="font-size: 15px;">KERBEROS</a> <a href="/tags/keepalived/" style="font-size: 15px;">keepalived</a> <a href="/tags/lvs/" style="font-size: 15px;">lvs</a> <a href="/tags/Kettle/" style="font-size: 15px;">Kettle</a> <a href="/tags/Kubernetes/" style="font-size: 15px;">Kubernetes</a> <a href="/tags/Mysql/" style="font-size: 15px;">Mysql</a> <a href="/tags/flannel/" style="font-size: 15px;">flannel</a> <a href="/tags/Quagga/" style="font-size: 15px;">Quagga</a> <a href="/tags/ku8eye/" style="font-size: 15px;">ku8eye</a> <a href="/tags/Redis/" style="font-size: 15px;">Redis</a> <a href="/tags/eclipse/" style="font-size: 15px;">eclipse</a> <a href="/tags/maven/" style="font-size: 15px;">maven</a> <a href="/tags/机器学习/" style="font-size: 15px;">机器学习</a> <a href="/tags/HAproxy/" style="font-size: 15px;">HAproxy</a> <a href="/tags/catlet/" style="font-size: 15px;">catlet</a> <a href="/tags/devstack/" style="font-size: 15px;">devstack</a> <a href="/tags/openstack/" style="font-size: 15px;">openstack</a> <a href="/tags/Python/" style="font-size: 15px;">Python</a> <a href="/tags/pgbench/" style="font-size: 15px;">pgbench</a> <a href="/tags/pgCluu/" style="font-size: 15px;">pgCluu</a> <a href="/tags/trigger/" style="font-size: 15px;">trigger</a> <a href="/tags/uuid/" style="font-size: 15px;">uuid</a> <a href="/tags/阅读书单/" style="font-size: 15px;">阅读书单</a> <a href="/tags/WordPress/" style="font-size: 15px;">WordPress</a> <a href="/tags/罗马/" style="font-size: 15px;">罗马</a> <a href="/tags/Hive/" style="font-size: 15px;">Hive</a> <a href="/tags/sqoop/" style="font-size: 15px;">sqoop</a> <a href="/tags/Storm/" style="font-size: 15px;">Storm</a> <a href="/tags/Yarn/" style="font-size: 15px;">Yarn</a> <a href="/tags/必然/" style="font-size: 15px;">必然</a> <a href="/tags/Thrift/" style="font-size: 15px;">Thrift</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-archive"> 归档</i></div><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a></li></ul></div></div></div></div><a id="totop" href="#top"></a><div id="footer"><div class="footer-info"><p><a href="/baidusitemap.xml">网站地图</a> |  <a href="/atom.xml">订阅</a> |  <a href="/about/">关于</a></p><p>本站总访问量：<i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>次</p><p><span> Copyright &copy;<a href="/." rel="nofollow">yaodataking.com.</a></span><span> Theme by<a rel="nofollow" target="_blank" href="https://github.com/chaooo/hexo-theme-BlueLake"> BlueLake.</a></span><span> Count by<a href="http://busuanzi.ibruce.info/"> busuanzi.</a></span><span> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a></span></p></div></div></div><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><script type="text/javascript" src="/js/search.json.js?v=2.0.1"></script><script type="text/javascript" src="/js/toctotop.js?v=2.0.1" async></script><script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["mshare","weixin","tsina","qzone","linkedin","fbook","twi","print","renren","sqq","evernotecn","bdysc","tqq","tqf","bdxc","kaixin001","tieba","douban","bdhome","thx","ibaidu","meilishuo","mogujie","diandian","huaban","duitang","hx","fx","youdao","sdo","qingbiji","people","xinhua","mail","isohu","yaolan","wealink","ty","iguba","h163","copy"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"],"viewText":"分享到：","viewSize":"16"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"]}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
 </script></body></html>
