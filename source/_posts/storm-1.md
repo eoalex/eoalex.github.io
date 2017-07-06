@@ -10,11 +10,11 @@ categories:
 date: 2017-02-23 10:59:05
 ---
 
-1.环境准备
+## 1. 环境准备
 主机：虚拟机Ubuntu 16.04 内存2G 硬盘20GB
 Docker镜像：zookeeper版本3.4.6 Storm版本1.0.2
-2.安装
-2.1 docker file
+## 2. 安装
+### 2.1 docker file
 zookeeper的dockerfile
 
     FROM java:openjdk-8-jre-alpine
@@ -38,8 +38,9 @@ zookeeper的dockerfile
     VOLUME ["/opt/zookeeper/conf", "/tmp/zookeeper"]
     ENTRYPOINT ["/opt/zookeeper/bin/zkServer.sh"]
     CMD ["start-foreground"]`</pre>
-    Storm的dockerfile
-    <pre>`FROM openjdk:8-jre-alpine
+Storm的dockerfile
+    
+    FROM openjdk:8-jre-alpine
     # Install required packages
     RUN apk add --no-cache \
         bash \
@@ -73,26 +74,36 @@ zookeeper的dockerfile
     ENV PATH $PATH:/$DISTRO_NAME/bin
     COPY docker-entrypoint.sh /
     ENTRYPOINT ["/docker-entrypoint.sh"]`</pre>
-    2.2 启动
-    step1 启动zookeeper
-    <pre>`docker run -d --restart always --name zookeeper zookeeper:3.4.6`</pre>
-    step2 启动Nimbus
-    <pre>`docker run -d --restart always --name nimbus --link zookeeper storm:1.0.2 storm nimbus`</pre>
-    step3 启动Storm UI
-    <pre>`docker run -d -p 8080:8080 --restart always --name ui --link nimbus storm:1.0.2 storm ui`</pre>
-    此时进入127.0.0.1:8080,我们看到nimbus已启动。
-    [![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_09-26-09.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_09-26-09.png)
-    step4 启动Supervisor
-    <pre>`docker run -d --restart always --name supervisor1 --link zookeeper --link nimbus storm:1.0.2 storm supervisor`</pre>
-    [![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_09-29-34.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_09-29-34.png)
-    我们看到Supervisor1已正常启动，如果需要我们可以启动多个Supervisor，至此简单Storm集群环境安装完毕。
-    3.提交Topology
-    进入nimbus的docker,使用storm的example WordCountTopology提交Topology
-    <pre>`docker exec -it nimbus bash
+### 2.2 启动
+step1 启动zookeeper
+    
+    docker run -d --restart always --name zookeeper zookeeper:3.4.6`</pre>
+step2 启动Nimbus
+    
+    docker run -d --restart always --name nimbus --link zookeeper storm:1.0.2 storm nimbus
+
+step3 启动Storm UI
+   
+    docker run -d -p 8080:8080 --restart always --name ui --link nimbus storm:1.0.2 storm ui
+此时进入127.0.0.1:8080,我们看到nimbus已启动。
+
+![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_09-26-09.png)
+step4 启动Supervisor
+	
+	docker run -d --restart always --name supervisor1 --link zookeeper --link nimbus storm:1.0.2 storm supervisor
+
+![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_09-29-34.png)
+
+我们看到Supervisor1已正常启动，如果需要我们可以启动多个Supervisor，至此简单Storm集群环境安装完毕。
+## 3. 提交Topology
+进入nimbus的docker,使用storm的example WordCountTopology提交Topology
+    
+    docker exec -it nimbus bash
     cd examples/storm-starter
     storm jar storm-starter-topologies-1.0.2.jar org.apache.storm.starter.WordCountTopology first-topology
 
 运行情况
-[![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_10-16-42.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_10-16-42.png)
+![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_10-16-42.png)
+
 详细信息
-[![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_11-01-19.png)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_11-01-19.png)
+![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_11-01-19.png)

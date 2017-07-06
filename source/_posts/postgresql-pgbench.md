@@ -8,26 +8,31 @@ categories:
   - 数据库
 date: 2016-02-11 15:35:55
 ---
-
+## 1. 简介
 pgbench 是一个简单的测试PostgreSQL性能的程序。它可以运行在多个并发数据库会话中，并不停地执行同一顺序SQL命令，然后计算平均事务速度，也就是tps。pgbench 默认使用[TPC-B](http://www.tpc.org/tpcb/)方法来测试五个包含 SELECT、UPDATE、和 INSERT命令的脚本。当然，我们也可以使用自己的脚本来测试。本文将使用pgbench 默认提供的脚本来测试。
-1.环境及安装
+## 2. 安装
 环境centos 6.5 ,内存 4G，postgesql 版本 9.3.4
 进入postgres中的pgbench源代码目录
-#cd /home/src/pgsql/contrib/pgbench
-#make all
-#make install
-[![2016-02-11_14-11-50](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-11_14-11-50.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-11_14-11-50.jpg)
-2.初始化数据
+	
+	#cd /home/src/pgsql/contrib/pgbench
+	#make all
+	#make install
+![2016-02-11_14-11-50](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-11_14-11-50.jpg)
+
+## 3. 初始化数据
 启动数据库
-#cd /usr/local/pgsql
-#pg_ctl -D data start
-#createdb pgbench
+	
+	#cd /usr/local/pgsql
+	#pg_ctl -D data start
+	#createdb pgbench
 初始化测试数据
-#pgbench -i pgbench
-[![2016-02-11_14-18-41](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-11_14-18-41.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-11_14-18-41.jpg)
-3\. 测试
-3.1 模拟1个客户端
-#pgbench -M simple -c 1 -T 100 -r pgbench
+	#pgbench -i pgbench
+![2016-02-11_14-18-41](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-11_14-18-41.jpg)
+
+## 4. 测试
+### 4.1 模拟1个客户端
+	
+	#pgbench -M simple -c 1 -T 100 -r pgbench
 
     starting vacuum...end.
     transaction type: TPC-B (sort of)
@@ -54,10 +59,10 @@ pgbench 是一个简单的测试PostgreSQL性能的程序。它可以运行在�
             0.152673        UPDATE pgbench_branches SET bbalance = bbalance + :delta WHERE bid = :bid;
             0.130653        INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
             0.909966        END;
-    `</pre>
-    3.2 模拟50个客户端
+    
+### 4.2 模拟50个客户端
     #pgbench -M simple -c 50 -T 100 -r pgbench
-    <pre>`
+    
     starting vacuum...end.
     transaction type: TPC-B (sort of)
     scaling factor: 1
@@ -83,10 +88,10 @@ pgbench 是一个简单的测试PostgreSQL性能的程序。它可以运行在�
             23.461208       UPDATE pgbench_branches SET bbalance = bbalance + :delta WHERE bid = :bid;
             0.577524        INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
             2.212504        END;
-    `</pre>
-    3.3 模拟100个客户端（数据库默认设置最大连接数)
+    
+### 4.3 模拟100个客户端（数据库默认设置最大连接数)
     #pgbench -M simple -c 100 -T 100 -r pgbench
-    <pre>`
+    
     starting vacuum...end.
     transaction type: TPC-B (sort of)
     scaling factor: 1
@@ -112,10 +117,10 @@ pgbench 是一个简单的测试PostgreSQL性能的程序。它可以运行在�
             26.131598       UPDATE pgbench_branches SET bbalance = bbalance + :delta WHERE bid = :bid;
             0.605307        INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
             2.406303        END;
-    `</pre>
-    3.4 模拟100个客户端,使用扩张调用接口
+    
+### 4.4 模拟100个客户端,使用扩张调用接口
     #pgbench -M extended -c 100 -T 100 -r pgbench
-    <pre>`
+    
     starting vacuum...end.
     transaction type: TPC-B (sort of)
     scaling factor: 1
@@ -141,10 +146,10 @@ pgbench 是一个简单的测试PostgreSQL性能的程序。它可以运行在�
             29.409881       UPDATE pgbench_branches SET bbalance = bbalance + :delta WHERE bid = :bid;
             0.749236        INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
             2.665060        END;
-    `</pre>
-    3.5 模拟100个客户端,使用绑定变量调用接口
+    
+### 4.5 模拟100个客户端,使用绑定变量调用接口
     #pgbench -M prepared -c 100 -T 100 -r pgbench
-    <pre>`
+    
     starting vacuum...end.
     transaction type: TPC-B (sort of)
     scaling factor: 1

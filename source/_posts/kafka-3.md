@@ -10,15 +10,18 @@ categories:
 date: 2016-10-22 23:49:09
 ---
 
-1\. 简介
-在[Kafka入门之一:使用Docker安装Kafka和Zookeeper](http://blog.yaodataking.com/2016/09/kafka-1.html)里我们已经演示使用docker安装单节点的Kafka，也就是一个broker。但实际上kafka是天生支持多broker的。在安装之前，我们先来看几个broker参数。 更多参数参见[官网](http://kafka.apache.org/082/documentation.html#brokerconfigs)
+## 1. 简介
+在[Kafka入门之一:使用Docker安装Kafka和Zookeeper](/2016/09/kafka-1/)里我们已经演示使用docker安装单节点的Kafka，也就是一个broker。但实际上kafka是天生支持多broker的。在安装之前，我们先来看几个broker参数。 更多参数参见[官网](http://kafka.apache.org/082/documentation.html#brokerconfigs).
+
 <table>
-     <tbody>
+     <thead>
          <tr>
-             <td width="300" height="">Property</td>
-             <td width="200" height="">Default</td>
-             <td width="800" height="">Description</td>
+             <td>Property</td>
+             <td>Default</td>
+             <td>Description</td>
          </tr>
+     </thead>
+     <tbody>
          <tr>
              <td>broker.id</td>
              <td>&nbsp;</td>             <td>每个broker都可以用一个唯一的非负整数id进行标识；这个id可以作为broker的&#8220;名字&#8221;，并且它的存在使得broker无须混淆consumers就可以迁移到不同的host/port上。你可以选择任意你喜欢的数字作为id，只要id是唯一的即可。</td>
@@ -35,10 +38,7 @@ date: 2016-10-22 23:49:09
          <tr>
              <td>zookeeper.connect</td>
              <td>null</td>
-             <td>ZooKeeper连接字符串的格式为：hostname:port，此处hostname和port分别是ZooKeeper集群中某个节点的host和port；为了当某个host宕掉之后你能通过其他ZooKeeper节点进行连接，你可以按照一下方式制定多个hosts：hostname1:port1, hostname2:port2, hostname3:port3.
-ZooKeeper 允许你增加一个&#8220;chroot&#8221;路径，将集群中所有kafka数据存放在特定的路径下。当多个Kafka集群或者其他应用使用相同ZooKeeper集群时，可以使用这个方式设置数据存放路径。这种方式的实现可以通过这样设置连接字符串格式，如下所示：          hostname1：port1，hostname2：port2，hostname3：port3/chroot/path
-
-             这样设置就将所有kafka集群数据存放在/chroot/path路径下。注意，在你启动broker之前，你必须创建这个路径，并且consumers必须使用相同的连接格式。</td>
+             <td>ZooKeeper连接字符串的格式为：hostname:port，此处hostname和port分别是ZooKeeper集群中某个节点的host和port；为了当某个host宕掉之后你能通过其他ZooKeeper节点进行连接，你可以按照一下方式制定多个hosts：hostname1:port1, hostname2:port2, hostname3:port3.ZooKeeper 允许你增加一个&#8220;chroot&#8221;路径，将集群中所有kafka数据存放在特定的路径下。当多个Kafka集群或者其他应用使用相同ZooKeeper集群时，可以使用这个方式设置数据存放路径。这种方式的实现可以通过这样设置连接字符串格式，如下所示：hostname1：port1，hostname2：port2，hostname3：port3/chroot/path这样设置就将所有kafka集群数据存放在/chroot/path路径下。注意，在你启动broker之前，你必须创建这个路径，并且consumers必须使用相同的连接格式。</td>
          </tr>
          <tr>
              <td>message.max.bytes</td>
@@ -212,9 +212,11 @@ ZooKeeper 允许你增加一个&#8220;chroot&#8221;路径，将集群中所有ka
          </tr>
       </tbody>
 </table>
+
 这些参数在你还没有了解具体用途之前，你都可以默认，今天我们将会使用几个参数。
-2\. Kafka集群
-2.1 Dockerfile
+
+## 2. Kafka集群
+### 2.1 Dockerfile
 我们在dockeefile中加入一些broker的参数，即在server.properites文件中设置的参数。
 
     FROM java:openjdk-8-jre-alpine
@@ -222,64 +224,83 @@ ZooKeeper 允许你增加一个&#8220;chroot&#8221;路径，将集群中所有ka
     ARG SCALA_VERSION=2.11
     ARG KAFKA_VERSION=0.8.2.2
     LABEL name="kafka" version=$VERSION
-    RUN apk update &amp;&amp; apk add ca-certificates &amp;&amp; \
-        apk add tzdata &amp;&amp; \
-        ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime &amp;&amp; \
-        echo "Asia/Shanghai" &gt; /etc/timezone
+    RUN apk update && apk add ca-certificates && \
+        apk add tzdata && \
+        ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+        echo "Asia/Shanghai" > /etc/timezone
     RUN apk add --no-cache wget bash \
-        &amp;&amp; mkdir /opt \
-        &amp;&amp; wget -q -O - $MIRROR/apache/kafka/$KAFKA_VERSION/kafka_$SCALA_VERSION-$KAFKA_VERSION.tgz | tar -xzf - -C /opt \
-        &amp;&amp; mv /opt/kafka_$SCALA_VERSION-$KAFKA_VERSION /opt/kafka \
-        &amp;&amp; sed -i 's/num.partitions.*$/num.partitions=3/g' /opt/kafka/config/server.properties
+        && mkdir /opt \
+        && wget -q -O - $MIRROR/apache/kafka/$KAFKA_VERSION/kafka_$SCALA_VERSION-$KAFKA_VERSION.tgz | tar -xzf - -C /opt \
+        && mv /opt/kafka_$SCALA_VERSION-$KAFKA_VERSION /opt/kafka \
+        && sed -i 's/num.partitions.*$/num.partitions=3/g' /opt/kafka/config/server.properties
 
-    RUN echo "cd /opt/kafka" &gt; /opt/kafka/start.sh &amp;&amp;\
-    	echo "sed -i 's%zookeeper.connect=.*$%zookeeper.connect=zookeeper:2181%g'  /opt/kafka/config/server.properties" &gt;&gt; /opt/kafka/start.sh &amp;&amp;\
-    	echo "[ ! -z $""BROKER_ID"" ] &amp;&amp; sed -i 's%broker.id=.*$%broker.id='$""BROKER_ID'""%g'  /opt/kafka/config/server.properties" &gt;&gt; /opt/kafka/start.sh &amp;&amp;\
-    	echo "[ ! -z $""BROKER_PORT"" ] &amp;&amp; sed -i 's%port=.*$%port='$""BROKER_PORT'""%g'  /opt/kafka/config/server.properties" &gt;&gt; /opt/kafka/start.sh &amp;&amp;\
-    	echo "sed -i 's%#advertised.host.name=.*$%advertised.host.name='$""(hostname -i)'""%g'  /opt/kafka/config/server.properties" &gt;&gt; /opt/kafka/start.sh &amp;&amp;\
-    	echo "[ ! -z $""ADVERTISED_HOST_NAME"" ] &amp;&amp; sed -i 's%.*advertised.host.name=.*$%advertised.host.name='$""ADVERTISED_HOST_NAME'""%g'  /opt/kafka/config/server.properties" &gt;&gt; /opt/kafka/start.sh &amp;&amp;\
-    	echo "sed -i 's%#host.name=.*$%host.name='$""(hostname -i)'""%g'  /opt/kafka/config/server.properties" &gt;&gt; /opt/kafka/start.sh &amp;&amp;\
-    	echo "[ ! -z $""HOST_NAME"" ] &amp;&amp; sed -i 's%.*host.name=.*$%host.name='$""HOST_NAME'""%g'  /opt/kafka/config/server.properties" &gt;&gt; /opt/kafka/start.sh &amp;&amp;\
-    	echo "delete.topic.enable=true" &gt;&gt; /opt/kafka/config/server.properties &amp;&amp;\
-    	echo "bin/kafka-server-start.sh config/server.properties" &gt;&gt; /opt/kafka/start.sh &amp;&amp;\
+    RUN echo "cd /opt/kafka" &gt; /opt/kafka/start.sh &&\
+    	echo "sed -i 's%zookeeper.connect=.*$%zookeeper.connect=zookeeper:2181%g'  /opt/kafka/config/server.properties" &gt;&gt; /opt/kafka/start.sh &&\
+    	echo "[ ! -z $""BROKER_ID"" ] && sed -i 's%broker.id=.*$%broker.id='$""BROKER_ID'""%g'  /opt/kafka/config/server.properties" &gt;&gt; /opt/kafka/start.sh &&\
+    	echo "[ ! -z $""BROKER_PORT"" ] && sed -i 's%port=.*$%port='$""BROKER_PORT'""%g'  /opt/kafka/config/server.properties" &gt;&gt; /opt/kafka/start.sh &&\
+    	echo "sed -i 's%#advertised.host.name=.*$%advertised.host.name='$""(hostname -i)'""%g'  /opt/kafka/config/server.properties" &gt;&gt; /opt/kafka/start.sh &&\
+    	echo "[ ! -z $""ADVERTISED_HOST_NAME"" ] && sed -i 's%.*advertised.host.name=.*$%advertised.host.name='$""ADVERTISED_HOST_NAME'""%g'  /opt/kafka/config/server.properties" &gt;&gt; /opt/kafka/start.sh &&\
+    	echo "sed -i 's%#host.name=.*$%host.name='$""(hostname -i)'""%g'  /opt/kafka/config/server.properties" &gt;&gt; /opt/kafka/start.sh &&\
+    	echo "[ ! -z $""HOST_NAME"" ] && sed -i 's%.*host.name=.*$%host.name='$""HOST_NAME'""%g'  /opt/kafka/config/server.properties" &gt;&gt; /opt/kafka/start.sh &&\
+    	echo "delete.topic.enable=true" &gt;&gt; /opt/kafka/config/server.properties &&\
+    	echo "bin/kafka-server-start.sh config/server.properties" &gt;&gt; /opt/kafka/start.sh &&\
     	chmod a+x /opt/kafka/start.sh
 
     EXPOSE 9092
     WORKDIR /opt/kafka
-    ENTRYPOINT ["sh", "/opt/kafka/start.sh"]`</pre>
-    2.2启动zookeeper
-    为简单起见，zookeeper我们暂时使用单个容器。
-    <pre>`sudo docker build -f zookeeper.Dockerfile -t alex/zookeeper:3.4.6 .`</pre>
-    2.3启动Kafka集群
+    ENTRYPOINT ["sh", "/opt/kafka/start.sh"]
+### 2.2 启动zookeeper
+为简单起见，zookeeper我们暂时使用单个容器。
+    
+    sudo docker build -f zookeeper.Dockerfile -t alex/zookeeper:3.4.6 .
+### 2.3 启动Kafka集群
     使用下面命令启动三个Kafka容器，分别是kafka0，kafka1，kafka2，我们看到启动容器时传入了BROKER_ID，BROKER_PORT等变量。这就可以很方便的启动多个容器。
-    <pre>`docker run -itd --name kafka0 -h kafka0 -p9092:9092 -e BROKER_ID=0 -e BROKER_PORT=9092 --link zookeeper alex/kafka_cluster:0.8.2.2
+    
+    docker run -itd --name kafka0 -h kafka0 -p9092:9092 -e BROKER_ID=0 -e BROKER_PORT=9092 --link zookeeper alex/kafka_cluster:0.8.2.2
     docker run -itd --name kafka1 -h kafka1 -p9093:9092 -e BROKER_ID=1 -e BROKER_PORT=9092 --link zookeeper alex/kafka_cluster:0.8.2.2
-    docker run -itd --name kafka2 -h kafka2 -p9094:9092 -e BROKER_ID=2 -e BROKER_PORT=9092 --link zookeeper alex/kafka_cluster:0.8.2.2`</pre>
-    3.验证是否集群正常
-    进入kafka0容器内, 创建topic1
-    <pre>`docker exec -it kafka0 bash
+    docker run -itd --name kafka2 -h kafka2 -p9094:9092 -e BROKER_ID=2 -e BROKER_PORT=9092 --link zookeeper alex/kafka_cluster:0.8.2.2
+
+## 3. 验证是否集群正常
+进入kafka0容器内, 创建topic1
+    
+    docker exec -it kafka0 bash
     bin/kafka-topics.sh --zookeeper zookeeper:2181 --topic topic1 --create --replication-factor 2 --partitions 3
-    bin/kafka-topics.sh --zookeeper zookeeper:2181 --topic topic1 --describe `</pre>
-    [![2016-10-22_21-17-05](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-17-05.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-17-05.jpg)
-    启动consumer
-    <pre>`bin/kafka-console-consumer.sh --zookeeper zookeeper:2181 --topic topic1`</pre>
-    进入kafka2容器内,  启动producer
-    <pre>`bin/kafka-console-producer.sh --broker-list kafka2:9092 --topic topic1`</pre>
-    [![2016-10-22_21-16-06](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-16-06.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-16-06.jpg)
-    发送一些消息，我看到consumer端正常接收。
-    [![2016-10-22_21-16-26](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-16-26.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-16-26.jpg)
-    这就说明集群配置成功。
+    bin/kafka-topics.sh --zookeeper zookeeper:2181 --topic topic1 --describe
+    
+![2016-10-22_21-17-05](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-17-05.jpg)
+启动consumer
+    
+    bin/kafka-console-consumer.sh --zookeeper zookeeper:2181 --topic topic1
+进入kafka2容器内,  启动producer
+    
+    bin/kafka-console-producer.sh --broker-list kafka2:9092 --topic topic1`</pre>
 
-    4.验证min.insync.replicas和request.required.acks的作用。
-    我们创建topic2，并将min.insync.replicas设为2，partitions为1。
-    <pre>`bin/kafka-topics.sh --zookeeper zookeeper:2181 --topic topic2 --create --config min.insync.replicas=2 --replication-factor 2 --partitions 1
-    bin/kafka-topics.sh --zookeeper zookeeper:2181 --topic topic2 --describe `</pre>
-    [![2016-10-22_23-26-17](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_23-26-17.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_23-26-17.jpg)
-    我们看到topic2分配在了kafka2上，并且kafka0是备份，ISR是0和2,现在我们将kafka1和kafka2的broker关闭。我们看到leader已自动转为broker0。然后启动consumer
-    <pre>`bin/kafka-console-consumer.sh --zookeeper zookeeper:2181 --topic topic2`</pre>
-    在另一个终端上启动producer,并将request-required-acks设置为-1<pre>`bin/kafka-console-producer.sh --broker-list kafka0:9092 --topic topic2 --request-required-acks -1
+![2016-10-22_21-16-06](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-16-06.jpg)
 
-[![2016-10-22_23-35-05](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_23-35-05.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_23-35-05.jpg)
+发送一些消息，我看到consumer端正常接收。
+![2016-10-22_21-16-26](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-16-26.jpg)
+
+这就说明集群配置成功。
+
+## 4.	验证min.insync.replicas和request.required.acks的作用。
+我们创建topic2，并将min.insync.replicas设为2，partitions为1。
+    
+    bin/kafka-topics.sh --zookeeper zookeeper:2181 --topic topic2 --create --config min.insync.replicas=2 --replication-factor 2 --partitions 1
+    bin/kafka-topics.sh --zookeeper zookeeper:2181 --topic topic2 --describe
+    
+![2016-10-22_23-26-17](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_23-26-17.jpg)
+
+我们看到topic2分配在了kafka2上，并且kafka0是备份，ISR是0和2,现在我们将kafka1和kafka2的broker关闭。我们看到leader已自动转为broker0。然后启动consumer
+
+	bin/kafka-console-consumer.sh --zookeeper zookeeper:2181 --topic topic
+    
+在另一个终端上启动producer,并将request-required-acks设置为-1
+
+	bin/kafka-console-producer.sh --broker-list kafka0:9092 --topic topic2 --request-required-acks -1
+
+![2016-10-22_23-35-05](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_23-35-05.jpg)
+
 我们看到此时发送消息，kafka出现错误。原因是我们在producer发送时设置了检查replicas是否都收到数据的确认，但是因为我们已经关闭broker2, 所以尝试发送3次未果后，producer返回错误。
 显然，我们将producer以默认设置发送消息时，consumer马上收到消息了。
-[![2016-10-22_22-02-59](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_22-02-59.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_22-02-59.jpg)
+
+![2016-10-22_22-02-59](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_22-02-59.jpg)

@@ -10,12 +10,12 @@ categories:
 date: 2017-05-15 19:52:57
 ---
 
-一、简介
+## 1. 简介
 我们知道storm的作用主要是进行流式实时计算，对于均匀的数据流storm处理是非常有效的，但是现实生活中大部分场景并不是均匀的数据流，而是时而多时而少的数据流入，这种情况下显然用批量处理是不合适的，如果使用storm做实时计算的话可能因为数据拥堵而导致服务器挂掉，应对这种情况，使用kafka作为消息队列是非常合适的选择，kafka可以将不均匀的数据转换成均匀的消息流，从而和storm比较完善的结合，这样才可以实现稳定的流式计算，storm和kafka结合，实质上无非是把Kafka的数据消费，是由Storm去消费，通过KafkaSpout将数据输送到Storm，然后让Storm安装业务需求对接受的数据做实时处理，最后将处理后的数据输出或者保存到文件、数据库、分布式存储等等。
 
-二、搭建storm和kafka集群
+## 2. 搭建storm和kafka集群
 我们要搭建storm和kafka集群,这里使用docker镜像。所以首先使用docker file建立镜像。
-1.storm的docker file
+### 2.1 storm的docker file
 
     FROM openjdk:8-jre-alpine
 
@@ -47,11 +47,12 @@ date: 2017-05-15 19:52:57
     # DRPC and remote deployment
     EXPOSE 6627 3772 3773
 
-    ENTRYPOINT ["/usr/share/storm/entrypoint.sh"]`</pre>
-    2.zookeeper和kafak的docker file
-    这里略，参见本博客关于[kafka](http://blog.yaodataking.com/2016/10/kafka-4.html)的博文。
-    3.使用docker-compose 启动集群
-    <pre>`version: '2.0'
+    ENTRYPOINT ["/usr/share/storm/entrypoint.sh"]
+### 2.2 zookeeper和kafak的docker file
+这里略，参见本博客关于[kafka](/2016/10/kafka-4/)的博文。
+### 2.3 使用docker-compose 启动集群
+    
+    version: '2.0'
     services:
       zookeeper0:
         image: alex/zookeeper_cluster:3.4.6

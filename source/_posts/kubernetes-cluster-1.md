@@ -9,40 +9,25 @@ categories:
   - 云计算及虚拟化
 date: 2016-02-27 20:18:55
 ---
+## 1. 简介
+[上文](/2016/02/04/kubernetes-guestbook/)我们在一台虚机上演示了Kubernetes基于redis和docker的guestbook留言簿案例，本文我们将通过配置Kubernetes集群的方式继续深入研究。
+## 2. 准备
+集群组件安装如下配置。
 
-上文我们在一台虚机上演示了Kubernetes基于redis和docker的guestbook留言簿案例，本文我们将通过配置Kubernetes集群的方式继续深入研究。集群组件安装如下配置。
-<table width="553">
-<tbody>
-<tr>
-<td width="109">IP</td>
-<td width="156">NAME</td>
-<td width="288">Component</td>
-</tr>
-<tr>
-<td width="109">192.168.199.51</td>
-<td width="156">centos-master</td>
-<td width="288">etcd,kube-apiserver,kube-controller-manager,kube-scheduler</td>
-</tr>
-<tr>
-<td width="109">192.168.199.52</td>
-<td width="156">centos-minion01</td>
-<td width="288">kube-proxy,kubelet,docker </td>
-</tr>
-<td width="109">192.168.199.53</td>
-<td width="156">centos-minion02</td>
-<td width="288">kube-proxy,kubelet,docker </td>
-</tr>
-</tbody>
-</table>
+|IP	|NAME            |	Component|
+|:--|:--------------|:--|
+|192.168.199.51|	centos-master|	etcd,kube-apiserver,kube-controller-manager,kube-scheduler|
+|192.168.199.52|	centos-minion01 |	kube-proxy,kubelet,docker|
+|192.168.199.53|	centos-minion02 |	kube-proxy,kubelet,docker|
 
 主机环境：centos 7，三台虚机。
-1.准备工作
-以下工作在每台虚机执行。
-1.1 停止防火墙
-#systemctl disable firewalld
-#systemctl stop firewalld
 
-1.2 修改iptables
+以下工作在每台虚机执行。
+### 2.1 停止防火墙
+	#systemctl disable firewalld
+	#systemctl stop firewalld
+
+### 2.2 修改iptables
 把icmp-host-prohibited两条注释掉
 
     # sample configuration for iptables service
@@ -59,26 +44,27 @@ date: 2016-02-27 20:18:55
     #-A INPUT -j REJECT --reject-with icmp-host-prohibited
     #-A FORWARD -j REJECT --reject-with icmp-host-prohibited
     COMMIT
-    `</pre>
-    重启iptables
+   
+ 重启iptables
+ 
     #systemctl restart iptables
 
-    1.3 使用阿里镜像
+### 2.3 使用阿里镜像
     #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
 
-    1.4 更新主机列表
+### 2.4 更新主机列表
     #echo "192.168.199.51 centos-master
     192.168.199.52 centos-minion01
     192.168.199.53 centos-minion02" &gt;&gt; /etc/hosts
 
-    2.安装配置kubernetes master
-    2.1 在centos-master上安装
+## 3. 安装配置kubernetes master
+###  3.1 在centos-master上安装
     #yum install kubernetes-master
     #yum install etcd
 
-    2.2配置 Kubernetes services
+### 3.2 配置 Kubernetes services
     #vi /etc/kubernetes/config
-    <pre>`###
+    ###
     # kubernetes system config
     #
     # The following values are used to configure various aspects of all
@@ -100,11 +86,11 @@ date: 2016-02-27 20:18:55
 
     # How the controller-manager, scheduler, and proxy find the apiserver
     KUBE_MASTER="--master=http://centos-master:8080"
-    `</pre>
+    
 
-    2.3配置Kubernetes API server
+### 3.3 配置Kubernetes API server
     #vi /etc/kubernetes/apiserver
-    <pre>`###
+    ###
     # kubernetes system config
     #
     # The following values are used to configure the kube-apiserver
@@ -129,26 +115,27 @@ date: 2016-02-27 20:18:55
 
     # Add your own!
     KUBE_API_ARGS=""
-    `</pre>
+    
 
-    2.4 启动服务
-    <pre>`for SERVICES in etcd kube-apiserver kube-controller-manager kube-scheduler; do 
+### 3.4 启动服务
+    for SERVICES in etcd kube-apiserver kube-controller-manager kube-scheduler; do 
         systemctl restart $SERVICES
         systemctl enable $SERVICES
         systemctl status $SERVICES 
     done
-    `</pre>
-    2.5 停止服务
-    <pre>`for SERVICES in etcd kube-apiserver kube-controller-manager kube-scheduler; do 
+    
+### 3.5 停止服务
+    for SERVICES in etcd kube-apiserver kube-controller-manager kube-scheduler; do 
         systemctl stop $SERVICES
     done
-    `</pre>
-
-    3.安装配置kubernetes node
-    3.1 在centos-minion01及centos-minion02上安装
+    
+## 4. 安装配置kubernetes node
+### 4.1 安装
+在centos-minion01及centos-minion02上安装
+    
     #yum install kubernetes-node
     #vi /etc/kubernetes/config
-    <pre>`###
+    ###
     # kubernetes system config
     #
     # The following values are used to configure various aspects of all
@@ -170,11 +157,12 @@ date: 2016-02-27 20:18:55
 
     # How the controller-manager, scheduler, and proxy find the apiserver
     KUBE_MASTER="--master=http://centos-master:8080"
-    `</pre>
-    3.2 配置 kubelet文件
-    vi /etc/kubernetes/kubelet
-    centos-minion01
-    <pre>`###
+    
+### 4.2 配置 kubelet文件
+ 编辑`/etc/kubernetes/kubelet`
+ centos-minion01
+    
+    ###
     # kubernetes kubelet (minion) config
 
     # The address for the info server to serve on (set to 0.0.0.0 or "" for all interfaces)
@@ -194,9 +182,8 @@ date: 2016-02-27 20:18:55
 
     # Add your own!
     KUBELET_ARGS=""
-    `</pre>
-    centos-minion02
-    <pre>`
+centos-minion02
+    
     ###
     # kubernetes kubelet (minion) config
 
@@ -217,9 +204,9 @@ date: 2016-02-27 20:18:55
 
     # Add your own!
     KUBELET_ARGS=""
-    `</pre>
-    3.3 配置config文件
-    <pre>`###
+### 4.3 配置config文件
+    
+    ###
     # kubernetes system config
     #
     # The following values are used to configure various aspects of all
@@ -241,22 +228,17 @@ date: 2016-02-27 20:18:55
 
     # How the controller-manager, scheduler, and proxy find the apiserver
     KUBE_MASTER="--master=http://centos-master:8080"
-    `</pre>
-
-    3.4 启动服务
-    <pre>`for SERVICES in kube-proxy kubelet docker; do 
+    
+### 4.4 启动服务
+    for SERVICES in kube-proxy kubelet docker; do 
         systemctl restart $SERVICES
         systemctl enable $SERVICES
         systemctl status $SERVICES 
     done
-    `</pre>
-    在centos-minion01上启动
-    <pre>`[root@centos-minion01 ~]# for SERVICES in kube-proxy kubelet docker; do
-    &gt;     systemctl restart $SERVICES
-    &gt;     systemctl enable $SERVICES
-    &gt;     systemctl status $SERVICES
-    &gt; done
-    ● kube-proxy.service - Kubernetes Kube-Proxy Server
+    
+在centos-minion01上启动
+
+	   ● kube-proxy.service - Kubernetes Kube-Proxy Server
        Loaded: loaded (/usr/lib/systemd/system/kube-proxy.service; enabled; vendor preset: disabled)
        Active: active (running) since Sat 2016-02-27 07:35:45 CST; 227ms ago
          Docs: https://github.com/GoogleCloudPlatform/kubernetes
@@ -301,14 +283,10 @@ date: 2016-02-27 20:18:55
     Feb 27 07:35:46 centos-minion01 systemd[1]: Started Docker Application Container Engine.
     Hint: Some lines were ellipsized, use -l to show in full.
     [root@centos-minion01 ~]#
-    `</pre>
-    在centos-minion02上启动
-    <pre>`[root@centos-minion02 kubernetes]# for SERVICES in kube-proxy kubelet docker; do
-    &gt;     systemctl restart $SERVICES
-    &gt;     systemctl enable $SERVICES
-    &gt;     systemctl status $SERVICES
-    &gt; done
-    ● kube-proxy.service - Kubernetes Kube-Proxy Server
+
+在centos-minion02上启动
+ 	  	
+ 	  	● kube-proxy.service - Kubernetes Kube-Proxy Server
        Loaded: loaded (/usr/lib/systemd/system/kube-proxy.service; enabled; vendor preset: disabled)
        Active: active (running) since Sat 2016-02-27 07:32:22 CST; 221ms ago
          Docs: https://github.com/GoogleCloudPlatform/kubernetes
@@ -354,41 +332,43 @@ date: 2016-02-27 20:18:55
     Feb 27 07:32:23 centos-minion02 systemd[1]: Started Docker Application Container Engine.
     Hint: Some lines were ellipsized, use -l to show in full.
     [root@centos-minion02 kubernetes]#
-    `</pre>
 
-    3.5 停止服务
-    <pre>`for SERVICES in kube-proxy kubelet docker; do 
+
+### 4.5 停止服务
+    for SERVICES in kube-proxy kubelet docker; do 
         systemctl stop $SERVICES 
     done
-    `</pre>
+    
 
-    4\. 检查及确认状态
+## 5. 检查及确认状态
     #kubectl get nodes
     #kubectl cluster-info
-    我们看到2个节点都正常启动。
-    <pre>`[root@centos-master ~]# kubectl get nodes
+我们看到2个节点都正常启动。
+
+    [root@centos-master ~]# kubectl get nodes
     NAME              LABELS                                   STATUS    AGE
     centos-minion01   kubernetes.io/hostname=centos-minion01   Ready     1m
     centos-minion02   kubernetes.io/hostname=centos-minion02   Ready     51s
     [root@centos-master ~]# kubectl cluster-info
     Kubernetes master is running at http://localhost:8080
     [root@centos-master ~]#
-    `</pre>
 
-    5.创建MYSQL POD
-    5.1 建立工作目录并查看API版本
-    在kubernetes master节点
+
+## 6. 创建MYSQL POD
+### 6.1 建立工作目录并查看API版本
+在kubernetes master节点
+
     #mkdir mysqlpod
     #cd mysqlpod
     #kubectl api-versions
-    我们看到API版本为1,所以设置文件时用v1就可以了。
-    <pre>`
+我们看到API版本为1,所以设置文件时用v1就可以了。
+    
     [root@centos-master mysqlpod]# kubectl api-versions
     Available Server Api Versions: v1
-    `</pre>
-    5.2 编写mysql的pod文件
+    
+### 6.2 编写mysql的pod文件
     #vi mysqlpod.yaml
-    <pre>`apiVersion: v1
+    apiVersion: v1
     kind: Pod
     metadata:
       name: mysql
@@ -403,12 +383,13 @@ date: 2016-02-27 20:18:55
           value: 123456
         ports:
         - containerPort: 3306
-    `</pre>
-    5.3 启动POD
+    
+### 6.3 启动POD
     #kubectl create -f mysqlpod.yaml
     #kubectl get pods
     #kubectl describe pods mysql
-    <pre>`Events:
+    
+    Events:
       FirstSeen     LastSeen        Count   From                            SubobjectPath                           Reason            Message
       ─────────     ────────        ─────   ────                            ─────────────                           ──────            ───────
       49s           49s             1       {scheduler }                                                            Scheduled Successfully assigned mysql to centos-minion02
@@ -418,19 +399,19 @@ date: 2016-02-27 20:18:55
       48s           48s             1       {kubelet centos-minion02}       spec.containers{mysql}                  Pulled            Container image "mysql" already present on machine
       48s           48s             1       {kubelet centos-minion02}       spec.containers{mysql}                  Created           Created with docker id aa39d65008dc
       47s           47s             1       {kubelet centos-minion02}       spec.containers{mysql}                  Started           Started with docker id aa39d65008dc
-    `</pre>
-    我们看到这个POD启动在centos-minion02虚机上，首先它启动了一个叫pod-infrastructure的容器，然后去找本机是否有mysql镜像，没有就去下载，已有的话就直接创建一个mysql容器。
-    在centos-minion02上看启动的容器。
-    #docker ps
-    <pre>`[root@centos-minion02 ~]# docker ps
+    
+我们看到这个POD启动在centos-minion02虚机上，首先它启动了一个叫pod-infrastructure的容器，然后去找本机是否有mysql镜像，没有就去下载，已有的话就直接创建一个mysql容器。
+在centos-minion02上看启动的容器。
+
+	[root@centos-minion02 ~]# docker ps
     CONTAINER ID        IMAGE                                                        COMMAND                  CREATED             STATUS              PORTS               NAMES
     aa39d65008dc        mysql                                                        "/entrypoint.sh mysql"   About an hour ago   Up About an hour                        k8s_mysql.1431d49_mysql_default_c935d35d-dce2-11e5-9ab1-000c29beeacc_95c7a9b7
     31f65f03a960        registry.access.redhat.com/rhel7/pod-infrastructure:latest   "/pod"                   About an hour ago   Up About an hour                        k8s_POD.36d00adb_mysql_default_c935d35d-dce2-11e5-9ab1-000c29beeacc_1cf5c985
-    `</pre>
-    我们看到启动两个容器，一个是mysql，一个是pod-infrastructure。
-    5.4 编写mysql的服务文件
+
+我们看到启动两个容器，一个是mysql，一个是pod-infrastructure。
+### 6.4 编写mysql的服务文件
     #vi mysqlservice.yaml
-    <pre>`apiVersion: v1
+    apiVersion: v1
     kind: Service
     metadata:
       labels:
@@ -441,18 +422,20 @@ date: 2016-02-27 20:18:55
         - port: 3306
       selector:
         name: mysql
-    `</pre>
-    5.4 启动服务
+    
+### 6.4 启动服务
+    
     #kubectl create -f mysqlservice.yaml
-    <pre>`[root@centos-master mysqlpod]# kubectl get services
+    [root@centos-master mysqlpod]# kubectl get services
     NAME         CLUSTER_IP     EXTERNAL_IP   PORT(S)    SELECTOR     AGE
     kubernetes   10.254.0.1             443/TCP           18h
     mysql        10.254.62.21           3306/TCP   name=mysql   9s
     [root@centos-master mysqlpod]#
-    `</pre>
-    5.5 mysql登录
-    在centos-minion02上连接mysql的POD，我们看到连接正常。
-    <pre>`[root@centos-minion02 ~]# mysql -uroot -p -h10.254.62.21
+    
+### 6.5 mysql登录
+在centos-minion02上连接mysql的POD，我们看到连接正常。
+ 	
+ 	[root@centos-minion02 ~]# mysql -uroot -p -h10.254.62.21
     Enter password:
     Welcome to the MySQL monitor.  Commands end with ; or \g.
     Your MySQL connection id is 3
@@ -466,7 +449,7 @@ date: 2016-02-27 20:18:55
 
     Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-    mysql&gt; show databases;
+    mysql> show databases;
     +--------------------+
     | Database           |
     +--------------------+
@@ -477,6 +460,6 @@ date: 2016-02-27 20:18:55
     +--------------------+
     4 rows in set (0.01 sec)
 
-    mysql&gt;
+    mysql>
 
 参考：Kubernetes权威指南

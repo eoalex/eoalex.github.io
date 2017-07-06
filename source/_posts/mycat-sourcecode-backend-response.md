@@ -7,17 +7,19 @@ categories:
   - 数据库
 date: 2016-04-23 17:18:23
 ---
-
+## 1. 简介
 [Mycat](http://mycat.io/)是一个彻底开源的新颖的数据库中间件产品,它接受客户端SQL请求，根据路由分片发送至后端数据库集群，然后返回响应数据给客户端。它有效解决了传统数据库的瓶颈问题，从而使数据库的高可用，高负载成为可能。那么它的内部是怎么实现的呢？本文我们就Mycat源码分析研究一下后端连接处理的实现方式与内部机制，这里抛砖引玉,希望与感兴趣的朋友共同交流探讨。
 本文源码分析基于mycat1.6，地址如下：https://github.com/MyCATApache/Mycat-Server/tree/1.6/src/main/java/io/mycat
-[![2016-04-23_9-54-14](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-23_9-54-14.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-23_9-54-14.jpg)
+![2016-04-23_9-54-14](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-23_9-54-14.jpg)
 
-1.流程图
+## 2. 流程图
 后端连接处理流程主要指mycat server接收到路由以后下发SQL语句至具体的datahost执行并返回报文的一段过程。以下是主要流程图。
-[![2016-04-23_11-21-04](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-23_11-21-04.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-23_11-21-04.jpg)
-2\. routeEndExecuteSQL
+![2016-04-23_11-21-04](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-23_11-21-04.jpg)
+
+## 3. routeEndExecuteSQL
 类ServerConnection包含routeEndExecuteSQL方法，路由计算成功，去调用类NonBlockingSession的execute方法。
 
+```Java
     public void routeEndExecuteSQL(String sql, int type, SchemaConfig schema) {
     		// 路由计算
     		RouteResultset rrs = null;
@@ -40,10 +42,12 @@ date: 2016-04-23 17:18:23
     			session.execute(rrs, type);
     		}
     	}
-    `</pre>
-    3.类NonBlockingSession的execute方法
-    类NonBlockingSession的execute方法对路由结果做了判断，如果不存在任何需要派发的节点则直接返回，如果是单节点，则调用类singleNodeHandler方法execute，如果是多节点，则调用类MultiNodeQueryHandler方法execute。
-    <pre>`
+```
+    
+## 4. 类NonBlockingSession的execute方法
+类NonBlockingSession的execute方法对路由结果做了判断，如果不存在任何需要派发的节点则直接返回，如果是单节点，则调用类singleNodeHandler方法execute，如果是多节点，则调用类MultiNodeQueryHandler方法execute。
+
+```Java    
     public void execute(RouteResultset rrs, int type) {
 
     		// clear prev execute resources
@@ -92,11 +96,13 @@ date: 2016-04-23 17:18:23
     			this.setPrepared(false);
     		}
     	}
-    `</pre>
-    4.类MultiNodeQueryHandler的execute方法
-    单节点与多节点的原理是一样的，只是多节点多了一层循环，对每个datanode分别进行了同样的操作。这里先判断session是否已经有该datanode关联的后端连接session.tryExistsCon，如果已有，则调用_execute方法下发SQL指令；反之，则调用getConnection方法从连接池中获取一个可用连接或新建一个连接。
-    <pre>`
-    public void execute() throws Exception {
+```
+    
+## 5. 类MultiNodeQueryHandler的execute方法
+单节点与多节点的原理是一样的，只是多节点多了一层循环，对每个datanode分别进行了同样的操作。这里先判断session是否已经有该datanode关联的后端连接session.tryExistsCon，如果已有，则调用_execute方法下发SQL指令；反之，则调用getConnection方法从连接池中获取一个可用连接或新建一个连接。
+    
+```Java
+public void execute() throws Exception {
     		final ReentrantLock lock = this.lock;
     		lock.lock();
     		try {
@@ -133,10 +139,12 @@ date: 2016-04-23 17:18:23
 
     		}
     	}
-    `</pre>
-    5.类MySQLConnection的execute方法
+```
+    
+## 6. 类MySQLConnection的execute方法
     这里execute方法判断是否已执行，同时同步并执行synAndDoExecute方法，最后调用底层命令sendQueryCmd。
-    <pre>`
+    
+```Java    
     	public void execute(RouteResultsetNode rrn, ServerConnection sc,
     			boolean autocommit) throws UnsupportedEncodingException {
     		if (!modifiedSQLExecuted &amp;&amp; rrn.isModifySQL()) {
@@ -218,10 +226,12 @@ date: 2016-04-23 17:18:23
     		// waiting syn result...
 
     	}
-    `</pre>
-    6\. 类MultiNodeQueryHandler的okResponse方法
-    在类MySQLConnection的execute方法执行前，其实我们已经通过conn.setResponseHandler(this)将接收返回的数据报文。
-    <pre>`
+```
+    
+## 7. 类MultiNodeQueryHandler的okResponse方法
+在类MySQLConnection的execute方法执行前，其实我们已经通过conn.setResponseHandler(this)将接收返回的数据报文。
+
+```Java    
     	public void okResponse(byte[] data, BackendConnection conn) {
 
     		this.netOutBytes += data.length;
@@ -302,5 +312,6 @@ date: 2016-04-23 17:18:23
     			}
     		}
     	}
+```
 
 小结，对比1.5正式版本，1.6版本重构了包名，框架看上去更加清晰。我这里只是粗略的对后端连接处理做了分解，肯定有错误之处，还望谅解。

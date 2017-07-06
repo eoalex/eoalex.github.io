@@ -9,27 +9,30 @@ categories:
   - 运维
 date: 2016-03-13 19:24:58
 ---
-
+## 1. 简介
 [flannel](https://github.com/coreos/flannel) 是 CoreOS 团队针对 Kubernetes 设计的一个覆盖网络 (overlay network) 工具，其目的在于帮助每一个使用 Kuberentes 的 CoreOS 主机拥有一个完整的子网。Kubernetes 会为每一个 POD 分配一个独立的 IP 地址，这样便于同一个 POD 中的 Containers 彼此连接，而之前的 CoreOS 并不具备这种能力。为了解决这一问题，flannel 通过在集群中创建一个覆盖网格网络 (overlay mesh network) 为主机设定一个子网。具体flannel介绍及原理参见[官网](https://github.com/coreos/flannel)。下面我们实战配置及测试。
-注：本文安装配置是在我的上篇博文[Kubernetes集群初探](http://blog.yaodataking.com/2016/02/kubernetes-cluster-1.html)的基础上。
-1\. etcd设置
+>注：本文安装配置是在我的上篇博文[Kubernetes集群初探](/2016/02/27/kubernetes-cluster-1/)的基础上。
+
+## 2. etcd设置
 首先我们要对etcd做一些更改
-1.1设置flanel网络段
-#etcdctl set /coreos.com/network/config '{ "Network": "10.2.0.0/16" }'
-1.2修改配置文件
+### 2.1 设置flanel网络段
+	#etcdctl set /coreos.com/network/config '{ "Network": "10.2.0.0/16" }'
+### 2.2 修改配置文件
 在配置文件里/etc/etcd/etcd.conf把ETCD_LISTEN_CLIENT_URLS="http://localhost:2379"中的locahost改为0.0.0.0
 
-2.flannel安装配置(每台Node节点都要配置)
-2.1下载
-#wget https://github.com/coreos/flannel/releases/download/v0.5.5/flannel-0.5.5-linux-amd64.tar.gz
-2.2解压
-#tar -xzvf flannel-0.5.5-linux-amd64.tar.gz
-2.3安装
+## 3. flannel安装配置
+每台Node节点都要配置.
+### 3.1 下载
+	#wget https://github.com/coreos/flannel/releases/download/v0.5.5/flannel-0.5.5-linux-amd64.tar.gz
+### 3.2 解压
+	#tar -xzvf flannel-0.5.5-linux-amd64.tar.gz
+### 3.3 安装
 直接复制解压出来的两个文件到可执行目录
-#cp flannel-0.5.5/flanneld /usr/bin
-#cp flannel-0.5.5/mk-docker-opts.sh /usr/bin
-2.4配置
-编辑/etc/sysconfig/flanneld
+	
+	#cp flannel-0.5.5/flanneld /usr/bin
+	#cp flannel-0.5.5/mk-docker-opts.sh /usr/bin
+### 3.4 配置
+编辑`/etc/sysconfig/flanneld`
 
     # Flanneld configuration options
     # etcd url location
@@ -40,9 +43,10 @@ date: 2016-03-13 19:24:58
 
     # Any additonal options
     #FLANNEL_OPTIONS=
-    `</pre>
-    编辑服务文件/usr/lib/systemd/system/flanneld.service
-    <pre></code>[Unit]
+    
+编辑服务文件`/usr/lib/systemd/system/flanneld.service`
+    
+    [Unit]
     Description=Flanneld overlay address etcd agent
     After=network.target
     Before=docker.service
@@ -58,19 +62,19 @@ date: 2016-03-13 19:24:58
     [Install]
     RequiredBy=docker.service
     WantedBy=multi-user.target
-    </code></pre>
-    2.5暂停docker服务
+### 3.5 暂停docker服务
     #systemctl stop docker
-    2.6执行以下脚本
+### 3.6 执行以下脚本
     #systemctl start flanneld
     #mk-docker-opts.sh -i
     #source /run/flannel/subnet.env
     #ifconfig docker0 ${FLANNEL_SUBNET}
-    2.7重启docker服务
+### 3.7 重启docker服务
     #systemctl restart docker
-    检查网络配置，我们看到多了flannel0，
-    在centos-minion01上
-    <pre>`[root@centos-minion01 ~]# ip a
+检查网络配置，我们看到多了flannel0，
+在centos-minion01上
+    
+    [root@centos-minion01 ~]# ip a
     1: lo:  mtu 65536 qdisc noqueue state UNKNOWN
         link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
         inet 127.0.0.1/8 scope host lo
@@ -91,9 +95,9 @@ date: 2016-03-13 19:24:58
         link/none
         inet 10.2.35.0/16 scope global flannel0
            valid_lft forever preferred_lft forever
-    `</pre>
-    在centos-minion02上
-    <pre>`[root@centos-minion02 ~]# ip a
+在centos-minion02上
+    
+    [root@centos-minion02 ~]# ip a
     1: lo:  mtu 65536 qdisc noqueue state UNKNOWN
         link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
         inet 127.0.0.1/8 scope host lo
@@ -116,21 +120,23 @@ date: 2016-03-13 19:24:58
         link/none
         inet 10.2.52.0/16 scope global flannel0
            valid_lft forever preferred_lft forever
-    `</pre>
-    查看etcd上的路由表。
-    <pre>`[root@centos-master ~]# etcdctl ls /coreos.com/network/subnets
+    
+查看etcd上的路由表。
+    
+    [root@centos-master ~]# etcdctl ls /coreos.com/network/subnets
     /coreos.com/network/subnets/10.2.35.0-24
     /coreos.com/network/subnets/10.2.52.0-24
     [root@centos-master ~]# etcdctl get /coreos.com/network/subnets/10.2.35.0-24
     {"PublicIP":"192.168.199.52"}
     [root@centos-master ~]# etcdctl get /coreos.com/network/subnets/10.2.52.0-24
     {"PublicIP":"192.168.199.53"}
-    `</pre>
+    
 
-    3\. 测试验证
-    3.1 启动两个pod
-    我们在centos-master上制作两个pod文件。第二个文件把01改为02
-    <pre>`[root@centos-master mysqlpod]# cat mysqlpod01.yaml
+## 4. 测试验证
+### 4.1 启动两个pod
+我们在centos-master上制作两个pod文件。第二个文件把01改为02
+    
+    [root@centos-master mysqlpod]# cat mysqlpod01.yaml
     apiVersion: v1
     kind: Pod
     metadata:
@@ -146,18 +152,20 @@ date: 2016-03-13 19:24:58
           value: p123456
         ports:
         - containerPort: 3306
-    `</pre>
-    启动这两个pod。
+    
+启动这两个pod。
+
     kubectl create -f mysqlpod01.yaml
     kubectl create -f mysqlpod02.yaml
-    <pre>`[root@centos-master ~]# kubectl get pods -o wide
+    [root@centos-master ~]# kubectl get pods -o wide
     NAME      READY     STATUS    RESTARTS   AGE       NODE
     mysql01   1/1       Running   0          10m       centos-minion02
     mysql02   1/1       Running   0          7m        centos-minion01
-    `</pre>
-    我们看到分别启动在两台Node上。下面我们测试他们的容器能不能互联。
-    在centos-minion01上进入mysql02容器，获得IP地址为10.2.35.2，同时我们在centos-minion02上也获得mysql01容器的IP地址为10.2.52.2。
-    <pre>`[root@centos-minion01 ~]# docker exec -it 309728d3a3f4 /bin/bash
+    
+我们看到分别启动在两台Node上。下面我们测试他们的容器能不能互联。
+在centos-minion01上进入mysql02容器，获得IP地址为10.2.35.2，同时我们在centos-minion02上也获得mysql01容器的IP地址为10.2.52.2。
+    
+    [root@centos-minion01 ~]# docker exec -it 309728d3a3f4 /bin/bash
     root@mysql02:/# ip a
     1: lo:  mtu 65536 qdisc noqueue state UNKNOWN group default
         link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
@@ -185,10 +193,11 @@ date: 2016-03-13 19:24:58
 
     Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-    mysql&gt;
-    `</pre>
-    我们看到连接没有问题。同时在centos-minion02的上，我们也试着进入mysql01容器，连接在centos-minion01节点上的mysql02容器。
-    <pre>`[root@centos-minion02 ~]# docker exec -it 98fd9272ad7a /bin/bash
+    mysql>
+    
+我们看到连接没有问题。同时在centos-minion02的上，我们也试着进入mysql01容器，连接在centos-minion01节点上的mysql02容器。
+    
+    [root@centos-minion02 ~]# docker exec -it 98fd9272ad7a /bin/bash
     root@mysql01:/# ip a
     1: lo:  mtu 65536 qdisc noqueue state UNKNOWN group default
         link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
@@ -216,7 +225,7 @@ date: 2016-03-13 19:24:58
 
     Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-    mysql&gt;
+    mysql>
 
 同样也可以顺利连接。
 
