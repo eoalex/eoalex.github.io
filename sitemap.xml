@@ -2,6 +2,41 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://blog.yaodataking.com/about/index.html</loc>
+    
+    <lastmod>2017-07-18T14:22:47.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2017/05/15/storm-3/</loc>
+    
+    <lastmod>2017-07-18T14:17:05.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2017/03/07/storm-2/</loc>
+    
+    <lastmod>2017-07-18T14:16:32.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2017/02/23/storm-1/</loc>
+    
+    <lastmod>2017-07-18T14:15:56.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/03/10/kettle-synchronize/</loc>
+    
+    <lastmod>2017-07-18T14:14:10.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://blog.yaodataking.com/2016/04/30/mycat-sourcecode-catlet-sharejoin/</loc>
     
     <lastmod>2017-07-06T12:41:36.000Z</lastmod>
@@ -261,23 +296,9 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2017/02/23/storm-1/</loc>
-    
-    <lastmod>2017-07-02T12:05:46.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://blog.yaodataking.com/2017/02/28/machine-learning-2/</loc>
     
     <lastmod>2017-07-02T11:59:48.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2017/03/07/storm-2/</loc>
-    
-    <lastmod>2017-07-02T11:56:21.000Z</lastmod>
     
   </url>
   
@@ -292,13 +313,6 @@
     <loc>http://blog.yaodataking.com/2017/04/09/docker-ps/</loc>
     
     <lastmod>2017-07-02T11:47:26.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2017/05/15/storm-3/</loc>
-    
-    <lastmod>2017-07-02T11:42:38.000Z</lastmod>
     
   </url>
   
@@ -334,13 +348,6 @@
     <loc>http://blog.yaodataking.com/2016/03/11/mycat-haproxy-docker/</loc>
     
     <lastmod>2017-07-02T10:48:53.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/03/10/kettle-synchronize/</loc>
-    
-    <lastmod>2017-07-02T10:40:49.000Z</lastmod>
     
   </url>
   
@@ -576,9 +583,9 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/about/index.html</loc>
+    <loc>http://blog.yaodataking.com/2016/08/14/rome-story-8/</loc>
     
-    <lastmod>2017-06-21T15:43:47.000Z</lastmod>
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
   </url>
   
@@ -604,13 +611,6 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/08/14/rome-story-8/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://blog.yaodataking.com/2016/08/21/rome-story-9/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
@@ -625,14 +625,21 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/04/17/rome-story-1/</loc>
+    <loc>http://blog.yaodataking.com/2016/04/10/kubernetes-ku8eye/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/04/10/kubernetes-ku8eye/</loc>
+    <loc>http://blog.yaodataking.com/2016/09/10/rome-story-10/</loc>
+    
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/04/17/rome-story-1/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
@@ -660,7 +667,7 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/04/30/rome-story-2/</loc>
+    <loc>http://blog.yaodataking.com/2016/09/28/rome-story-11/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
@@ -674,13 +681,6 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/09/10/rome-story-10/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://blog.yaodataking.com/2016/06/05/rome-story-4/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
@@ -688,7 +688,7 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/09/28/rome-story-11/</loc>
+    <loc>http://blog.yaodataking.com/2016/04/30/rome-story-2/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
