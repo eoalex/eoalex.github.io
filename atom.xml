@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://blog.yaodataking.com/"/>
-  <updated>2017-07-18T14:17:05.000Z</updated>
+  <updated>2017-09-02T14:41:31.000Z</updated>
   <id>http://blog.yaodataking.com/</id>
   
   <author>
@@ -14,6 +14,122 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>以太坊搭建本地私有链</title>
+    <link href="http://blog.yaodataking.com/2017/09/02/ethereum-1/"/>
+    <id>http://blog.yaodataking.com/2017/09/02/ethereum-1/</id>
+    <published>2017-09-02T13:58:34.000Z</published>
+    <updated>2017-09-02T14:41:31.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1. 介绍"></a>1. 介绍</h2><p>本文我们演示如何使用以太坊客户端搭建以太坊的私有链。<br>环境：Ubuntu 16.04</p>
+<h2 id="2-步骤"><a href="#2-步骤" class="headerlink" title="2. 步骤"></a>2. 步骤</h2><h3 id="2-1-安装客户端"><a href="#2-1-安装客户端" class="headerlink" title="2.1 安装客户端"></a>2.1 安装客户端</h3><p>从以下地址下载以太坊Linux包</p>
+<pre><code>https://github.com/ethereum/mist/releases
+</code></pre><p>安装</p>
+<pre><code>sudo apt-get -f install libappindicator1 libindicator7
+sudo dpkg -i Mist-linux64-0-9-0.deb
+</code></pre><p>设置geth执行路径，编辑.bashrc</p>
+<pre><code>export PATH=$PATH:～／.config/Mist/binaries/Geth/unpacked
+</code></pre><h3 id="2-2-建立目录和genesis-json"><a href="#2-2-建立目录和genesis-json" class="headerlink" title="2.2 建立目录和genesis.json"></a>2.2 建立目录和genesis.json</h3><p>创建目录</p>
+<pre><code>sudo mkdir /opt/mychains
+</code></pre><p>cd /opt/mychains，编辑genesis.json</p>
+<pre><code>{
+&quot;nonce&quot;: &quot;0x0000000000000042&quot;,     
+&quot;timestamp&quot;: &quot;0x00&quot;,
+&quot;parentHash&quot;: &quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,
+&quot;extraData&quot;: &quot;0x00&quot;,     
+&quot;gasLimit&quot;: &quot;0x8000000&quot;,     
+&quot;difficulty&quot;: &quot;0x400&quot;,
+&quot;mixhash&quot;: &quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,
+&quot;coinbase&quot;: &quot;0x3333333333333333333333333333333333333333&quot;,     
+&quot;alloc&quot;: {
+ },
+&quot;config&quot;: {
+    &quot;chainId&quot;: 15,
+    &quot;homesteadBlock&quot;: 0,
+    &quot;eip155Block&quot;: 0,
+    &quot;eip158Block&quot;: 0
+    }
+}
+</code></pre><p>Mixhash<br>一个256位的哈希值，和nonce配合，一起用来证明在区块链上已经做了足够的计算量（工作证明）。这个nonce 和 mixhash 的组成，必须满足一个在黄皮书中所描述的数学上的条件，黄皮书 4.3.4。<br>Nonce<br>一个64位的哈希值，和mixhash配合，一起用来证明在区块链上已经做了足够的计算量（工作证明）<br>Difficulty<br>定义挖矿的目标，可以用上一个区块的难度值和时间戳计算出来，值越高，矿工越难挖到区块<br>Alloc 预先填入一些钱包和余额<br>Coinbase<br>160位的钱包地址。在创世区块中可以被定义成任何的地址，因为当每挖到一个区块的时候，这个值会变成矿工的etherbase地址<br>Timestamp  一个unix的time()函数的输出值，时间戳<br>extraData  32字节长度，可以为私有链留下一些信息，如你的姓名等，用以证明这个私有链是你创建的<br>gasLimit   当前链，一个区块所能消耗的gas上限</p>
+<h3 id="2-3-初始化创世块"><a href="#2-3-初始化创世块" class="headerlink" title="2.3 初始化创世块"></a>2.3 初始化创世块</h3><pre><code>geth --identity &quot;mydev1&quot; --rpc --rpccorsdomain &quot;*&quot; --datadir &quot;./mydev1&quot; --rpcapi &quot;db,eth,net,web3&quot; --networkid 100 init &quot;./genesis.json&quot;
+
+WARN [09-02|21:15:15] No etherbase set and no accounts found as default 
+INFO [09-02|21:15:15] Allocated cache and file handles database=/opt/mychains/mydev1/geth/chaindata cache=16 handles=16
+INFO [09-02|21:15:15] Writing custom genesis block 
+INFO [09-02|21:15:15] Successfully wrote genesis state database=chaindata  hash=6650a0…b5c158
+INFO [09-02|21:15:15] Allocated cache and file handles database=/opt/mychains/mydev1/geth/lightchaindata cache=16 handles=16
+INFO [09-02|21:15:15] Writing custom genesis block 
+INFO [09-02|21:15:15] Successfully wrote genesis state atabase=lightchaindata hash=6650a0…b5c158
+</code></pre><h3 id="2-4-启动私有链"><a href="#2-4-启动私有链" class="headerlink" title="2.4 启动私有链"></a>2.4 启动私有链</h3><pre><code>geth --datadir &quot;./mydev1&quot; --identity &quot;mydev1&quot; --rpccorsdomain &quot;*&quot; --networkid 100 console
+
+WARN [09-02|21:21:00] No etherbase set and no accounts found as default 
+INFO [09-02|21:21:00] Starting peer-to-peer node               instance=Geth/mydev1/v1.6.6-stable-10a45cb5/linux-amd64/go1.8.3
+INFO [09-02|21:21:00] Allocated cache and file handles         database=/opt/mychains/mydev1/geth/chaindata cache=128 handles=1024
+WARN [09-02|21:21:00] Upgrading chain database to use sequential keys 
+INFO [09-02|21:21:00] Initialised chain configuration          config=&quot;{ChainID: 15 Homestead: 0 DAO: &lt;nil&gt; DAOSupport: false EIP150: &lt;nil&gt; EIP155: 0 EIP158: 0 Metropolis: &lt;nil&gt; Engine: unknown}&quot;
+INFO [09-02|21:21:00] Disk storage enabled for ethash caches   dir=/opt/mychains/mydev1/geth/ethash count=3
+INFO [09-02|21:21:00] Disk storage enabled for ethash DAGs     dir=/home/alex/.ethash               count=2
+WARN [09-02|21:21:00] Upgrading db log bloom bins 
+INFO [09-02|21:21:00] Bloom-bin upgrade completed              elapsed=248.19µs
+INFO [09-02|21:21:00] Initialising Ethereum protocol           versions=&quot;[63 62]&quot; network=100
+INFO [09-02|21:21:00] Loaded most recent local header          number=0 hash=6650a0…b5c158 td=1024
+INFO [09-02|21:21:00] Loaded most recent local full block      number=0 hash=6650a0…b5c158 td=1024
+INFO [09-02|21:21:00] Loaded most recent local fast block      number=0 hash=6650a0…b5c158 td=1024
+INFO [09-02|21:21:00] Starting P2P networking 
+INFO [09-02|21:21:00] Database conversion successful 
+INFO [09-02|21:21:00] UDP listener up                          self=enode://4203871e783238ac002006ded5de0627d3bd05e76403833ba4c2b3ecec0e98cecae5d367123b1c1aadb6ce3cc59491de3cb78d4ff469a452beb49ce2de9f0c01@192.168.1.5:30303
+INFO [09-02|21:21:00] RLPx listener up                         self=enode://4203871e783238ac002006ded5de0627d3bd05e76403833ba4c2b3ecec0e98cecae5d367123b1c1aadb6ce3cc59491de3cb78d4ff469a452beb49ce2de9f0c01@192.168.1.5:30303
+INFO [09-02|21:21:00] IPC endpoint opened: /opt/mychains/mydev1/geth.ipc 
+Welcome to the Geth JavaScript console!
+
+instance: Geth/mydev1/v1.6.6-stable-10a45cb5/linux-amd64/go1.8.3
+ modules: admin:1.0 debug:1.0 eth:1.0 miner:1.0 net:1.0 personal:1.0 rpc:1.0 txpool:1.0 web3:1.0
+
+INFO [09-02|21:21:01] Mapped network port                      proto=udp extport=30303 intport=30303 interface=NAT-PMP(192.168.199.1)
+INFO [09-02|21:21:01] Mapped network port                      proto=tcp extport=30303 intport=30303 interface=NAT-PMP(192.168.199.1)
+</code></pre><h3 id="2-5-创建账号并启动挖矿"><a href="#2-5-创建账号并启动挖矿" class="headerlink" title="2.5 创建账号并启动挖矿"></a>2.5 创建账号并启动挖矿</h3><p>创建账号personal.newAccount(“123456”)</p>
+<pre><code>&quot;0x852ffa22f80d5ce869b94bcf60fbe60bb867415a&quot;
+INFO [09-02|21:31:48] New wallet appeared url=keystore:///opt/mychains/mydev1… status=Locked
+</code></pre><p>启动挖矿miner.start()</p>
+<pre><code>INFO [09-02|21:33:09] Updated mining threads  threads=0
+INFO [09-02|21:33:09] Transaction pool price threshold updated price=18000000000    null
+INFO [09-02|21:33:09] Starting mining operation 
+INFO [09-02|21:33:09] Commit new mining work number=1 txs=0 uncles=0 elapsed=131.912µs
+INFO [09-02|21:33:25] Generating DAG in progress  epoch=1 percentage=0 elapsed=13.305s
+INFO [09-02|21:33:37] Generating DAG in progress  epoch=1 percentage=1 elapsed=24.781s
+INFO [09-02|21:33:48] Generating DAG in progress  epoch=1 percentage=2 elapsed=36.059s
+INFO [09-02|21:33:59] Generating DAG in progress  epoch=1 percentage=3 elapsed=47.375s
+INFO [09-02|21:34:10] Generating DAG in progress  epoch=1 percentage=4 elapsed=58.127s
+INFO [09-02|21:34:15] Successfully sealed new block  number=1 hash=1a9b10…5d488d
+INFO [09-02|21:34:15] 🔨 mined potential block  number=1 hash=1a9b10…5d488d
+INFO [09-02|21:34:15] Commit new mining work  number=2 txs=0 uncles=0 elapsed=5.490ms
+INFO [09-02|21:34:17] Successfully sealed new block  number=2 hash=8fc2dc…501949
+INFO [09-02|21:34:17] 🔨 mined potential block  number=2 hash=8fc2dc…501949
+INFO [09-02|21:34:17] Commit new mining work  number=3 txs=0 uncles=0 elapsed=176.082µs
+INFO [09-02|21:34:21] Generating DAG in progress  epoch=1 percentage=5 elapsed=1m9.380s
+</code></pre><h3 id="2-6-检验挖矿是否成功"><a href="#2-6-检验挖矿是否成功" class="headerlink" title="2.6 检验挖矿是否成功"></a>2.6 检验挖矿是否成功</h3><p>查看主账户的以太币数量</p>
+<pre><code>acc0=eth.accounts[0]
+eth.getBalance(acc0)
+</code></pre><p>结果只要不为0，那就说明挖矿成功！</p>
+<pre><code>40000000000000000000
+</code></pre>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;1-介绍&quot;&gt;&lt;a href=&quot;#1-介绍&quot; class=&quot;headerlink&quot; title=&quot;1. 介绍&quot;&gt;&lt;/a&gt;1. 介绍&lt;/h2&gt;&lt;p&gt;本文我们演示如何使用以太坊客户端搭建以太坊的私有链。&lt;br&gt;环境：Ubuntu 16.04&lt;/p&gt;
+&lt;h2 id=&quot;2-
+    
+    </summary>
+    
+      <category term="云计算及虚拟化" scheme="http://blog.yaodataking.com/categories/%E4%BA%91%E8%AE%A1%E7%AE%97%E5%8F%8A%E8%99%9A%E6%8B%9F%E5%8C%96/"/>
+    
+    
+      <category term="区块链" scheme="http://blog.yaodataking.com/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/"/>
+    
+      <category term="以太坊" scheme="http://blog.yaodataking.com/tags/%E4%BB%A5%E5%A4%AA%E5%9D%8A/"/>
+    
+  </entry>
   
   <entry>
     <title>Storm与kafka集成(上)</title>
@@ -1218,36 +1334,6 @@ dual.commit.enabled=true
     
     
       <category term="Oracle" scheme="http://blog.yaodataking.com/tags/Oracle/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>《罗马人的故事14:基督的胜利》读书笔记</title>
-    <link href="http://blog.yaodataking.com/2016/11/14/rome-story-14/"/>
-    <id>http://blog.yaodataking.com/2016/11/14/rome-story-14/</id>
-    <published>2016-11-14T03:00:17.000Z</published>
-    <updated>2017-07-04T14:41:15.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>公元356年，24岁的副帝尤里安开始了他在高卢的战斗生活。令人意想不到的是，作为一名哲学门徒，尤里安犹如凯撒转世，不仅成功瓦解了莱茵河沿岸蛮族的入侵，而且赢得了罗马军队的拥护，罗马人的精神似乎又回来了。历史也给了尤里安一次绝佳的机会，5年后，皇帝君士坦提乌斯突然因病逝世，尤里安顺理成章地成为了罗马帝国唯一的最高统治者。然而尤里安终究不是凯撒，对基督的不正确处理导致他无法被当时社会接受，尤里安的死应该也是一次暗杀。我在想如果是凯撒，他会怎么面对基督的崛起呢？大概也很难吧，先接受再利用应该是正确的政治态度吧。总的来说，如果不能引领及顺应这个时代，个人的成就无法脱离他所处的时代。让我们用尤里安的遗言作为罗马帝国的谢幕吧。</p>
-<blockquote>
-<p>告别人生的时刻好像到了。我一直希望能回报养育我的大自然，现在我做到了，备感欣慰。哲学说，生为苦，死为解脱，因此是快乐。哲学还告诉我，死是神明赐给在现世建下功德之人的最后的奖励。对于迄今为止的所为，我没有任何后悔。我从未有过谋杀及其他卑劣之举，这让我感到欣慰。无论是与世隔绝的时期，还是日后集大权于一身，我始终忠实于自己，没有背叛自己的信念。我尽力顺应神明之期待而活，施善政兴利安民。遇战争，事前必深思熟虑，不得已才为之。尽管如此，结果未必尽如人意。像人间诸事，结果良善是神明之援助，欠佳则归咎于人之过失。我坚信帝国存在之意义，在于保证人民的安全与繁荣，并为之付出努力。我可以问心无愧地断言，为政后我所推行的一切政策，皆是为了实现这个目的。</p>
-</blockquote>
-<p>说到这里，尤里安长长地吸了一口气，然后继续说道：</p>
-<blockquote>
-<p>不能再多说了，我精力不济，感到死亡即将降临。唯有一事须作最后的交代。关于继任皇帝的人选，我不作提名。我的抉择可能考虑不够周延，或不够明智。若无法获得军队的支持，我的推荐会危及他的性命。人选委由诸位决定。我仅祝福罗马帝国的百姓，能在贤明的君主的统治下，过上安全幸福的生活。</p>
-</blockquote>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;公元356年，24岁的副帝尤里安开始了他在高卢的战斗生活。令人意想不到的是，作为一名哲学门徒，尤里安犹如凯撒转世，不仅成功瓦解了莱茵河沿岸蛮族的入侵，而且赢得了罗马军队的拥护，罗马人的精神似乎又回来了。历史也给了尤里安一次绝佳的机会，5年后，皇帝君士坦提乌斯突然因病逝世，尤
-    
-    </summary>
-    
-      <category term="读书笔记" scheme="http://blog.yaodataking.com/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
-    
-    
-      <category term="罗马" scheme="http://blog.yaodataking.com/tags/%E7%BD%97%E9%A9%AC/"/>
     
   </entry>
   
