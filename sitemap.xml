@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://blog.yaodataking.com/2018/01/01/reading-2017/</loc>
+    
+    <lastmod>2018-01-01T13:19:08.811Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://blog.yaodataking.com/2017/09/02/ethereum-1/</loc>
     
     <lastmod>2017-09-02T14:41:31.000Z</lastmod>
@@ -590,14 +597,7 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/10/28/rome-story-13/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/07/21/rome-story-6/</loc>
+    <loc>http://blog.yaodataking.com/2016/08/21/rome-story-9/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
@@ -605,6 +605,13 @@
   
   <url>
     <loc>http://blog.yaodataking.com/2016/07/03/rome-story-5/</loc>
+    
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/07/21/rome-story-6/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
@@ -625,27 +632,6 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/08/21/rome-story-9/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/04/30/rome-story-2/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/06/05/rome-story-4/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://blog.yaodataking.com/2016/10/06/rome-story-12/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
@@ -653,7 +639,21 @@
   </url>
   
   <url>
+    <loc>http://blog.yaodataking.com/2016/10/28/rome-story-13/</loc>
+    
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://blog.yaodataking.com/2016/09/28/rome-story-11/</loc>
+    
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/04/10/kubernetes-ku8eye/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
@@ -674,14 +674,14 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/04/10/kubernetes-ku8eye/</loc>
+    <loc>http://blog.yaodataking.com/2017/02/23/homo-tommorrow/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2017/02/23/homo-tommorrow/</loc>
+    <loc>http://blog.yaodataking.com/2016/11/30/rome-story-15/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
@@ -695,7 +695,14 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/11/30/rome-story-15/</loc>
+    <loc>http://blog.yaodataking.com/2016/06/05/rome-story-4/</loc>
+    
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/04/30/rome-story-2/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
