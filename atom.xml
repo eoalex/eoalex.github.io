@@ -526,7 +526,7 @@ c1d3b0166030        com.docker.swarm.node=debian,com.docker.swarm.cpu=6
     <link href="http://blog.yaodataking.com/2017/03/07/storm-2/"/>
     <id>http://blog.yaodataking.com/2017/03/07/storm-2/</id>
     <published>2017-03-07T11:54:33.000Z</published>
-    <updated>2017-07-18T14:16:32.000Z</updated>
+    <updated>2018-10-28T06:12:55.440Z</updated>
     
     <content type="html"><![CDATA[<h2 id="1-Storm是什么"><a href="#1-Storm是什么" class="headerlink" title="1. Storm是什么"></a>1. <strong>Storm是什么</strong></h2><p>Storm是开源的、分布式、流式计算系统。 我们知道Hadoop是开源的、分布式 系统，但是，Hadoop它只能处理适合进行批量计算的需求，对于，非批量的计算就不能够满足要求了。于是类似Storm流式计算系统就雨后春笋般的冒出来了，如Yahoo的S4，IBM的StreamBase，Amazon的Kinesis，Spark的Streaming，Google的Millwheel，不消说，Storm是业内最知名的。</p>
 <h2 id="2-Storm的主要特点"><a href="#2-Storm的主要特点" class="headerlink" title="2. Storm的主要特点"></a>2. <strong>Storm的主要特点</strong></h2><p>Storm的主工程师Nathan Marz表示： Storm可以方便地在一个计算机集群中编写与扩展复杂的实时计算，Storm之于实时处理，就好比Hadoop之于批处理。Storm保证每个消息都会得到处理，而且它很快——在一个小集群中，每秒可以处理数以百万计的消息。更棒的是你可以使用任意编程语言来做开发。<br>Storm的主要特点如下：</p>
@@ -540,8 +540,8 @@ c1d3b0166030        com.docker.swarm.node=debian,com.docker.swarm.cpu=6
 <li>本地模式。Storm有一个“本地模式”，可以在处理过程中完全模拟Storm集群。这让你可以快速进行开发和单元测试。</li>
 </ol>
 <p>不过Storm不是一个完整的解决方案。使用Storm时你需要关注以下几点：<br>如果使用的是自己的消息队列，需要加入消息队列做数据的来源和产出的代码<br>需要考虑如何做故障处理：如何记录消息队列处理的进度，应对Storm重启，挂掉的场景<br>需要考虑如何做消息的回退：如果某些消息处理一直失败怎么办？</p>
-<h2 id="3-Storm组件及概念"><a href="#3-Storm组件及概念" class="headerlink" title="3. Storm组件及概念"></a>3. <strong>Storm组件及概念</strong></h2><p>1. Nimbus：雨云，主节点的守护进程，负责为工作节点分发任务(任务写入Zookeeper)。<br>2. Supervisor：从Zookeeper接收Nimbus分配的任务，启动和停止属于自己管理的worker进程。<br>3. Worker：运行具体处理组件逻辑的进程。<br>4. Topology：一个Storm拓扑打包了一个实时处理程序的逻辑。一个Storm拓扑类似一个Hadoop的MapReduce任务(Job)。主要区别是MapReduce任务最终会结束，而拓扑会一直运行（当然直到你杀死它)。一个拓扑是一个通过流分组(stream grouping)把Spout和Bolt连接到一起的拓扑结构。图的每条边代表一个Bolt订阅了其他Spout或者Bolt的输出流。一个拓扑就是一个复杂的多阶段的流计算。<br>5. Spout：龙卷，是一个在Topology中产生源数据流的组件。通常情况下Spout会从外部数据源中读取数据，然后转换为Topology内部的源数据。Spout 是一个主动的角色，其接口中有个nextTuple()函数， Storm框架会不停地调用此函数，用户只要在其中生成源数据即可。<br>6. Bolt：雷电，是一个在Topology中接受数据然后执行处理的组件。Bolt可以执行过滤、函数操作、合并、写数据库等任何操作。Bolt是一个被动的角色，其接口中有个execute(Tuple input)函数,在接受到消息后会调用此函数，用户可以在其中执行自己想要的操作。<br>7. Task：Worker中每一个Spout/Bolt的线程称为一个Task. 在 Storm 0.8之后，task不再与物理线程对应，同一个Spout/Bolt的Task可能会共享一个物理线程，该线程称为Executor。<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/03/topology.png" alt=""><br>8. Tuple：元组，一次消息传递的基本单元。<br>9. Stream：源源不断传递的Tuple就组成了stream。<br>10.Stream Grouping：即消息的partition方法。流分组策略告诉Topology如何在两个组件之间发送Tuple。 Storm 中提供若干种实用的grouping方式，包括shuffle, fields hash, all, global, none, direct和localOrShuffle等。<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/03/2017-03-07_19-58-54.png" alt=""></p>
-<h2 id="4-Storm基本架构"><a href="#4-Storm基本架构" class="headerlink" title="4. Storm基本架构"></a>4. <strong>Storm基本架构</strong></h2><p>Nimbus和Supervisor之间的通信依靠Zookeeper来完成，并且Nimbus进程和Supervisor都是快速失败和无状态的。所有的状态要么在Zookeeper里面，要么在本地磁盘上。这就意味着你可以用Kill -9 来杀死 Nimbus和Supervisor进程，然后在重启它们，它们可以继续工作，就像什么也没发生。这个设计使Storm具有非常高的稳定性。<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/03/storm-architect.png" alt=""></p>
+<h2 id="3-Storm组件及概念"><a href="#3-Storm组件及概念" class="headerlink" title="3. Storm组件及概念"></a>3. <strong>Storm组件及概念</strong></h2><p>1. Nimbus：雨云，主节点的守护进程，负责为工作节点分发任务(任务写入Zookeeper)。<br>2. Supervisor：从Zookeeper接收Nimbus分配的任务，启动和停止属于自己管理的worker进程。<br>3. Worker：运行具体处理组件逻辑的进程。<br>4. Topology：一个Storm拓扑打包了一个实时处理程序的逻辑。一个Storm拓扑类似一个Hadoop的MapReduce任务(Job)。主要区别是MapReduce任务最终会结束，而拓扑会一直运行（当然直到你杀死它)。一个拓扑是一个通过流分组(stream grouping)把Spout和Bolt连接到一起的拓扑结构。图的每条边代表一个Bolt订阅了其他Spout或者Bolt的输出流。一个拓扑就是一个复杂的多阶段的流计算。<br>5. Spout：龙卷，是一个在Topology中产生源数据流的组件。通常情况下Spout会从外部数据源中读取数据，然后转换为Topology内部的源数据。Spout 是一个主动的角色，其接口中有个nextTuple()函数， Storm框架会不停地调用此函数，用户只要在其中生成源数据即可。<br>6. Bolt：雷电，是一个在Topology中接受数据然后执行处理的组件。Bolt可以执行过滤、函数操作、合并、写数据库等任何操作。Bolt是一个被动的角色，其接口中有个execute(Tuple input)函数,在接受到消息后会调用此函数，用户可以在其中执行自己想要的操作。<br>7. Task：Worker中每一个Spout/Bolt的线程称为一个Task. 在 Storm 0.8之后，task不再与物理线程对应，同一个Spout/Bolt的Task可能会共享一个物理线程，该线程称为Executor。<br><img src="/uploads/2017/03/topology.png" alt=""><br>8. Tuple：元组，一次消息传递的基本单元。<br>9. Stream：源源不断传递的Tuple就组成了stream。<br>10.Stream Grouping：即消息的partition方法。流分组策略告诉Topology如何在两个组件之间发送Tuple。 Storm 中提供若干种实用的grouping方式，包括shuffle, fields hash, all, global, none, direct和localOrShuffle等。<br><img src="/uploads/2017/03/2017-03-07_19-58-54.png" alt=""></p>
+<h2 id="4-Storm基本架构"><a href="#4-Storm基本架构" class="headerlink" title="4. Storm基本架构"></a>4. <strong>Storm基本架构</strong></h2><p>Nimbus和Supervisor之间的通信依靠Zookeeper来完成，并且Nimbus进程和Supervisor都是快速失败和无状态的。所有的状态要么在Zookeeper里面，要么在本地磁盘上。这就意味着你可以用Kill -9 来杀死 Nimbus和Supervisor进程，然后在重启它们，它们可以继续工作，就像什么也没发生。这个设计使Storm具有非常高的稳定性。<br><img src="/uploads/2017/03/storm-architect.png" alt=""></p>
 <h2 id="5-与Hadoop的区别"><a href="#5-与Hadoop的区别" class="headerlink" title="5. 与Hadoop的区别"></a>5. <strong>与Hadoop的区别</strong></h2><p>Hadoop使用磁盘作为中间交换的介质，而Storm的数据是一直在内存中流转的。两者面向的领域也不完全相同，一个是批量处理，基于任务调度的；另外一个是实时处理，基于流。以水为例，Hadoop可以看作是纯净水，一桶桶地搬；而Storm是用水管，预先接好（Topology），然后打开水龙头，水就源源不断地流出来了。</p>
 <h2 id="6-与Spark-Streaming的区别"><a href="#6-与Spark-Streaming的区别" class="headerlink" title="6. 与Spark Streaming的区别"></a>6. <strong>与Spark Streaming的区别</strong></h2><p>虽然这两个框架都提供可扩展性和容错性,它们根本的区别在于他们的处理模型。Storm处理的是每次传入的一个事件，而Spark Streaming是处理某个时间段窗口内的事件流。因此,Storm处理一个事件可以达到秒内的延迟，而Spark Streaming则有几秒钟的延迟。</p>
 ]]></content>
@@ -564,14 +564,14 @@ c1d3b0166030        com.docker.swarm.node=debian,com.docker.swarm.cpu=6
     <link href="http://blog.yaodataking.com/2017/02/28/machine-learning-2/"/>
     <id>http://blog.yaodataking.com/2017/02/28/machine-learning-2/</id>
     <published>2017-02-28T13:11:13.000Z</published>
-    <updated>2017-07-02T11:59:48.000Z</updated>
+    <updated>2018-10-28T06:12:55.408Z</updated>
     
     <content type="html"><![CDATA[<h2 id="1-基本概念"><a href="#1-基本概念" class="headerlink" title="1. 基本概念"></a>1. 基本概念</h2><p>我们首先了解一下关于回归的基本概念。<br><strong>因变量（dependent variable）</strong>是函数中的专业名词，函数关系式中，某些特定的数会随另一个（或另几个）会变动的数的变动而变动，就称为因变量。如：Y=f(X)。此式表示为：Y随X的变化而变化。Y是因变量，X是自变量。<br><strong>自变量（Independent variable）</strong>一词来自数学。在数学中，y=f（x）。在这一方程中自变量是x，因变量是y。将这个方程运用到心理学的研究中，自变量是指研究者主动操纵，而引起因变量发生变化的因素或条件，因此自变量被看作是因变量的原因。自变量有连续变量和类别变量之分。如果实验者操纵的自变量是连续变量，则实验是函数型实验。如实验者操纵的自变量是类别变量，则实验是因素型的。在心理学实验中，一个明显的问题是要有一个有机体作为被试对刺激作反应。显然，这里刺激变量就是自变量。<br>变量间的关系：<br>1)变量间有完全确定的关系：函数关系式<br>2)变量间有一定的关系，无法用函数形式表示出来，为研究这类变量之间的关系就需要通过大量试验或观测获得数据，用统计方法去寻找它们间的关系，这种关系反映了变量间的统计规律，研究这类统计规律的方法之一就是回归分析。</p>
 <p><strong>回归分析（regression analysis)</strong>是确定两种或两种以上变量间相互依赖的定量关系的一种统计分析方法。运用十分广泛，回归分析按照涉及的变量的多少，分为一元回归和多元回归分析；在<strong>线性回归(Linear Regression)</strong>中，按照因变量的多少，可分为简单回归分析和多重回归分析；按照自变量和因变量之间的关系类型，可分为线性回归分析和非线性回归分析。如果在回归分析中，只包括一个自变量和一个因变量，且二者的关系可用一条直线近似表示，这种回归分析称为一元线性回归分析。如果回归分析中包括两个或两个以上的自变量，且自变量之间存在线性相关，则称为多元线性回归分析。<br><strong>回归分析</strong>实际上就是利用样本（已知数据），产生拟合方程，从而（对未知数据）迚行预测。</p>
 <h2 id="2-主要算法"><a href="#2-主要算法" class="headerlink" title="2. 主要算法"></a>2. 主要算法</h2><p>目前的回归算法中，只要有以下几种算法。<br>线性回归（Linear Regression）<br>普通最小二乘回归（Ordinary Least Squares Regression，OLSR）<br>逻辑回归（Logistic Regression）<br>逐步回归（Stepwise Regression）<br>岭回归（Ridge Regression）<br>LASSO回归（Least Absolute Shrinkage and Selection Operator）<br>ElasticNet回归<br>优点：直接、快速、知名度高<br>缺点：要求严格的假设 需要处理异常值</p>
 <h3 id="2-1-线性回归（Linear-Regression）"><a href="#2-1-线性回归（Linear-Regression）" class="headerlink" title="2.1 线性回归（Linear Regression）"></a>2.1 <strong>线性回归（Linear Regression）</strong></h3><p>线性回归用最适直线(回归线)去建立因变量Y和一个或多个自变量X之间的关系。可以用公式来表示：Y=a+b*X+e<br>a为截距，b为回归线的斜率，e是误差项。如何找到那条回归线？我们可以通过最小二乘法把这个问题解决。其实最小二乘法就是线性回归模型的损失函数，只要把损失函数做到最小时得出的参数，才是我们最需要的参数。</p>
-<h3 id="2-2-普通最小二乘-OLS-回归"><a href="#2-2-普通最小二乘-OLS-回归" class="headerlink" title="2.2 普通最小二乘 (OLS) 回归"></a>2.2 <strong>普通最小二乘 (OLS) 回归</strong></h3><p>在 OLS 回归中，估计方程可通过确定将样本的数据点与由方程预测的值之间的距离平方和最小化的方程计算得出。<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-27_15-06-28.png" alt=""><br>应该满足的 OLS 假定<br>仅当满足以下假定时，OLS 回归才会提供最精确的无偏估计值。<br>1) 回归模型的系数为线性系数。最小二乘可通过变换变量（而不是系数）来为曲率建模。您必须指定适当的函数形式才能正确地为任何曲率建模。<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-27_15-07-24.png" alt=""><br>在此，对预测变量 X 进行了平方计算以便为曲率建模。<br>2) 残差的均值为零。模型中包含常量将迫使均值等于零。<br>3) 所有预测变量都与残差不相关。<br>4) 残差与残差之间不相关（序列相关）。<br>5) 残差具有恒定方差。<br>6) 任何预测变量都不与其他预测变量完全相关 (r=1)。最好也避免不完全的高度相关（多重共线性）。<br>7) 残差呈正态分布。<br>由于仅当所有这些假定都满足时，OLS 回归才会提供最佳估计值，因此检验这些假定极为重要。 常用方法包括检查残差图、使用失拟检验以及使用方差膨胀因子 (VIF) 检查预测变量之间的相关性。</p>
-<h3 id="2-3-逻辑回归（Logistic-Regression）"><a href="#2-3-逻辑回归（Logistic-Regression）" class="headerlink" title="2.3 逻辑回归（Logistic Regression）"></a>2.3 <strong>逻辑回归（Logistic Regression）</strong></h3><p><strong>逻辑回归（logistic analysis)</strong>就是一种减小预测范围，将预测值限定为[0,1]间的一种回归模型。Logistic回归的因变量可以是二分类的，也可以是多分类的，但是二分类的更为常用，也更加容易解释。所以实际中最常用的就是二分类的Logistic回归。<a href="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-28_20-52-14.png" target="_blank" rel="external"><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-28_20-52-14.png" alt=""></a></p>
+<h3 id="2-2-普通最小二乘-OLS-回归"><a href="#2-2-普通最小二乘-OLS-回归" class="headerlink" title="2.2 普通最小二乘 (OLS) 回归"></a>2.2 <strong>普通最小二乘 (OLS) 回归</strong></h3><p>在 OLS 回归中，估计方程可通过确定将样本的数据点与由方程预测的值之间的距离平方和最小化的方程计算得出。<br><img src="/uploads/2017/02/2017-02-27_15-06-28.png" alt=""><br>应该满足的 OLS 假定<br>仅当满足以下假定时，OLS 回归才会提供最精确的无偏估计值。<br>1) 回归模型的系数为线性系数。最小二乘可通过变换变量（而不是系数）来为曲率建模。您必须指定适当的函数形式才能正确地为任何曲率建模。<br><img src="/uploads/2017/02/2017-02-27_15-07-24.png" alt=""><br>在此，对预测变量 X 进行了平方计算以便为曲率建模。<br>2) 残差的均值为零。模型中包含常量将迫使均值等于零。<br>3) 所有预测变量都与残差不相关。<br>4) 残差与残差之间不相关（序列相关）。<br>5) 残差具有恒定方差。<br>6) 任何预测变量都不与其他预测变量完全相关 (r=1)。最好也避免不完全的高度相关（多重共线性）。<br>7) 残差呈正态分布。<br>由于仅当所有这些假定都满足时，OLS 回归才会提供最佳估计值，因此检验这些假定极为重要。 常用方法包括检查残差图、使用失拟检验以及使用方差膨胀因子 (VIF) 检查预测变量之间的相关性。</p>
+<h3 id="2-3-逻辑回归（Logistic-Regression）"><a href="#2-3-逻辑回归（Logistic-Regression）" class="headerlink" title="2.3 逻辑回归（Logistic Regression）"></a>2.3 <strong>逻辑回归（Logistic Regression）</strong></h3><p><strong>逻辑回归（logistic analysis)</strong>就是一种减小预测范围，将预测值限定为[0,1]间的一种回归模型。Logistic回归的因变量可以是二分类的，也可以是多分类的，但是二分类的更为常用，也更加容易解释。所以实际中最常用的就是二分类的Logistic回归。<a href="/uploads/2017/02/2017-02-28_20-52-14.png"><img src="/uploads/2017/02/2017-02-28_20-52-14.png" alt=""></a></p>
 <h3 id="2-4-逐步回归（Stepwise-Regression）"><a href="#2-4-逐步回归（Stepwise-Regression）" class="headerlink" title="2.4 逐步回归（Stepwise Regression）"></a>2.4 <strong>逐步回归（Stepwise Regression）</strong></h3><p>在实际问题中, 人们总是希望从对因变量有影响的诸多变量中选择一些变量作为自变量, 应用多元回归分析的方法建立“最优”回归方程以便对因变量进行预报或控制。所谓“最优”回归方程, 主要是指希望在回归方程中包含所有对因变量影响显著的自变量而不包含对影响不显著的自变量的回归方程。逐步回归分析正是根据这种原则提出来的一种回归分析方法。它的主要思路是在考虑的全部自变量中按其对的作用大小, 显著程度大小或者说贡献大小, 由大到小地逐个引入回归方程, 而对那些对作用不显著的变量可能始终不被引人回归方程。另外, 己被引人回归方程的变量在引入新变量后也可能失去重要性, 而需要从回归方程中剔除出去。引人一个变量或者从回归方程中剔除一个变量都称为逐步回归的一步, 每一步都要进行检验, 以保证在引人新变量前回归方程中只含有对影响显著的变量, 而不显著的变量已被剔除。</p>
 <h3 id="2-5-岭回归（Ridge-Regression）"><a href="#2-5-岭回归（Ridge-Regression）" class="headerlink" title="2.5 岭回归（Ridge Regression）"></a>2.5 <strong>岭回归（Ridge Regression）</strong></h3><p>岭回归是一种专用于共线性数据分析的有偏估计回归方法，实质上是一种改良的最小二乘估计法，通过放弃最小二乘法的无偏性，以损失部分信息、降低精度为代价获得回归系数更为符合实际、更可靠的回归方法，对病态数据的拟合要强于最小二乘法。</p>
 <h3 id="2-6-LASSO回归（Least-Absolute-Shrinkage-and-Selection-Operator）"><a href="#2-6-LASSO回归（Least-Absolute-Shrinkage-and-Selection-Operator）" class="headerlink" title="2.6 LASSO回归（Least Absolute Shrinkage and Selection Operator）"></a>2.6 <strong>LASSO回归（Least Absolute Shrinkage and Selection Operator）</strong></h3><p>Lasso也是通过惩罚其回归系数的绝对值。与岭回归不同的是，Lasso回归在惩罚方程中用的是绝对值，而不是平方。这就使得惩罚后的值可能会变成0.</p>
@@ -618,7 +618,7 @@ c1d3b0166030        com.docker.swarm.node=debian,com.docker.swarm.cpu=6
     <link href="http://blog.yaodataking.com/2017/02/23/storm-1/"/>
     <id>http://blog.yaodataking.com/2017/02/23/storm-1/</id>
     <published>2017-02-23T02:59:05.000Z</published>
-    <updated>2017-07-18T14:15:56.000Z</updated>
+    <updated>2018-10-28T06:12:55.439Z</updated>
     
     <content type="html"><![CDATA[<h2 id="1-环境准备"><a href="#1-环境准备" class="headerlink" title="1. 环境准备"></a>1. 环境准备</h2><p>主机：虚拟机Ubuntu 16.04 内存2G 硬盘20GB<br>Docker镜像：zookeeper版本3.4.6 Storm版本1.0.2</p>
 <h2 id="2-安装"><a href="#2-安装" class="headerlink" title="2. 安装"></a>2. 安装</h2><h3 id="2-1-docker-file"><a href="#2-1-docker-file" class="headerlink" title="2.1 docker file"></a>2.1 docker file</h3><p>zookeeper的dockerfile</p>
@@ -685,16 +685,16 @@ ENTRYPOINT [&quot;/docker-entrypoint.sh&quot;]`&lt;/pre&gt;
 </code></pre><p>step3 启动Storm UI</p>
 <pre><code>docker run -d -p 8080:8080 --restart always --name ui --link nimbus storm:1.0.2 storm ui
 </code></pre><p>此时进入127.0.0.1:8080,我们看到nimbus已启动。</p>
-<p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_09-26-09.png" alt=""><br>step4 启动Supervisor</p>
+<p><img src="/uploads/2017/02/2017-02-23_09-26-09.png" alt=""><br>step4 启动Supervisor</p>
 <pre><code>docker run -d --restart always --name supervisor1 --link zookeeper --link nimbus storm:1.0.2 storm supervisor
-</code></pre><p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_09-29-34.png" alt=""></p>
+</code></pre><p><img src="/uploads/2017/02/2017-02-23_09-29-34.png" alt=""></p>
 <p>我们看到Supervisor1已正常启动，如果需要我们可以启动多个Supervisor，至此简单Storm集群环境安装完毕。</p>
 <h2 id="3-提交Topology"><a href="#3-提交Topology" class="headerlink" title="3. 提交Topology"></a>3. 提交Topology</h2><p>进入nimbus的docker,使用storm的example WordCountTopology提交Topology</p>
 <pre><code>docker exec -it nimbus bash
 cd examples/storm-starter
 storm jar storm-starter-topologies-1.0.2.jar org.apache.storm.starter.WordCountTopology first-topology
-</code></pre><p>运行情况<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_10-16-42.png" alt=""></p>
-<p>详细信息<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_11-01-19.png" alt=""></p>
+</code></pre><p>运行情况<br><img src="/uploads/2017/02/2017-02-23_10-16-42.png" alt=""></p>
+<p>详细信息<br><img src="/uploads/2017/02/2017-02-23_11-01-19.png" alt=""></p>
 ]]></content>
     
     <summary type="html">
@@ -838,7 +838,7 @@ storm jar storm-starter-topologies-1.0.2.jar org.apache.storm.starter.WordCountT
     <link href="http://blog.yaodataking.com/2016/12/30/kafka-12/"/>
     <id>http://blog.yaodataking.com/2016/12/30/kafka-12/</id>
     <published>2016-12-30T02:03:24.000Z</published>
-    <updated>2017-07-03T13:05:27.000Z</updated>
+    <updated>2018-10-28T06:12:55.394Z</updated>
     
     <content type="html"><![CDATA[<h2 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h2><p>在 LinkedIn的Kafka的系统上，每天有超过 8000 亿条消息被发送，相当于超过 175 兆兆字节（terabytes）数据，另外，每天还会消耗掉 650 兆兆字节（terabytes）数据的消息，为什么Kafka有这样的能力去处理这么多产生的数据和消耗掉的数据? 下面我们就来分析一下Kafka的高性能之道。</p>
 <h2 id="2-高性能之道"><a href="#2-高性能之道" class="headerlink" title="2. 高性能之道"></a>2. 高性能之道</h2><h3 id="2-1-高效使用磁盘"><a href="#2-1-高效使用磁盘" class="headerlink" title="2.1 高效使用磁盘"></a>2.1 高效使用磁盘</h3><p>首先kafka的消息是不断追加到文件中的，因此数据只增加不更新。也没有记录级别的数据删除，只会整个segment删除。上述这个特性使kafka可以充分利用磁盘的顺序读写性能，顺序读写不需要硬盘磁头的寻道时间，只需很少的扇区旋转时间，所以速度远快于随机读写。另外kafka重度依赖底层操作系统提供的PageCache功能。当上层有写操作时，操作系统只是将数据写入PageCache，同时标记Page属性为Dirty。当读操作发生时，先从PageCache中查找，如果发生缺页才进行磁盘调度，最终返回需要的数据。</p>
@@ -851,10 +851,10 @@ storm jar storm-starter-topologies-1.0.2.jar org.apache.storm.starter.WordCountT
 <li>使用FileChannel.transferFrom()</li>
 <li>使用FileChannel.transferTo()</li>
 <li>使用非直接模式ByteBuffer的read／write</li>
-<li>使用直接模式 ByteBuffer的read／write<br>测试文件大小：600+ MB<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-24_10-44-45.png" alt="2016-12-24_10-44-45"></li>
+<li>使用直接模式 ByteBuffer的read／write<br>测试文件大小：600+ MB<br><img src="/uploads/2016/12/2016-12-24_10-44-45.png" alt="2016-12-24_10-44-45"></li>
 </ul>
 <p>测试的缓冲区大小：4KB<br>机器配置：MacBook Pro i7 2.2GHz  Mem 16GB  SSD 256 GB</p>
-<p>测试结果如下.<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-24_10-53-32.png" alt="2016-12-24_10-53-32"><br>结论：</p>
+<p>测试结果如下.<br><img src="/uploads/2016/12/2016-12-24_10-53-32.png" alt="2016-12-24_10-53-32"><br>结论：</p>
 <ul>
 <li>transferFrom和transferTo 数据传输性能差不多。transferFrom性能稍优</li>
 <li>使用直接模式和非直接模式 read/write 数据传输性能差不多。直接模式性能稍优</li>
@@ -885,7 +885,7 @@ storm jar storm-starter-topologies-1.0.2.jar org.apache.storm.starter.WordCountT
     <link href="http://blog.yaodataking.com/2016/12/23/kafka-11/"/>
     <id>http://blog.yaodataking.com/2016/12/23/kafka-11/</id>
     <published>2016-12-23T14:39:23.000Z</published>
-    <updated>2017-07-03T13:12:50.000Z</updated>
+    <updated>2018-10-28T06:12:55.393Z</updated>
     
     <content type="html"><![CDATA[<h2 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h2><p>kafka的数据统计是通过一个叫metrics的工具进行收集的，metrics是一个java类库。metrics以JMX的形式提供了对外查看数据的接口，因此我们首先要在kafka启动的时候指定jmx的端口，然后通过可视化工具jconsole或kafka manager查看。下面我们分别介绍一下。</p>
 <h2 id="2-JMX配置"><a href="#2-JMX配置" class="headerlink" title="2. JMX配置"></a>2. JMX配置</h2><p>首先我们看JMX如何配置，在Kafka工具中有个脚本<code>bin/kafka-run-class.sh</code>定义了JMX的启动方法。</p>
@@ -917,7 +917,7 @@ environment:
   KAFKA_JMX_OPTS: &quot;-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false  -Dcom.sun.management.jmxremote.ssl=false&quot;
 </code></pre><h2 id="3-JConsole监控"><a href="#3-JConsole监控" class="headerlink" title="3. JConsole监控"></a>3. JConsole监控</h2><p>我们知道java 内置了jconsole工具，本博客之前也有介绍过<a href="/2016/04/jconsole-remote-mycat/">jconsole</a>,因此jconsole的使用并不陌生。我们可以通过docker inspect 查看某个broker的IP地址及jmx端口。然后使用命令进入,如下</p>
 <pre><code>jconsole 172.19.0.6:12345
-</code></pre><p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-23_20-53-38.png" alt="2016-12-23_20-53-38"></p>
+</code></pre><p><img src="/uploads/2016/12/2016-12-23_20-53-38.png" alt="2016-12-23_20-53-38"></p>
 <p>通过查看Mbean标签下的参数，我们可以获取kafka的一些运行参数。</p>
 <h3 id="4-Kafka-Manager监控"><a href="#4-Kafka-Manager监控" class="headerlink" title="4. Kafka Manager监控"></a>4. Kafka Manager监控</h3><p>Kafka Manager是Yahoo构建的一个开源的基于Web的管理工具，可以简化开发者和运维工程师维护Kafka集群的工作。kakfa manager的<a href="https://github.com/yahoo/kafka-manager" target="_blank" rel="external">GitHub </a>地址。同样的我们创建一个kakfa manager的docker镜像,然后加入<code>docker-compose</code>文件。</p>
 <pre><code>kafka-manager:
@@ -934,8 +934,8 @@ environment:
     PORT: 38080
   expose:
     - 38080
-</code></pre><p>访问38080端口并加入一个Kafka集群。<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-23_21-11-49.png" alt="2016-12-23_21-11-49"></p>
-<p>检查broker，<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-23_21-15-55.png" alt="2016-12-23_21-15-55"></p>
+</code></pre><p>访问38080端口并加入一个Kafka集群。<br><img src="/uploads/2016/12/2016-12-23_21-11-49.png" alt="2016-12-23_21-11-49"></p>
+<p>检查broker，<br><img src="/uploads/2016/12/2016-12-23_21-15-55.png" alt="2016-12-23_21-15-55"></p>
 <p>我们还可以管理以下功能：</p>
 <ul>
 <li>管理几个不同的集群;</li>
@@ -1040,7 +1040,7 @@ ssl.truststore.password=test1234
     <link href="http://blog.yaodataking.com/2016/12/09/kafka-9/"/>
     <id>http://blog.yaodataking.com/2016/12/09/kafka-9/</id>
     <published>2016-12-09T15:12:43.000Z</published>
-    <updated>2017-07-03T13:33:54.000Z</updated>
+    <updated>2018-10-28T06:12:55.401Z</updated>
     
     <content type="html"><![CDATA[<h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h2><p>Kafka Streams是一个客户端程序库，用于处理和分析存储在Kafka中的数据，并将得到的数据写入kafka或发送到外部系统。Kafka Stream中有几个重要的流处理概念：Event time和Process Time、窗口函数、应用状态管理。Kafka Stream的门槛非常低：比如单机进行一些小数据量的功能验证而不需要在其他机器上启动一些服务（比如在Storm运行Topology需要启动Nimbus和Supervisor，当然也支持Local Mode），Kafka Stream的并发模型可以对单应用多实例进行负载均衡。</p>
 <h2 id="2-主要特点"><a href="#2-主要特点" class="headerlink" title="2. 主要特点"></a>2. 主要特点</h2><ul>
@@ -1094,7 +1094,7 @@ ssl.truststore.password=test1234
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> String userAddress;</div><div class="line"><span class="keyword">private</span> String gender;</div><div class="line"><span class="keyword">private</span> <span class="keyword">int</span> orderCount;</div><div class="line"><span class="keyword">private</span> <span class="keyword">int</span> itemSum;</div><div class="line"><span class="keyword">private</span> <span class="keyword">double</span> orderAmount;</div><div class="line">```		</div><div class="line">增加fromOrderUserItem及add方法。</div><div class="line"></div><div class="line">```<span class="function">java</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> OrderAddressGenderSum <span class="title">fromOrderUserItem</span><span class="params">(OrderUserItem orderUserItem)</span> &#123;</div><div class="line">			OrderAddressGenderSum orderAddressGenderSum = <span class="keyword">new</span> OrderAddressGenderSum();</div><div class="line">			<span class="keyword">if</span>(orderUserItem == <span class="keyword">null</span>) &#123;</div><div class="line">				<span class="keyword">return</span> orderAddressGenderSum;</div><div class="line">			&#125;</div><div class="line">			orderAddressGenderSum.userAddress = orderUserItem.userAddress;</div><div class="line">			orderAddressGenderSum.gender = orderUserItem.gender;</div><div class="line">			orderAddressGenderSum.orderCount = <span class="number">1</span>;</div><div class="line">			orderAddressGenderSum.itemSum = orderUserItem.quantity;</div><div class="line">			orderAddressGenderSum.orderAmount = orderUserItem.quantity * orderUserItem.itemPrice;</div><div class="line">			<span class="keyword">return</span> orderAddressGenderSum;</div><div class="line">		&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> OrderAddressGenderSum <span class="title">add</span><span class="params">(OrderAddressGenderSum v1, OrderAddressGenderSum v2)</span> </span>&#123;</div><div class="line">			OrderAddressGenderSum orderAddressGenderSum = <span class="keyword">new</span> OrderAddressGenderSum();</div><div class="line">			orderAddressGenderSum.userAddress = v1.userAddress;</div><div class="line">			orderAddressGenderSum.gender = v1.gender;</div><div class="line">			orderAddressGenderSum.orderCount = v1.orderCount + v2.orderCount;</div><div class="line">			orderAddressGenderSum.itemSum = v1.itemSum + v2.itemSum;</div><div class="line">			orderAddressGenderSum.orderAmount = v1.orderAmount + v2.orderAmount;</div><div class="line">            <span class="keyword">return</span> orderAddressGenderSum;</div><div class="line">        &#125;</div></pre></td></tr></table></figure>
 <p>定义一个新的streamBuilder，Order使用KStream流，User，Item使用KTable,使用join关联。主要代码如下。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">KStreamBuilder streamBuilder = <span class="keyword">new</span> KStreamBuilder();</div><div class="line">		KStream&lt;String, Order&gt; orderStream = streamBuilder.stream(Serdes.String(), SerdesFactory.serdFrom(Order.class), <span class="string">"orders"</span>);</div><div class="line">		KTable&lt;String, User&gt; userTable = streamBuilder.table(Serdes.String(), SerdesFactory.serdFrom(User.class), <span class="string">"users"</span>, <span class="string">"users-state-store"</span>);</div><div class="line">		KTable&lt;String, Item&gt; itemTable = streamBuilder.table(Serdes.String(), SerdesFactory.serdFrom(Item.class), <span class="string">"items"</span>, <span class="string">"items-state-store"</span>);</div><div class="line">		KTable&lt;String, OrderAddressGenderSum&gt; kTable = orderStream</div><div class="line">				.leftJoin(userTable, (Order order, User user) -&gt; OrderUser.fromOrderUser(order, user), Serdes.String(), SerdesFactory.serdFrom(Order.class))</div><div class="line">				.filter((String userName, OrderUser orderUser) -&gt; orderUser.userAddress != <span class="keyword">null</span>)</div><div class="line">				.map((String userName, OrderUser orderUser) -&gt; <span class="keyword">new</span> KeyValue&lt;String, OrderUser&gt;(orderUser.itemName, orderUser))</div><div class="line">				.through(Serdes.String(), SerdesFactory.serdFrom(OrderUser.class), (String key, OrderUser orderUser, <span class="keyword">int</span> numPartitions) -&gt; (orderUser.getItemName().hashCode() &amp; <span class="number">0x7FFFFFFF</span>) % numPartitions, <span class="string">"orderuser-repartition-by-item"</span>)</div><div class="line">				.leftJoin(itemTable, (OrderUser orderUser, Item item) -&gt;OrderUserItem.fromOrderUser(orderUser, item), Serdes.String(),SerdesFactory.serdFrom(OrderUser.class))</div><div class="line">		        .map((String item, OrderUserItem orderUserItem) -&gt; KeyValue.&lt;String, OrderAddressGenderSum&gt;pair(orderUserItem.userAddress + orderUserItem.gender,OrderAddressGenderSum.fromOrderUserItem(orderUserItem)))</div><div class="line">		        .groupByKey(Serdes.String(), SerdesFactory.serdFrom(OrderAddressGenderSum.class))</div><div class="line">		        .reduce((OrderAddressGenderSum v1, OrderAddressGenderSum v2) -&gt; OrderAddressGenderSum.add(v1, v2),<span class="string">"gender-amount-state-store"</span>);			</div><div class="line">		kTable.foreach((key, orderAddressGenderSum) -&gt; System.out.printf(<span class="string">"%s\n"</span>, orderAddressGenderSum.toString()));</div><div class="line">        kTable</div><div class="line">        	.toStream()</div><div class="line">        	.map((String key, OrderAddressGenderSum orderAddressGenderSum) -&gt; <span class="keyword">new</span> KeyValue&lt;String, String&gt;(key,orderAddressGenderSum.printSelf()))</div><div class="line">        	.to(<span class="string">"gender-amount"</span>);</div><div class="line">		KafkaStreams kafkaStreams = <span class="keyword">new</span> KafkaStreams(streamBuilder, props);</div><div class="line">		kafkaStreams.cleanUp();</div><div class="line">		kafkaStreams.start();		</div><div class="line">		System.in.read();</div><div class="line">		kafkaStreams.close();</div><div class="line">		kafkaStreams.cleanUp();</div></pre></td></tr></table></figure>
-<p>最终结果如下。<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-09_22-43-20.png" alt="2016-12-09_22-43-20"></p>
+<p>最终结果如下。<br><img src="/uploads/2016/12/2016-12-09_22-43-20.png" alt="2016-12-09_22-43-20"></p>
 <blockquote>
 <p>注：此示例基于<a href="https://github.com/habren/KafkaExample" target="_blank" rel="external">harben的GitHub</a>上的Purchase Analysis示例修改。</p>
 </blockquote>
@@ -1120,7 +1120,7 @@ ssl.truststore.password=test1234
     <link href="http://blog.yaodataking.com/2016/12/03/kafka-8/"/>
     <id>http://blog.yaodataking.com/2016/12/03/kafka-8/</id>
     <published>2016-12-03T05:10:57.000Z</published>
-    <updated>2017-07-03T13:48:18.000Z</updated>
+    <updated>2018-10-28T06:12:55.400Z</updated>
     
     <content type="html"><![CDATA[<p>前面几节我们讲的Kafka都是基于0.8.2.2的版本，截止到今天，kafka实际上已经更新到0.10.1.0，那么API都有哪些变化呢？</p>
 <h2 id="1-Producer-API"><a href="#1-Producer-API" class="headerlink" title="1. Producer API"></a>1. Producer API</h2><p>在Kafka 0.8.2, Producer已经被重新设计，所以这次变化较少。</p>
@@ -1152,7 +1152,7 @@ ssl.truststore.password=test1234
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">KafkaConsumerRunner</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</div><div class="line">	</div><div class="line">	<span class="keyword">private</span> <span class="keyword">final</span> AtomicBoolean closed = <span class="keyword">new</span> AtomicBoolean(<span class="keyword">false</span>);</div><div class="line">	<span class="keyword">private</span> <span class="keyword">final</span> KafkaConsumer consumer;</div><div class="line"></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">		 <span class="keyword">try</span> &#123;</div><div class="line">		     consumer.subscribe(Arrays.asList(<span class="string">"topic"</span>));</div><div class="line">		     <span class="keyword">while</span> (!closed.get()) &#123;</div><div class="line">		         ConsumerRecords records = consumer.poll(<span class="number">10000</span>);</div><div class="line">		         <span class="comment">// Handle new records</span></div><div class="line">		     &#125;</div><div class="line">		 &#125; <span class="keyword">catch</span> (WakeupException e) &#123;</div><div class="line">		     <span class="comment">// Ignore exception if closing</span></div><div class="line">		     <span class="keyword">if</span> (!closed.get()) <span class="keyword">throw</span> e;</div><div class="line">		 &#125; <span class="keyword">finally</span> &#123;</div><div class="line">		     consumer.close();</div><div class="line">		 &#125;</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	<span class="comment">// Shutdown hook which can be called from a separate thread</span></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">shutdown</span><span class="params">()</span> </span>&#123;</div><div class="line">	 closed.set(<span class="keyword">true</span>);</div><div class="line">	 consumer.wakeup();</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>如果用以下的方式开启多个线程是禁止的。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Thread[] consumerThreads = <span class="keyword">new</span> Thread[<span class="number">2</span>];</div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; consumerThreads.length; ++i) &#123;</div><div class="line">	consumerThreads[i] = <span class="keyword">new</span> Thread(runnable);</div><div class="line">	consumerThreads[i].start();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-03_12-50-49.png" alt="2016-12-03_12-50-49"></p>
+<p><img src="/uploads/2016/12/2016-12-03_12-50-49.png" alt="2016-12-03_12-50-49"></p>
 ]]></content>
     
     <summary type="html">
@@ -1176,9 +1176,9 @@ ssl.truststore.password=test1234
     <link href="http://blog.yaodataking.com/2016/12/01/soft-skill/"/>
     <id>http://blog.yaodataking.com/2016/12/01/soft-skill/</id>
     <published>2016-12-01T14:49:23.000Z</published>
-    <updated>2017-07-03T13:53:41.000Z</updated>
+    <updated>2018-10-28T06:12:55.436Z</updated>
     
-    <content type="html"><![CDATA[<h2 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h2><p>最近重读了Dave Hendricksen的《软件架构师的12项修炼》，感觉在提高自己的软技能方面还是有所用的，特别是沟通，协商，领导力等关系技能上，其实这些技能对于每个人都是适用的。<br>作者把这些技能看作一个金字塔，如下图。<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/softskill.jpg" alt="softskill"></p>
+    <content type="html"><![CDATA[<h2 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h2><p>最近重读了Dave Hendricksen的《软件架构师的12项修炼》，感觉在提高自己的软技能方面还是有所用的，特别是沟通，协商，领导力等关系技能上，其实这些技能对于每个人都是适用的。<br>作者把这些技能看作一个金字塔，如下图。<br><img src="/uploads/2016/12/softskill.jpg" alt="softskill"></p>
 <p>以下是简单的技能说明。</p>
 <h2 id="2-关系技能："><a href="#2-关系技能：" class="headerlink" title="2. 关系技能："></a>2. <strong>关系技能：</strong></h2><ul>
 <li>文雅的举止（在任何环境下都能与人文雅相处的能力）</li>
@@ -1247,7 +1247,7 @@ ssl.truststore.password=test1234
     <link href="http://blog.yaodataking.com/2016/11/26/kafka-7/"/>
     <id>http://blog.yaodataking.com/2016/11/26/kafka-7/</id>
     <published>2016-11-26T05:01:50.000Z</published>
-    <updated>2017-07-04T14:29:36.000Z</updated>
+    <updated>2018-10-28T06:12:55.399Z</updated>
     
     <content type="html"><![CDATA[<h2 id="1-Low-Level-Consumer-Simple-Consumer-的offset管理"><a href="#1-Low-Level-Consumer-Simple-Consumer-的offset管理" class="headerlink" title="1. Low Level Consumer(Simple Consumer)的offset管理"></a><strong>1. Low Level Consumer(Simple Consumer)的offset管理</strong></h2><p><a href="/2016/11/kafka-6／">上一节</a>我们讲到了kafka的High Level Consumer的消息消费是自动根据offset的顺序消费的。但有时候用户希望比Consumer Group更好的控制数据的消费，比如</p>
 <ul>
@@ -1303,14 +1303,14 @@ dual.commit.enabled=true
 </code></pre><p>最大值</p>
 <pre><code>bin/kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list kafka0:9092 -topic topic1 --time -1
 </code></pre><p>当然通过这个工具,我们还可获取指定timestamp的offset，具体用法参见此命令help。</p>
-<h2 id="5-日志压缩"><a href="#5-日志压缩" class="headerlink" title="5. 日志压缩"></a><strong>5. 日志压缩</strong></h2><h3 id="5-1-原理"><a href="#5-1-原理" class="headerlink" title="5.1 原理"></a>5.1 原理</h3><p>为什么日志压缩放在这里讲呢？因为kafka的日志压缩跟offset有关，启动压缩机制后，kafka只保留每一Key的最大的offset（也就是最新值)，而把旧的值在压缩过程中删除掉。如下图。<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_12-15-07.png" alt="2016-11-26_12-15-07"></p>
+<h2 id="5-日志压缩"><a href="#5-日志压缩" class="headerlink" title="5. 日志压缩"></a><strong>5. 日志压缩</strong></h2><h3 id="5-1-原理"><a href="#5-1-原理" class="headerlink" title="5.1 原理"></a>5.1 原理</h3><p>为什么日志压缩放在这里讲呢？因为kafka的日志压缩跟offset有关，启动压缩机制后，kafka只保留每一Key的最大的offset（也就是最新值)，而把旧的值在压缩过程中删除掉。如下图。<br><img src="/uploads/2016/11/2016-11-26_12-15-07.png" alt="2016-11-26_12-15-07"></p>
 <h3 id="5-2-配置"><a href="#5-2-配置" class="headerlink" title="5.2 配置"></a>5.2 配置</h3><pre><code>为实现日志压缩，我们必须修改Kafka配置文件server.properties，把log.cleaner.enable设置为true，然后重启kafka。
 </code></pre><h3 id="5-3-实验演示"><a href="#5-3-实验演示" class="headerlink" title="5.3 实验演示"></a>5.3 实验演示</h3><h4 id="5-3-1-目标"><a href="#5-3-1-目标" class="headerlink" title="5.3.1 目标"></a>5.3.1 目标</h4><p>创建一个topic，将其log.cleanup.policy设置为compact，等clean（compact）过后使用consumer消费该topic，打印出每条消息的partition  key  offset，观察其offset是否连续.</p>
 <h4 id="5-3-2-步骤"><a href="#5-3-2-步骤" class="headerlink" title="5.3.2 步骤"></a>5.3.2 步骤</h4><p>a)创建topic1，注意这个topic里加了两个配置cleanup.policy=compact及segment.bytes=512，这将会对这个topic启动日志压缩,并且分段文件达到512字节就轮转。</p>
 <pre><code>bin/kafka-topics.sh --zookeeper zookeeper0:2181/kafka --topic topic1 --create --config cleanup.policy=compact --config segment.bytes=512 --replication-factor 1 --partitions 3
-</code></pre><p>b)发送消息，我们连续10次发送key为0，1，2的消息。（确保超过512字节）<br>c)消费消息，停止消费，再连续3次发送，再消费消息。看下图<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_10-43-01.png" alt="2016-11-26_10-43-01"></p>
-<p>查看kafka上的log目录，看到生成了以第一个offset的不同log，旧的log在删除过程中。<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_10-44-57.png" alt="2016-11-26_10-44-57"></p>
-<p>查看log文件的内容，看到压缩过的log只保留了最后一个offset。<br><img src="http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_10-47-56.png" alt="2016-11-26_10-47-56"></p>
+</code></pre><p>b)发送消息，我们连续10次发送key为0，1，2的消息。（确保超过512字节）<br>c)消费消息，停止消费，再连续3次发送，再消费消息。看下图<br><img src="/uploads/2016/11/2016-11-26_10-43-01.png" alt="2016-11-26_10-43-01"></p>
+<p>查看kafka上的log目录，看到生成了以第一个offset的不同log，旧的log在删除过程中。<br><img src="/uploads/2016/11/2016-11-26_10-44-57.png" alt="2016-11-26_10-44-57"></p>
+<p>查看log文件的内容，看到压缩过的log只保留了最后一个offset。<br><img src="/uploads/2016/11/2016-11-26_10-47-56.png" alt="2016-11-26_10-47-56"></p>
 <h4 id="5-3-3-实验小结"><a href="#5-3-3-实验小结" class="headerlink" title="5.3.3 实验小结"></a>5.3.3 实验小结</h4><ul>
 <li>一直保持消费Log head的consumer可按顺序消费所有消息，并且offset连续。</li>
 <li>任何从offset 0开始的读操作至少可读到每个key对应的最后一条消息。</li>
