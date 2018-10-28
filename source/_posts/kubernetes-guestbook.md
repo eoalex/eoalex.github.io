@@ -98,7 +98,7 @@ Kubernets目前在https://github.com/kubernetes/kubernetes进行维护。
     #docker pull kubeguide/redis-master
     #docker pull kubeguide/guestbook-redis-slave
     #docker pull kubeguide/guestbook-php-frontend
-![2016-02-01_22-01-11](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-01_22-01-11.jpg)
+![2016-02-01_22-01-11](/uploads/2016/02/2016-02-01_22-01-11.jpg)
 
 ### 3.2 设置工作目录
 
@@ -134,9 +134,9 @@ Kubernets目前在https://github.com/kubernetes/kubernetes进行维护。
     #kubectl create -f redis-master-controller.yaml
     #kubectl get pods
  一开始pod在pending状态
- ![2016-02-03_19-38-36](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-03_19-38-36.jpg)
+ ![2016-02-03_19-38-36](/uploads/2016/02/2016-02-03_19-38-36.jpg)
  第一次启动容器时间比较久，如果没什么问题，状态会更新为Running。
- ![2016-02-03_21-18-38](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-03_21-18-38.jpg)
+ ![2016-02-03_21-18-38](/uploads/2016/02/2016-02-03_21-18-38.jpg)
  
     #vi redis-master-service.yaml
     apiVersion: v1
@@ -157,7 +157,7 @@ Kubernets目前在https://github.com/kubernetes/kubernetes进行维护。
 
     #kubectl create -f redis-master-service.yaml
     #kubectl get services
-![2016-02-03_21-21-15](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-03_21-21-15.jpg)
+![2016-02-03_21-21-15](/uploads/2016/02/2016-02-03_21-21-15.jpg)
 
 ### 3.4 创建redis-slave Pod和服务
 
@@ -190,10 +190,10 @@ Kubernets目前在https://github.com/kubernetes/kubernetes进行维护。
     
     #kubectl create -f redis-slave-controller.yaml
     #kubectl get rc
-![2016-02-03_21-23-31](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-03_21-23-31.jpg)
+![2016-02-03_21-23-31](/uploads/2016/02/2016-02-03_21-23-31.jpg)
 
     #kubectl get pods
-![2016-02-03_21-23-50](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-03_21-23-50.jpg)
+![2016-02-03_21-23-50](/uploads/2016/02/2016-02-03_21-23-50.jpg)
 
     #vi redis-slave-service.yaml
 	  	 apiVersion: v1
@@ -212,7 +212,7 @@ Kubernets目前在https://github.com/kubernetes/kubernetes进行维护。
 
     #kubectl create -f redis-slave-service.yaml
     #kubectl get services
-![2016-02-03_21-25-17](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-03_21-25-17.jpg)
+![2016-02-03_21-25-17](/uploads/2016/02/2016-02-03_21-25-17.jpg)
 
 ### 3.5 创建frontend Pod和服务
 
@@ -245,10 +245,10 @@ Kubernets目前在https://github.com/kubernetes/kubernetes进行维护。
 
     #kubectl create -f frontend-controller.yaml
     #kubectl get rc
-![2016-02-03_21-27-09](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-03_21-27-09.jpg)
+![2016-02-03_21-27-09](/uploads/2016/02/2016-02-03_21-27-09.jpg)
 
     #kubectl get pods
-![2016-02-03_21-27-18](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-03_21-27-18.jpg)
+![2016-02-03_21-27-18](/uploads/2016/02/2016-02-03_21-27-18.jpg)
     
     #vi frontend-service.yaml
     apiVersion: v1
@@ -269,15 +269,15 @@ Kubernets目前在https://github.com/kubernetes/kubernetes进行维护。
 	
 	#kubectl create -f frontend-service.yaml
 	#kubectl get services
-![2016-02-04_11-41-15](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-04_11-41-15.jpg)
+![2016-02-04_11-41-15](/uploads/2016/02/2016-02-04_11-41-15.jpg)
 
 ### 3.6 通过浏览器访问网页
 
 访问主机30001端口，我们看到网页已经默认有一条Hello World！
-![2016-02-04_9-37-36](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-04_9-37-36.jpg)
+![2016-02-04_9-37-36](/uploads/2016/02/2016-02-04_9-37-36.jpg)
 
 我们再输入新的留言Hello Kubernetes！然后submit，看到下面多出来一条新的留言。
-![2016-02-04_9-38-38](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-04_9-38-38.jpg)
+![2016-02-04_9-38-38](/uploads/2016/02/2016-02-04_9-38-38.jpg)
 
 ### 3.7 停止Pod和服务
 

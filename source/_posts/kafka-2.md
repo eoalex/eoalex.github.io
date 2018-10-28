@@ -30,12 +30,12 @@ Docker设置方法参见[上文](/2016/09/kafka-1/)。
 将kafka docker中的server.properties配置文件的advertised.host.name改成docker宿主机的IP地址，以便远程客户端访问。
     
     advertised.host.name=192.168.199.122
-![2016-10-16_0-03-56](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-16_0-03-56.jpg)
+![2016-10-16_0-03-56](/uploads/2016/10/2016-10-16_0-03-56.jpg)
 
 ## 3. 启动Eclipse(本地windows端)
 ### 3.1 新建project
 新建一个maven project(Eclipse 安装设置方法参见本博其他文章)。
-![2016-10-15_19-14-47](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-15_19-14-47.jpg)
+![2016-10-15_19-14-47](/uploads/2016/10/2016-10-15_19-14-47.jpg)
 
 编辑pom.xml 在下加入以下代码
 
@@ -45,7 +45,7 @@ Docker设置方法参见[上文](/2016/09/kafka-1/)。
           	<version>0.8.2.2</version>   
     </dependency>
 保存后，eclipse自动获取kafka相关jar文件。
-![2016-10-15_19-29-02](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-15_19-29-02.jpg)
+![2016-10-15_19-29-02](/uploads/2016/10/2016-10-15_19-29-02.jpg)
 
 ### 3.2 DemoConsumer
 

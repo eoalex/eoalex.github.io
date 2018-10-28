@@ -44,7 +44,7 @@ Hadoop 2.0中的HDFS增加了两个重大特性，HA和Federation，HA即为High
     #cat zookeeper-3.4.6/conf/zoo.cfg | grep server |sed 's/[^*]*=//g' |sed 's/:[^*]*//g' |awk '{print "scp -rp ./zookeeper-3.4.6 grid@"$1":/home/grid"}' | sed '1d' > zoocopy
     #./zoocopy
     
-![20151027001](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027001.png)
+![20151027001](/uploads/2015/10/20151027001.png)
 
 在hadoop24上
     
@@ -59,12 +59,12 @@ Hadoop 2.0中的HDFS增加了两个重大特性，HA和Federation，HA即为High
 在每台上执行启动
     
     #~/zookeeper-3.4.6/bin/zkServer.sh start
-![20151027002](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027002.png)
+![20151027002](/uploads/2015/10/20151027002.png)
 
 查看状态
     
     #~/zookeeper-3.4.6/bin/zkServer.sh status
-![20151027003](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027003.png)
+![20151027003](/uploads/2015/10/20151027003.png)
 
 可以看到一台leader，两台follower
 
@@ -275,7 +275,7 @@ Hadoop 2.0中的HDFS增加了两个重大特性，HA和Federation，HA即为High
     #cat hadoopcopy
     #./hadoopcopy
     
-![20151027004](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027004.png)
+![20151027004](/uploads/2015/10/20151027004.png)
 
 创建znode
     
@@ -284,24 +284,24 @@ Hadoop 2.0中的HDFS增加了两个重大特性，HA和Federation，HA即为High
    
 验证
     #~/zookeeper-3.4.6/bin/zkCli.sh
-![20151027005](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027005.png)
+![20151027005](/uploads/2015/10/20151027005.png)
 
 在hadoop24,hadoop25,hadoop26启动journalnode
     
     #~/hadoop-2.7.1/sbin/hadoop-daemon.sh start journalnode
-![20151027006](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027006.png)
+![20151027006](/uploads/2015/10/20151027006.png)
 
 在主namenode节点(Hadoop24.hadoop.com)上格式化Namenode
 
     #~/hadoop-2.7.1/bin/hadoop namenode –format
 
-![20151027007](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027007.png)
+![20151027007](/uploads/2015/10/20151027007.png)
 
 在主namenode节点(Hadoop24.hadoop.com)启动namenode进程
     
     #~/hadoop-2.7.1/sbin/hadoop-daemon.sh start namenode
 
-![20151027008](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027008.png)
+![20151027008](/uploads/2015/10/20151027008.png)
 
 在备namenode节点(Hadoop25.hadoop.com)同步元数据
     
@@ -314,37 +314,37 @@ Hadoop 2.0中的HDFS增加了两个重大特性，HA和Federation，HA即为High
 在NameNode节点上安装和运行ZKFC
     
     #~/hadoop-2.7.1/sbin/hadoop-daemon.sh start zkfc
-![20151027008](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027008.png)
+![20151027008](/uploads/2015/10/20151027008.png)
 
-![20151027009](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027009.png)
+![20151027009](/uploads/2015/10/20151027009.png)
 
 启动datanode(hadoop26,hadoop27,hadoop28)
     
     #~/hadoop-2.7.1/sbin/hadoop-daemons.sh start datanode
 
-![20151027010](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027010.png)
+![20151027010](/uploads/2015/10/20151027010.png)
 
 启动yarn
     
     #~/hadoop-2.7.1/sbin/start-yarn.sh
-![20151027011](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027011.png)
+![20151027011](/uploads/2015/10/20151027011.png)
 
 主namenode节点上active
 
-![20151027012](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027012.png)
+![20151027012](/uploads/2015/10/20151027012.png)
 
 备namenode节点上standby
-![20151027013](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027013.png)]
+![20151027013](/uploads/2015/10/20151027013.png)]
 
 ## 1.4 验证HA
 测试主备namenode节点是否工作，在主namenode机器上通过jps命令查找到namenode的进程号，然后通过kill -9的方式杀掉进程，观察另一个namenode节点是否会从状态standby变成active状态
-![20151027015](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027015.png)
+![20151027015](/uploads/2015/10/20151027015.png)
 
 Kill进程后,主节点不能访问
-![20151027016](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027016.png)
+![20151027016](/uploads/2015/10/20151027016.png)
 
 备节点已变为active
-![20151027017](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027017.png)
+![20151027017](/uploads/2015/10/20151027017.png)
 
 测试备节点能否继续工作
 
@@ -357,6 +357,6 @@ Kill进程后,主节点不能访问
     #~/hadoop-2.7.1/bin/hadoop fs -ls /out
     #~/hadoop-2.7.1/bin/hadoop fs -cat /out/part-r-00000
 
-![20151027018](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/20151027018.png)
+![20151027018](/uploads/2015/10/20151027018.png)
 
 至此在Hadoop2.7.1集群上成功实现HA

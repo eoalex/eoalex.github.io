@@ -108,11 +108,11 @@ def get_nova_endpoint(response):
 
 ## 8. 查看结果
 运行源代码
-![2016-07-03_15-44-08](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/07/2016-07-03_15-44-08.jpg)
+![2016-07-03_15-44-08](/uploads/2016/07/2016-07-03_15-44-08.jpg)
 
 我们查看instance，看到test1已经创建。
 
-![2016-07-03_15-17-01](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/07/2016-07-03_15-17-01.jpg)
+![2016-07-03_15-17-01](/uploads/2016/07/2016-07-03_15-17-01.jpg)
 
 本文参考
     `http://developer.openstack.org/api-ref/compute/?expanded=create-server-detail`

@@ -34,12 +34,12 @@ OpenStack既是一个社区，也是一个项目和一个开源软件，它提�
 13)Congress:Governance 治理
 ## 三、Openstack的发展历史
 Openstack自从2010年发布一个版本Austin以来，以每六个月的速度更新一个版本，每个版本以26个英文字母为首字母从A到Z顺序命名。目前最新版本为Mitaka。
-![2016-05-09_0-09-53](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/05/2016-05-09_0-09-53.jpg)
+![2016-05-09_0-09-53](/uploads/2016/05/2016-05-09_0-09-53.jpg)
 
 ## 四、Openstack开发语言
 所有代码均采用Python开发
 ## 五、架构设计
-![2016-05-09_0-37-50](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/05/2016-05-09_0-37-50.jpg)
+![2016-05-09_0-37-50](/uploads/2016/05/2016-05-09_0-37-50.jpg)
 
 特点：
 1.无中心：可以通过增加组件部署实例来实现水平扩展

@@ -19,15 +19,15 @@ date: 2015-10-26 16:50:15
 
 1.3 修改master节点hosts文件。
 
-![002nJwOegy6UlNlUqCf5b690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlNlUqCf5b690.jpg)
+![002nJwOegy6UlNlUqCf5b690](/uploads/2015/10/002nJwOegy6UlNlUqCf5b690.jpg)
 
 1.4 修改master节点本机名。
 
-![002nJwOegy6UlNtbJ4j57690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlNtbJ4j57690.png)
+![002nJwOegy6UlNtbJ4j57690](/uploads/2015/10/002nJwOegy6UlNtbJ4j57690.png)
 
 1.5 修改master节点IP地址。
 
-![002nJwOegy6UlNCXNKyb2690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlNCXNKyb2690.png)
+![002nJwOegy6UlNCXNKyb2690](/uploads/2015/10/002nJwOegy6UlNCXNKyb2690.png)
 
 同样方法修改Slave1，Slave2的IP地址，hosts文件及本机名。
 
@@ -53,12 +53,12 @@ date: 2015-10-26 16:50:15
 ### 3.1 设置账号
 在各节点分别建立Hadoop运行帐号grid，并设置密码。
 
-![002nJwOegy6UlMtCeGJ71690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlMtCeGJ71690.png)
+![002nJwOegy6UlMtCeGJ71690](/uploads/2015/10/002nJwOegy6UlMtCeGJ71690.png)
 
 ### 3.2 配置SSH各节点免密码登陆。
 
 在各节点分别以grid用户名生成两个密钥文件，一个是私钥`id_rsa`，另一个是公钥`id_rsa.pub`。
-![002nJwOegy6UlO7nj194b690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlO7nj194b690.png)
+![002nJwOegy6UlO7nj194b690](/uploads/2015/10/002nJwOegy6UlO7nj194b690.png)
 
 在master机上把三个节点的公钥都添加至文件authorized_keys，然后分发至各节点。<br>
 在hadoop11节点上，如下命令。
@@ -99,19 +99,19 @@ date: 2015-10-26 16:50:15
     
 修改core-site.xml
 
-![002nJwOegy6UlSzzXzs1a690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlSzzXzs1a690.png)
+![002nJwOegy6UlSzzXzs1a690](/uploads/2015/10/002nJwOegy6UlSzzXzs1a690.png)
     
 修改hdfs-site.xml
 
-![002nJwOegy6UlSBcLQ7cb690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlSBcLQ7cb690.png)
+![002nJwOegy6UlSBcLQ7cb690](/uploads/2015/10/002nJwOegy6UlSBcLQ7cb690.png)
 
 修改mapred-site.xml
 
-![002nJwOegy6UlSDlQIMf0690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlSDlQIMf0690.png)
+![002nJwOegy6UlSDlQIMf0690](/uploads/2015/10/002nJwOegy6UlSDlQIMf0690.png)
 
 修改masters,slaves
 
-![002nJwOegy6UlRpkmdP41690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlRpkmdP41690.png)
+![002nJwOegy6UlRpkmdP41690](/uploads/2015/10/002nJwOegy6UlRpkmdP41690.png)
 
 ### 3.5 配置文件分发
 将配置文件分发至各Salve节点。
@@ -125,7 +125,7 @@ date: 2015-10-26 16:50:15
 
     #bin/hadoop namenode -format
     
-![002nJwOegy6UlRN6Cc101690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlRN6Cc101690.png)
+![002nJwOegy6UlRN6Cc101690](/uploads/2015/10/002nJwOegy6UlRN6Cc101690.png)
 
 至此，安装配置工作基本完成。
 
@@ -134,10 +134,10 @@ date: 2015-10-26 16:50:15
 
     #bin/start-all.sh
 
-![002nJwOegy6UlRSSYwo18690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlRSSYwo18690.png)
+![002nJwOegy6UlRSSYwo18690](/uploads/2015/10/002nJwOegy6UlRSSYwo18690.png)
 
 ## 5.验证
 
 Master机应该启动NameNode，SecondaryNameNode，JobTracker；<br>
 Slave机应该启动DataNode，TaskTracker。
-![002nJwOegy6UlRUCAcj7b690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlRUCAcj7b690.png)
+![002nJwOegy6UlRUCAcj7b690](/uploads/2015/10/002nJwOegy6UlRUCAcj7b690.png)

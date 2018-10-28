@@ -21,7 +21,7 @@ date: 2016-06-11 23:14:22
 
 ## 2. 组件节点分布
 
-[![2016-06-12_9-43-08](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-12_9-43-08.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-12_9-43-08.jpg)
+[![2016-06-12_9-43-08](/uploads/2016/06/2016-06-12_9-43-08.jpg)](/uploads/2016/06/2016-06-12_9-43-08.jpg)
 
 ## 3. 准备工作
 
@@ -1049,7 +1049,7 @@ date: 2016-06-11 23:14:22
 #### 6.5.4 验证
     http://192.168.199.80/dashboard
     demo/123456
-![2016-05-07_23-19-10](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-05-07_23-19-10.jpg)
+![2016-05-07_23-19-10](/uploads/2016/06/2016-05-07_23-19-10.jpg)
 
 ## 7. Cinder组件安装
 ### 7.1 Controller节点安装

@@ -58,7 +58,7 @@ date: 2016-03-10 20:09:45
 
 ### 2.2 创建测试数据库
 使用pgAdmin3 分别建立数据库kettle
-![2016-03-10_8-25-32](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-10_8-25-32.jpg)
+![2016-03-10_8-25-32](/uploads/2016/03/2016-03-10_8-25-32.jpg)
 
 ### 2.3 生成示例数据
 我们使用kettle的转换文件在两个数据库分别生成100万条orders数据。orders数据表结构如下。
@@ -78,30 +78,30 @@ date: 2016-03-10 20:09:45
 
 具体方法可参见kettle自带的sample转换，转换文件路径如下
 `\samples\transformations\data-generator\generate order data.ktr`
-![2016-03-10_19-42-37](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-10_19-42-37.jpg)
+![2016-03-10_19-42-37](/uploads/2016/03/2016-03-10_19-42-37.jpg)
 
 ## 3. 数据同步
 ### 3.1 制作转换文件，
 分别添加两个表输入mypostgres01和mypostgres02，然后再添加合并记录和数据同步。
 数据库连接设置
-![2016-03-10_19-51-51](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-10_19-51-51.jpg)
+![2016-03-10_19-51-51](/uploads/2016/03/2016-03-10_19-51-51.jpg)
 
 合并记录
-![2016-03-10_19-52-24](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-10_19-52-24.jpg)
+![2016-03-10_19-52-24](/uploads/2016/03/2016-03-10_19-52-24.jpg)
 
 数据同步
-![2016-03-10_19-52-58](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-10_19-52-58.jpg)
+![2016-03-10_19-52-58](/uploads/2016/03/2016-03-10_19-52-58.jpg)
 
 高级设置
-![2016-03-10_9-12-19](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-10_9-12-19-1.jpg)
+![2016-03-10_9-12-19](/uploads/2016/03/2016-03-10_9-12-19-1.jpg)
 
 运行结果
-![2016-03-10_16-44-56](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-10_16-44-56.jpg)
+![2016-03-10_16-44-56](/uploads/2016/03/2016-03-10_16-44-56.jpg)
 
 ### 3.2 优化转换文件。
 我们在合并前增加排序步骤。
-![2016-03-10_20-00-10](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-10_20-00-10.jpg)
+![2016-03-10_20-00-10](/uploads/2016/03/2016-03-10_20-00-10.jpg)
 
 运行结果
-![2016-03-10_19-48-45](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-10_19-48-45.jpg)
+![2016-03-10_19-48-45](/uploads/2016/03/2016-03-10_19-48-45.jpg)
 我们看到通过排序，数据同步完成时间由原来的3分多钟缩短到1分多钟，系统的性能大大提高。

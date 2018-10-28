@@ -12,7 +12,7 @@ date: 2015-12-06 20:31:46
 LVS是Linux Virtual Server的简写，意即Linux虚拟服务器，是一个虚拟的服务器集群系统。目前有三种IP负载均衡技术（VS/NAT、VS/TUN和VS/DR）；十种调度算法（rrr|wrr|lc|wlc|lblc|lblcr|dh|sh|sed|nq）。
 Keepalived在这里主要用作RealServer的健康状态检查以及LoadBalance主机和BackUP主机之间failover的实现。
 本文我们将实现下图的实验。
-![keepalive](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/keepalive.png)
+![keepalive](/uploads/2015/12/keepalive.png)
 
 ## 2. 准备
 
@@ -98,16 +98,16 @@ esac
 	
 	#./realserver.sh start
 3.1.4 测试WEB服务器独立可访问
-![2015-10-29_21-56-01](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-10-29_21-56-01.jpg)
-![2015-10-29_21-56-13](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-10-29_21-56-13.jpg)
+![2015-10-29_21-56-01](/uploads/2015/12/2015-10-29_21-56-01.jpg)
+![2015-10-29_21-56-13](/uploads/2015/12/2015-10-29_21-56-13.jpg)
 
 此时还不能访问192.168.199.88
-![2015-10-29_21-58-35](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-10-29_21-58-35.png)
+![2015-10-29_21-58-35](/uploads/2015/12/2015-10-29_21-58-35.png)
 
 ### 3.2 安装配置Lvs Master服务器
 	
 	#yum install keepalived
-![2015-10-29_22-04-42](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-10-29_22-04-42.png)
+![2015-10-29_22-04-42](/uploads/2015/12/2015-10-29_22-04-42.png)
 
 	#cd /etc/keepalived/
 	#cp keepalived.conf keepalived.conf.bak
@@ -175,7 +175,7 @@ virtual_server 192.168.199.88 80 {
 ```
 
 	#service keepalived start
-![2015-10-29_22-47-42](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-10-29_22-47-42.png)
+![2015-10-29_22-47-42](/uploads/2015/12/2015-10-29_22-47-42.png)
 
 ### 3.3 安装配置Lvs Backup服务器
 	
@@ -249,37 +249,37 @@ virtual_server 192.168.199.88 80 {
 ```
 	
 	#service keepalived start
-![2015-10-29_22-48-14](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-10-29_22-48-14.png)
+![2015-10-29_22-48-14](/uploads/2015/12/2015-10-29_22-48-14.png)
 
 访问192.168.199.88, 访问正常，一段时间会自动切换web服务器
 
-![2015-10-29_22-26-12](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-10-29_22-26-12.png)
+![2015-10-29_22-26-12](/uploads/2015/12/2015-10-29_22-26-12.png)
 
-![2015-10-29_22-44-50](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-10-29_22-44-50.png)
+![2015-10-29_22-44-50](/uploads/2015/12/2015-10-29_22-44-50.png)
 
 ## 4. 实验
 ### 4.1 实验1
 将WEB服务器31停止，看访问是否还是正常。
 	
 	#service httpd stop
-![2015-10-29_22-51-37](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-10-29_22-51-37.png)
+![2015-10-29_22-51-37](/uploads/2015/12/2015-10-29_22-51-37.png)
 
 我们看到还能正常访问，只是切换到WEB服务器B
-![2015-10-29_22-53-36](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-10-29_22-53-36.png)
+![2015-10-29_22-53-36](/uploads/2015/12/2015-10-29_22-53-36.png)
 
 ### 4.2 实验2
 将负载均衡服务器master停止，看访问是否还是正常。
 	
 	#service keepalived stop
-![2015-10-29_22-56-51](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-10-29_22-56-51.png)
+![2015-10-29_22-56-51](/uploads/2015/12/2015-10-29_22-56-51.png)
 
 我们可以从master服务器的LOG可以看到,VIP192.168.199.88已释放。
-![2015-10-29_23-06-08](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-10-29_23-06-08.png)
+![2015-10-29_23-06-08](/uploads/2015/12/2015-10-29_23-06-08.png)
 
 我们可以从BACKUP服务器的LOG可以看到，BACKUP服务器已接管VIP192.168.199.88
-![2015-10-29_23-03-41](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-10-29_23-03-41.png)
+![2015-10-29_23-03-41](/uploads/2015/12/2015-10-29_23-03-41.png)
 
 访问192.168.199.88还是正常
-![2015-10-29_22-58-45](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-10-29_22-58-45.png)
+![2015-10-29_22-58-45](/uploads/2015/12/2015-10-29_22-58-45.png)
 
 至此使用Keepalived实现将lvs进行高可用成功部署。

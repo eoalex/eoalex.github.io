@@ -9,7 +9,7 @@ tags:
 ## 1. 简介
 最近重读了Dave Hendricksen的《软件架构师的12项修炼》，感觉在提高自己的软技能方面还是有所用的，特别是沟通，协商，领导力等关系技能上，其实这些技能对于每个人都是适用的。
 作者把这些技能看作一个金字塔，如下图。
-![softskill](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/softskill.jpg)
+![softskill](/uploads/2016/12/softskill.jpg)
 
 以下是简单的技能说明。
 ## 2. **关系技能：**

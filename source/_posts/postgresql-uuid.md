@@ -42,10 +42,10 @@ DCE（Distributed Computing Environment）安全的UUID和基于时间的UUID算
 ### 2.1 安装UUID库
 
 	#yum install uuid-devel uuid
-![2016-01-01_13-20-46](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-01_13-20-46.jpg)
+![2016-01-01_13-20-46](/uploads/2016/01/2016-01-01_13-20-46.jpg)
 
 	#rpm -ql uuid
-![2016-01-01_16-17-13](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-01_16-17-13.jpg)
+![2016-01-01_16-17-13](/uploads/2016/01/2016-01-01_16-17-13.jpg)
 
 我们可以知道UUID库安装在/usr/lib64,在后面安装postgresql动态库uuid-ossp.so时会用到
 
@@ -60,13 +60,13 @@ DCE（Distributed Computing Environment）安全的UUID和基于时间的UUID算
 	#cd contrib/uuid-ossp/
 	#make
 	#make install
-![2016-01-01_15-18-59](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-01_15-18-59.jpg)
+![2016-01-01_15-18-59](/uploads/2016/01/2016-01-01_15-18-59.jpg)
 
 查看动态库是否安装成功至/usr/local/pgsql
 	
 	#ll /usr/local/pgsql/lib/uuid*
 	#ll /usr/local/pgsql/share/extension/
-![2016-01-01_15-20-41](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-01_15-20-41.jpg)
+![2016-01-01_15-20-41](/uploads/2016/01/2016-01-01_15-20-41.jpg)
 
 	#chown postgres:postgres -R /usr/local/pgsql
 
@@ -81,7 +81,7 @@ DCE（Distributed Computing Environment）安全的UUID和基于时间的UUID算
 	create extension "uuid-ossp";
 	select extname,extowner,extnamespace,extrelocatable,extversion from pg_extension;
 
-![2016-01-01_15-37-46](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-01_15-37-46.jpg)
+![2016-01-01_15-37-46](/uploads/2016/01/2016-01-01_15-37-46.jpg)
 
 至此UUID函数成功安装。
 
@@ -92,13 +92,13 @@ DCE（Distributed Computing Environment）安全的UUID和基于时间的UUID算
 	select uuid_generate_v1();
 	select uuid_generate_v1mc();
 
-![2016-01-01_15-36-41](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-01_15-36-41.jpg)
+![2016-01-01_15-36-41](/uploads/2016/01/2016-01-01_15-36-41.jpg)
 
 	select uuid_generate_v3(uuid_ns_url(), 'http://blog.yaodataking.com');
 	select uuid_generate_v4();
 	select uuid_generate_v5(uuid_ns_url(), 'http://blog.yaodataking.com');
 
-![2016-01-01_15-37-02](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-01_15-37-02.jpg)
+![2016-01-01_15-37-02](/uploads/2016/01/2016-01-01_15-37-02.jpg)
 
 关于postgresql uuid的更多信息，我们可以参见官网说明
 http://www.postgresql.org/docs/current/static/uuid-ossp.html

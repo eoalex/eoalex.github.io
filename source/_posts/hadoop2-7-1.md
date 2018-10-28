@@ -18,7 +18,7 @@ date: 2015-10-27 08:01:51
 |192.168.199.22|hadoop22|Slave1|
 |192.168.199.23|hadoop23|Slave2|
 
-![002nJwOegy6UlUhMq6xcd690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlUhMq6xcd690.png)
+![002nJwOegy6UlUhMq6xcd690](/uploads/2015/10/002nJwOegy6UlUhMq6xcd690.png)
 
 同样方法修改Slave1，Slave2的IP地址，hosts文件及本机名。
 
@@ -82,15 +82,15 @@ date: 2015-10-27 08:01:51
 
     export JAVA_HOME=/usr/java/jdk1.8.0_51
 
-![002nJwOegy6UlVcJVkK62690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlVcJVkK62690.png)
+![002nJwOegy6UlVcJVkK62690](/uploads/2015/10/002nJwOegy6UlVcJVkK62690.png)
 
-![002nJwOegy6UlVhJ5xJ07690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlVhJ5xJ07690.png)
+![002nJwOegy6UlVhJ5xJ07690](/uploads/2015/10/002nJwOegy6UlVhJ5xJ07690.png)
 
-![002nJwOegy6UlVcQwkOca690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlVcQwkOca690.png)
+![002nJwOegy6UlVcQwkOca690](/uploads/2015/10/002nJwOegy6UlVcQwkOca690.png)
 
-![002nJwOegy6UlVcV90844690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlVcV90844690.png)
+![002nJwOegy6UlVcV90844690](/uploads/2015/10/002nJwOegy6UlVcV90844690.png)
 
-![002nJwOegy6UlVcXuiM0c690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlVcXuiM0c690.png)
+![002nJwOegy6UlVcXuiM0c690](/uploads/2015/10/002nJwOegy6UlVcXuiM0c690.png)
 
 ### 3.5 配置文件分发
 将配置文件分发至各Salve节点
@@ -106,18 +106,18 @@ date: 2015-10-27 08:01:51
 
 ## 4.启动
     #./sbin/start-dfs.sh
-![002nJwOegy6UlVBlJbD4d690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlVBlJbD4d690.png)
+![002nJwOegy6UlVBlJbD4d690](/uploads/2015/10/002nJwOegy6UlVBlJbD4d690.png)
 	
 	#./sbin/start-yarn.sh
-![002nJwOegy6UlVESzBLa1690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlVESzBLa1690.png)
+![002nJwOegy6UlVESzBLa1690](/uploads/2015/10/002nJwOegy6UlVESzBLa1690.png)
 
 ## 5.验证
 
 Master机应该启动NameNode，SecondaryNameNode，ResourceManager;<br>
 Slave机应该启动DataNode，NodeManager
-![002nJwOegy6UlVIT0qf83690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlVIT0qf83690.png)
+![002nJwOegy6UlVIT0qf83690](/uploads/2015/10/002nJwOegy6UlVIT0qf83690.png)
 
-![002nJwOegy6UlVIXVHm6c690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlVIXVHm6c690.jpg)
+![002nJwOegy6UlVIXVHm6c690](/uploads/2015/10/002nJwOegy6UlVIXVHm6c690.jpg)
 
-![002nJwOegy6UlVJ1NcMc4690](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/10/002nJwOegy6UlVJ1NcMc4690.jpg)
+![002nJwOegy6UlVJ1NcMc4690](/uploads/2015/10/002nJwOegy6UlVJ1NcMc4690.jpg)
 

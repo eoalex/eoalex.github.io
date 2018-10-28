@@ -34,10 +34,10 @@ date: 2016-03-20 00:36:49
     
 ### 2.3 配置mycat
 schema.xml配置
-![2016-03-19_23-40-56](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-19_23-40-56.jpg)
+![2016-03-19_23-40-56](/uploads/2016/03/2016-03-19_23-40-56.jpg)
 
 rule.xml配置
-![2016-03-19_23-44-49](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-19_23-44-49.jpg)
+![2016-03-19_23-44-49](/uploads/2016/03/2016-03-19_23-44-49.jpg)
 
 autopartition-long.txt文件设置
     
@@ -186,7 +186,7 @@ autopartition-long.txt文件设置
     
 
 修改mycat配置，把db9,db10更改至第二台mysql容器。
-![2016-03-20_0-05-38](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-20_0-05-38.jpg)
+![2016-03-20_0-05-38](/uploads/2016/03/2016-03-20_0-05-38.jpg)
   
     mysql> reload @@config_all;
     Query OK, 1 row affected (0.15 sec)
@@ -197,5 +197,5 @@ autopartition-long.txt文件设置
     mysql -utest -p -h127.0.0.0 -P8066 -DTESTDB
     insert into travelrecord (id,user_id,traveldate,fee,days) values(9800001,'huang','2014-06-05',720.5,3);  
 
-![2016-03-20_0-30-59](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-20_0-30-59.jpg)
+![2016-03-20_0-30-59](/uploads/2016/03/2016-03-20_0-30-59.jpg)
 查看log，我们看到数据已经写往第二台mysql容器。至此我们确认数据迁移成功，此时可以停止主从复制了，第一台mysql容器的二个分片数据库也可以放心的删除了。

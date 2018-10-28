@@ -54,7 +54,7 @@ datanode：存放数据的节点，如果数据在coordinator上是以切片方�
 	#useradd pgxl -g pgxl
 	#passwd pgxl
 
-![2015-12-20_16-27-50](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_16-27-50.jpg)
+![2015-12-20_16-27-50](/uploads/2015/12/2015-12-20_16-27-50.jpg)
 
 ### 3.2 安装
 安装依赖库
@@ -63,11 +63,11 @@ datanode：存放数据的节点，如果数据在coordinator上是以切片方�
 	#tar -xzvf postgres-xl-v9.2-src.tar.gz
 	#cd postgres-xl
 	#./configure --prefix=/usr/local/pgsql_xl
-![2015-12-20_16-11-58](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_16-11-58.jpg)
+![2015-12-20_16-11-58](/uploads/2015/12/2015-12-20_16-11-58.jpg)
 
 	#make
 	#make install
-![2015-12-20_16-26-35](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_16-26-35.jpg)
+![2015-12-20_16-26-35](/uploads/2015/12/2015-12-20_16-26-35.jpg)
 
 ### 3.3 创建存放路径
 	
@@ -77,7 +77,7 @@ datanode：存放数据的节点，如果数据在coordinator上是以切片方�
 	#mkdir -p /pgxl_data/datanode/dn1
 	#mkdir -p /pgxl_data/datanode/dn2
 	#chown -R pgxl:pgxl /pgxl_data
-![2015-12-20_16-54-34](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_16-54-34.jpg)
+![2015-12-20_16-54-34](/uploads/2015/12/2015-12-20_16-54-34.jpg)
 
 ### 3.4 配置环境变量
 	
@@ -211,7 +211,7 @@ gtm + (gtmstandby) + (gtmproxy) + datanode + coordinator
 	
 	#postgres --coordinator -D /pgxl_data/coordinator/cd1 &amp;
 	#postgres --coordinator -D /pgxl_data/coordinator/cd2 &amp;
-![2015-12-20_18-21-05](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_18-21-05.jpg)
+![2015-12-20_18-21-05](/uploads/2015/12/2015-12-20_18-21-05.jpg)
 
 ### 3.8 注册节点
 在coord1上注册：
@@ -251,7 +251,7 @@ gtm + (gtmstandby) + (gtmproxy) + datanode + coordinator
 		alter node db2 with(TYPE=datanode,HOST='192.168.199.151',PORT=15432,primary=false);
 		select pgxc_pool_reload();
 所有节点都应该如下所示
-![2015-12-20_19-26-22](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_19-26-22.jpg)
+![2015-12-20_19-26-22](/uploads/2015/12/2015-12-20_19-26-22.jpg)
 
 ### 3.9 停止节点
 停止顺序
@@ -273,14 +273,14 @@ coordinator+datanode+(gtmproxy)+(gtmstandby)+gtm
 		create table test_xl (id integer,name varchar(32));
 		insert into test_xl select generate_series(1,100),'pgxl_test';
 在coord2上查询，看是否能够查询到在coord1上新建的数据库和表
-![2015-12-20_18-44-25](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_18-44-25.jpg)
+![2015-12-20_18-44-25](/uploads/2015/12/2015-12-20_18-44-25.jpg)
 
 在db1上查看
 
-![2015-12-20_18-44-58](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_18-44-58.jpg)
+![2015-12-20_18-44-58](/uploads/2015/12/2015-12-20_18-44-58.jpg)
 
 在db2上查看
 
-![2015-12-20_18-45-20](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_18-45-20.jpg)
+![2015-12-20_18-45-20](/uploads/2015/12/2015-12-20_18-45-20.jpg)
 
 这说明我们在coordinator上是以distribute切片方式建的表，数据分别放在datanode上。

@@ -54,7 +54,7 @@ http://mirrors.aliyun.com/ubuntu-releases/
     git clone -b stable/kilo git://git.openstack.org/openstack/cinder.git /opt/stack/cinder
 
 安装完成，显示结果如下。如果安装过程错误，使用./unstack.sh卸载，再使用./stack.sh重新安装。
-![2016-05-14_0-16-45](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/05/2016-05-14_0-16-45.jpg)
+![2016-05-14_0-16-45](/uploads/2016/05/2016-05-14_0-16-45.jpg)
 
 ### 2.8 修改配置文件
 编辑local.conf，主要更新IP地址。
@@ -93,7 +93,7 @@ http://mirrors.aliyun.com/ubuntu-releases/
     screen -list
     screen -r 4573
     script /dev/null
-![2016-05-14_0-24-47](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/05/2016-05-14_0-24-47.jpg)
+![2016-05-14_0-24-47](/uploads/2016/05/2016-05-14_0-24-47.jpg)
 
 ### 2.10 安装jdk
 #### 2.10.1 安装
@@ -123,7 +123,7 @@ http://mirrors.aliyun.com/ubuntu-releases/
     Xhost +
 #### 2.11.4 启动eclipse
 
-![2016-05-15_13-49-13](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/05/2016-05-15_13-49-13.jpg)
+![2016-05-15_13-49-13](/uploads/2016/05/2016-05-15_13-49-13.jpg)
 
 设置workspace为/opt/stack
 ### 2.12 安装pydev
@@ -132,12 +132,12 @@ http://mirrors.aliyun.com/ubuntu-releases/
 
 选择信任证书
 
-![2016-05-15_13-52-26](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/05/2016-05-15_13-52-26.jpg)
+![2016-05-15_13-52-26](/uploads/2016/05/2016-05-15_13-52-26.jpg)
 
 配置>
 eclipse->windows->preference->PyDev->interpreters->python interpreter->Quick Auto config
 
-![2016-05-14_1-33-27](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/05/2016-05-14_1-33-27.jpg)
+![2016-05-14_1-33-27](/uploads/2016/05/2016-05-14_1-33-27.jpg)
 
 至此开发环境搭建完成。
 
@@ -155,12 +155,12 @@ eclipse->windows->preference->PyDev->interpreters->python interpreter->Quick Aut
     manager.py debug configration ->arguments
     runserver 0.0.0.0:9000
 
-![2016-05-15_14-04-34](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/05/2016-05-15_14-04-34.jpg)
+![2016-05-15_14-04-34](/uploads/2016/05/2016-05-15_14-04-34.jpg)
 
 ### 3.3 登录9000端口
     http://192.168.199.20:9000
 使用admin 账号登录
-![2016-05-14_1-55-17](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/05/2016-05-14_1-55-17.jpg)
+![2016-05-14_1-55-17](/uploads/2016/05/2016-05-14_1-55-17.jpg)
 
 我们看到成功登录，至此可以验证开发环境搭建成功。
 ### 3.4 devstack终止或重启服务

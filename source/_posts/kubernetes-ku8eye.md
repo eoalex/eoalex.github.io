@@ -95,7 +95,7 @@ date: 2016-04-10 13:44:59
     `</pre>
     2.制作镜像
     #docker build -t myku8eye .
-    [![2016-03-26_14-46-50](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-03-26_14-46-50.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-03-26_14-46-50.jpg)
+    [![2016-03-26_14-46-50](/uploads/2016/04/2016-03-26_14-46-50.jpg)](/uploads/2016/04/2016-03-26_14-46-50.jpg)
     <pre>`docker images
     REPOSITORY                              TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
     myku8eye                                latest              af10ef44e73d        3 hours ago         2.25 GB
@@ -116,14 +116,14 @@ Node  192.168.199.55  sumary:SUCESS
 Node  192.168.199.56  sumary:SUCESS
 
 在master主机我们查看，我们看到kube nodes已启动。
-[![2016-03-26_14-36-58](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-03-26_14-36-58.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-03-26_14-36-58.jpg)
-[![2016-03-26_14-37-54](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-03-26_14-37-54.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-03-26_14-37-54.jpg)
+[![2016-03-26_14-36-58](/uploads/2016/04/2016-03-26_14-36-58.jpg)](/uploads/2016/04/2016-03-26_14-36-58.jpg)
+[![2016-03-26_14-37-54](/uploads/2016/04/2016-03-26_14-37-54.jpg)](/uploads/2016/04/2016-03-26_14-37-54.jpg)
 我们看到build镜像文件后，我们只要一个命令就可以轻松安装kubernetes集群。
 三、web界面
 访问http://192.168.199.50:8080端口，看到ku8 manager已启动。
-[![2016-04-10_14-00-26](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-10_14-00-26.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-10_14-00-26.jpg)
+[![2016-04-10_14-00-26](/uploads/2016/04/2016-04-10_14-00-26.jpg)](/uploads/2016/04/2016-04-10_14-00-26.jpg)
 使用guest/123456登录，我们可以看到左侧菜单有资源管理，应用管理及集群监控。有兴趣的朋友自己测试一下，这里不再赘述。
-[![2016-04-10_14-05-42](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-10_14-05-42.jpg)](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-10_14-05-42.jpg)
+[![2016-04-10_14-05-42](/uploads/2016/04/2016-04-10_14-05-42.jpg)](/uploads/2016/04/2016-04-10_14-05-42.jpg)
 
 参考：
 https://github.com/bestcloud/ku8eye/blob/master/doc/ku8eye-web-dev-env.md

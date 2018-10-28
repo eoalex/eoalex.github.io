@@ -35,15 +35,15 @@ Storm的主要特点如下：
 5\. Spout：龙卷，是一个在Topology中产生源数据流的组件。通常情况下Spout会从外部数据源中读取数据，然后转换为Topology内部的源数据。Spout 是一个主动的角色，其接口中有个nextTuple()函数， Storm框架会不停地调用此函数，用户只要在其中生成源数据即可。
 6\. Bolt：雷电，是一个在Topology中接受数据然后执行处理的组件。Bolt可以执行过滤、函数操作、合并、写数据库等任何操作。Bolt是一个被动的角色，其接口中有个execute(Tuple input)函数,在接受到消息后会调用此函数，用户可以在其中执行自己想要的操作。
 7\. Task：Worker中每一个Spout/Bolt的线程称为一个Task. 在 Storm 0.8之后，task不再与物理线程对应，同一个Spout/Bolt的Task可能会共享一个物理线程，该线程称为Executor。
-![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/03/topology.png)
+![](/uploads/2017/03/topology.png)
 8\. Tuple：元组，一次消息传递的基本单元。
 9\. Stream：源源不断传递的Tuple就组成了stream。
 10.Stream Grouping：即消息的partition方法。流分组策略告诉Topology如何在两个组件之间发送Tuple。 Storm 中提供若干种实用的grouping方式，包括shuffle, fields hash, all, global, none, direct和localOrShuffle等。
-![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/03/2017-03-07_19-58-54.png)
+![](/uploads/2017/03/2017-03-07_19-58-54.png)
 
 ## 4. **Storm基本架构**
 Nimbus和Supervisor之间的通信依靠Zookeeper来完成，并且Nimbus进程和Supervisor都是快速失败和无状态的。所有的状态要么在Zookeeper里面，要么在本地磁盘上。这就意味着你可以用Kill -9 来杀死 Nimbus和Supervisor进程，然后在重启它们，它们可以继续工作，就像什么也没发生。这个设计使Storm具有非常高的稳定性。
-![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/03/storm-architect.png)
+![](/uploads/2017/03/storm-architect.png)
 
 ## 5. **与Hadoop的区别**
 Hadoop使用磁盘作为中间交换的介质，而Storm的数据是一直在内存中流转的。两者面向的领域也不完全相同，一个是批量处理，基于任务调度的；另外一个是实时处理，基于流。以水为例，Hadoop可以看作是纯净水，一桶桶地搬；而Storm是用水管，预先接好（Topology），然后打开水龙头，水就源源不断地流出来了。

@@ -10,11 +10,11 @@ date: 2016-04-23 17:18:23
 ## 1. 简介
 [Mycat](http://mycat.io/)是一个彻底开源的新颖的数据库中间件产品,它接受客户端SQL请求，根据路由分片发送至后端数据库集群，然后返回响应数据给客户端。它有效解决了传统数据库的瓶颈问题，从而使数据库的高可用，高负载成为可能。那么它的内部是怎么实现的呢？本文我们就Mycat源码分析研究一下后端连接处理的实现方式与内部机制，这里抛砖引玉,希望与感兴趣的朋友共同交流探讨。
 本文源码分析基于mycat1.6，地址如下：https://github.com/MyCATApache/Mycat-Server/tree/1.6/src/main/java/io/mycat
-![2016-04-23_9-54-14](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-23_9-54-14.jpg)
+![2016-04-23_9-54-14](/uploads/2016/04/2016-04-23_9-54-14.jpg)
 
 ## 2. 流程图
 后端连接处理流程主要指mycat server接收到路由以后下发SQL语句至具体的datahost执行并返回报文的一段过程。以下是主要流程图。
-![2016-04-23_11-21-04](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/04/2016-04-23_11-21-04.jpg)
+![2016-04-23_11-21-04](/uploads/2016/04/2016-04-23_11-21-04.jpg)
 
 ## 3. routeEndExecuteSQL
 类ServerConnection包含routeEndExecuteSQL方法，路由计算成功，去调用类NonBlockingSession的execute方法。

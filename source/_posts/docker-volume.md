@@ -69,13 +69,13 @@ CMD ["mysqld"]
 我们通过以下命令启动一个容器
 	
 	docker run --name mysqlcontainer01 -e MYSQL_ROOT_PASSWORD=p123456 -d mysql:latest
-![2016-01-02_15-34-19](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-02_15-34-19.jpg)
+![2016-01-02_15-34-19](/uploads/2016/01/2016-01-02_15-34-19.jpg)
 通过`docker inspect mysqlcontainer01`可以看到mount了一个目录在主机`/var/lib/docker/volumes`下
-![2016-01-02_15-33-19](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-02_15-33-19.jpg)
+![2016-01-02_15-33-19](/uploads/2016/01/2016-01-02_15-33-19.jpg)
 我们可以看到这个目录其实就是容器中mysql创建的数据库目录`/var/lib/mysql`
-![2016-01-02_15-40-07](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-02_15-40-07.jpg)
+![2016-01-02_15-40-07](/uploads/2016/01/2016-01-02_15-40-07.jpg)
 现在我们试图停止并删除容器，再看一下`/var/lib/docker/volumes`目录下是否还存在。
-![2016-01-02_15-43-29](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-02_15-43-29.jpg)
+![2016-01-02_15-43-29](/uploads/2016/01/2016-01-02_15-43-29.jpg)
 我们看到启动容器时创建的目录还是存在的，而这个容器现在已经删除，通过这个Volume保证了容器中创建的数据还存在。
 
 ### 2.2 实验2
@@ -84,15 +84,15 @@ CMD ["mysqld"]
 	docker run --name mysqlcontainer02 -v /data/mysqldb:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=p123456 -d mysql:latest
 
 事先，主机已经有一个mysql数据库目录`/data/mysqldb`
-![2016-01-02_17-22-52](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-02_17-22-52.jpg)
+![2016-01-02_17-22-52](/uploads/2016/01/2016-01-02_17-22-52.jpg)
 我们看到已经有个数据库test目录及一个testfile文件，我们看容器启动后是否会挂载至容器中。
-![2016-01-02_17-27-21](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-02_17-27-21.jpg)
+![2016-01-02_17-27-21](/uploads/2016/01/2016-01-02_17-27-21.jpg)
 我们看到确实已经有test数据库了。容器中查看`/var/lib/mysql`也可以看到数据库test目录及一个testfile文件
-![2016-01-02_17-28-21](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-02_17-28-21.jpg)
+![2016-01-02_17-28-21](/uploads/2016/01/2016-01-02_17-28-21.jpg)
 
 我们再在容器中`/var/lib/mysql` 下新增一个文件testfile2
-![2016-01-02_17-40-18](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-02_17-40-18.jpg)
+![2016-01-02_17-40-18](/uploads/2016/01/2016-01-02_17-40-18.jpg)
 
 然后在主机`/data/mysqldb`看到也有了
-![2016-01-02_17-41-10](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-02_17-41-10.jpg)
+![2016-01-02_17-41-10](/uploads/2016/01/2016-01-02_17-41-10.jpg)
 这就证明通过volume挂载使得主机跟容器数据互通。

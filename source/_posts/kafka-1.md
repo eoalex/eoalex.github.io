@@ -20,12 +20,12 @@ Kafka是一个分布式的、可分区的、可复制的提交日志服务。它
 * **Consumer:**消息消费者，向Kafka broker读取消息的客户端。
 * **Consumer Group:**每个Consumer属于一个特定的Consumer Group（可为每个Consumer指定group name，若不指定group name则属于默认的group）。
 producers通过网络将消息发送到Kafka集群，集群向消费者提供消息，如下图所示：
-![producer_consumer](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/09/producer_consumer.png)
+![producer_consumer](/uploads/2016/09/producer_consumer.png)
 
 **Topics主题和Logs 日志**
 先来看一下Kafka提供的一个抽象概念:topic.
 一个topic是对一组消息的归纳。对每个topic，Kafka 对它的日志进行了分区，如下图所示：
-![log_anatomy](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/09/log_anatomy.png)
+![log_anatomy](/uploads/2016/09/log_anatomy.png)
 
 每个分区都由一系列有序的、不可变的消息组成，这些消息被连续的追加到分区中。分区中的每个消息都有一个连续的序列号叫做offset,用来在分区中唯一的标识这个消息。
 在一个可配置的时间段内，Kafka集群保留所有发布的消息，不管这些消息有没有被消费。比如，如果消息的保存策略被设置为2天，那么在一个消息被发布的两天时间内，它都是可以被消费的。之后它将被丢弃以释放空间。Kafka的性能是和数据量大小是无关的，所以保留太多的数据并不是问题。
@@ -39,7 +39,7 @@ producers通过网络将消息发送到Kafka集群，集群向消费者提供消
 Producer将消息发布到它指定的topic中,并负责决定发布到哪个分区。通常简单的由负载均衡机制随机选择分区，但也可以通过特定的分区函数选择分区。使用的更多的是第二种。
 **Consumers消费者**
 发布消息通常有两种模式：队列模式（queuing）和发布-订阅模式(publish-subscribe)。队列模式中，consumers可以同时从服务端读取消息，每个消息只被其中一个consumer读到；发布-订阅模式中消息被广播到所有的consumer中。Consumers可以加入一个consumer 组，共同竞争一个topic，topic中的消息将被分发到组中的一个成员中。同一组中的consumer可以在不同的程序中，也可以在不同的机器上。如果所有的consumer都在一个组中，这就成为了传统的队列模式，在各consumer中实现负载均衡。如果所有的consumer都不在不同的组中，这就成为了发布-订阅模式，所有的消息都被分发到所有的consumer中。更常见的是，每个topic都有若干数量的consumer组，每个组都是一个逻辑上的“订阅者”，为了容错和更好的稳定性，每个组由若干consumer组成。这其实就是一个发布-订阅模式，只不过订阅者是个组而不是单个consumer。
-![consumer-groups](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/09/consumer-groups.png)
+![consumer-groups](/uploads/2016/09/consumer-groups.png)
 
 由两个机器组成的集群拥有4个分区 (P0-P3) 2个consumer组. A组有两个consumerB组有4个。
 相比传统的消息系统，Kafka可以很好的保证有序性。
@@ -114,7 +114,7 @@ Kafka只能保证一个分区之内消息的有序性，在不同的分区之间
     sudo docker build -f zookeeper.Dockerfile -t alex/zookeeper:3.4.6 .
     sudo docker build -f kafka.Dockerfile -t alex/kafka:0.8.2.2 .
 完成的镜像文件如下，我们看到由于采用了java:openjdk-8-jre-alpine，整个镜像还是比较小的。
-![2016-09-25_7-42-04](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/09/2016-09-25_7-42-04.jpg)
+![2016-09-25_7-42-04](/uploads/2016/09/2016-09-25_7-42-04.jpg)
 
 ### 2.3 启动 zookeeper
     sudo docker run --name zookeeper -itd -p2181:2181 alex/zookeeper:3.4.6
@@ -124,7 +124,7 @@ Kafka只能保证一个分区之内消息的有序性，在不同的分区之间
 	
 	sudo docker run --name kafka -itd -p9092:9092 --link zookeeper alex/kafka:0.8.2.2
 检查端口是否都已启动。
-![2016-09-25_8-56-19](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/09/2016-09-25_8-56-19.jpg)
+![2016-09-25_8-56-19](/uploads/2016/09/2016-09-25_8-56-19.jpg)
 如果没有看到，你可能要使用以下命令检查容器启动的logs
 
     sudo docker logs zookeeper
@@ -140,7 +140,7 @@ Kafka只能保证一个分区之内消息的有序性，在不同的分区之间
     bin/kafka-topics.sh --describe --topic test1 --zookeeper zookeeper:2181
     bin/kafka-topics.sh --describe --topic test2 --zookeeper zookeeper:2181
     bin/kafka-topics.sh --list --zookeeper zookeeper:2181`</pre>
-![2016-09-25_7-16-28](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/09/2016-09-25_7-16-28.jpg)
+![2016-09-25_7-16-28](/uploads/2016/09/2016-09-25_7-16-28.jpg)
 启动consumer,以后我把这里叫做consumer端，以示区分。
 	
 	 bin/kafka-console-consumer.sh --zookeeper zookeeper:2181 --topic test1
@@ -150,9 +150,9 @@ Kafka只能保证一个分区之内消息的有序性，在不同的分区之间
     cd /opt/kafka
     source /root/.bash_profile
     bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test1
-![2016-09-25_7-18-07](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/09/2016-09-25_7-18-07.jpg)
+![2016-09-25_7-18-07](/uploads/2016/09/2016-09-25_7-18-07.jpg)
 我们看到cunsumer端，接收到了这些消息。
-![2016-09-25_7-18-34](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/09/2016-09-25_7-18-34.jpg)
+![2016-09-25_7-18-34](/uploads/2016/09/2016-09-25_7-18-34.jpg)
 
 ### 2.6 验证2
 接下来我们将演示消息转发的功能，将我们刚才在topic test1输入的消息转发给topic test2
@@ -163,9 +163,9 @@ Kafka只能保证一个分区之内消息的有序性，在不同的分区之间
     
     bin/kafka-replay-log-producer.sh --broker-list localhost:9092 --zookeeper zookeeper:2181 --inputtopic test1 --outputtopic test2
 
-![2016-09-25_7-20-06](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/09/2016-09-25_7-20-06.jpg)
+![2016-09-25_7-20-06](/uploads/2016/09/2016-09-25_7-20-06.jpg)
 
-![2016-09-25_7-19-46](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/09/2016-09-25_7-19-46.jpg)
+![2016-09-25_7-19-46](/uploads/2016/09/2016-09-25_7-19-46.jpg)
 
 我们看到cunsumer的test2成功接收到了之前test1的消息，而我刚才并没有重发这些消息，这也验证了kafka的消息是持久化的。
 

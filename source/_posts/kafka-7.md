@@ -80,7 +80,7 @@ kafka提供了一个工具可以查询指定topic的offset范围。如查询topi
 ## **5. 日志压缩**
 ### 5.1 原理
 为什么日志压缩放在这里讲呢？因为kafka的日志压缩跟offset有关，启动压缩机制后，kafka只保留每一Key的最大的offset（也就是最新值)，而把旧的值在压缩过程中删除掉。如下图。
-![2016-11-26_12-15-07](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_12-15-07.png)
+![2016-11-26_12-15-07](/uploads/2016/11/2016-11-26_12-15-07.png)
 
 ### 5.2 配置
     为实现日志压缩，我们必须修改Kafka配置文件server.properties，把log.cleaner.enable设置为true，然后重启kafka。
@@ -94,13 +94,13 @@ a)创建topic1，注意这个topic里加了两个配置cleanup.policy=compact及
 
 b)发送消息，我们连续10次发送key为0，1，2的消息。（确保超过512字节）
 c)消费消息，停止消费，再连续3次发送，再消费消息。看下图
-![2016-11-26_10-43-01](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_10-43-01.png)
+![2016-11-26_10-43-01](/uploads/2016/11/2016-11-26_10-43-01.png)
 
 查看kafka上的log目录，看到生成了以第一个offset的不同log，旧的log在删除过程中。
-![2016-11-26_10-44-57](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_10-44-57.png)
+![2016-11-26_10-44-57](/uploads/2016/11/2016-11-26_10-44-57.png)
 
 查看log文件的内容，看到压缩过的log只保留了最后一个offset。
-![2016-11-26_10-47-56](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-26_10-47-56.png)
+![2016-11-26_10-47-56](/uploads/2016/11/2016-11-26_10-47-56.png)
 
 #### 5.3.3 实验小结
 * 一直保持消费Log head的consumer可按顺序消费所有消息，并且offset连续。

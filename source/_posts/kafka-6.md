@@ -31,29 +31,29 @@ date: 2016-11-13 09:46:44
 ## 3. 实验
 ### 3.1 Kafka Consumer Group的特性
 创建一个Topic (名为topic1)，再创建一个属于group2的Consumer实例，并创建三个属于group1的Consumer实例，然后通过Producer向topic1发送Key分别为6，7，8，9，10，11六条消息。结果发现属于group2的Consumer收到了所有的这三条消息，同时group1中的3个Consumer分别收到了这六条消息，如下图所示。
-![2016-11-12_22-53-28](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-12_22-53-28.png)
+![2016-11-12_22-53-28](/uploads/2016/11/2016-11-12_22-53-28.png)
 
 ### 3.2 Consumer Rebalance实验
 1) 如果topic1有0，1，2共三个Partition，当group1只有一个Consumer(名为Consumer1)时，该 Consumer可消费这3个Partition的所有数据。
-![2016-11-12_23-59-46](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-12_23-59-46.png)
+![2016-11-12_23-59-46](/uploads/2016/11/2016-11-12_23-59-46.png)
 
 2) 增加一个Consumer(Consumer2)后，其中一个Consumer（Consumer1）可消费2个Partition的数据（Partition 0和Partition 1），另外一个Consumer(Consumer2)可消费另外一个Partition（Partition 2）的数据。
-![2016-11-13_00-09-55](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-13_00-09-55.png)
+![2016-11-13_00-09-55](/uploads/2016/11/2016-11-13_00-09-55.png)
 
 3) 再增加一个Consumer(Consumer3)后，每个Consumer可消费一个Partition的数据。Consumer1消费partition0，Consumer2消费partition1，Consumer3消费partition2。
-![2016-11-13_00-16-30](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-13_00-16-30.png)
+![2016-11-13_00-16-30](/uploads/2016/11/2016-11-13_00-16-30.png)
 
 4) 再增加一个Consumer(Consumer4)后，其中3个Consumer可分别消费一个Partition的数据，另外一个Consumer(Consumer4)不能消费topic1的任何数据。
-![2016-11-13_00-25-16](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-13_00-25-16.png)
+![2016-11-13_00-25-16](/uploads/2016/11/2016-11-13_00-25-16.png)
 
 5) 此时关闭Consumer1，其余3个Consumer可分别消费一个Partition的数据。
-![2016-11-13_00-35-24](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-13_00-35-24.png)
+![2016-11-13_00-35-24](/uploads/2016/11/2016-11-13_00-35-24.png)
 
 6) 接着关闭Consumer2，Consumer3可消费2个Partition，Consumer4可消费1个Partition。
-![2016-11-13_00-42-07](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-13_00-42-07.png)
+![2016-11-13_00-42-07](/uploads/2016/11/2016-11-13_00-42-07.png)
 
 7) 再关闭Consumer3，仅存的Consumer4可同时消费topic1的3个Partition。
-![2016-11-13_00-47-11](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/2016-11-13_00-47-11.png)
+![2016-11-13_00-47-11](/uploads/2016/11/2016-11-13_00-47-11.png)
 
 小结，Consumer Rebalance的算法如下：
 * 将目标Topic下的所有Partirtion排序，存于$P_T$

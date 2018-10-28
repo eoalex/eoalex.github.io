@@ -17,7 +17,7 @@ pgbench 是一个简单的测试PostgreSQL性能的程序。它可以运行在�
 	#cd /home/src/pgsql/contrib/pgbench
 	#make all
 	#make install
-![2016-02-11_14-11-50](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-11_14-11-50.jpg)
+![2016-02-11_14-11-50](/uploads/2016/02/2016-02-11_14-11-50.jpg)
 
 ## 3. 初始化数据
 启动数据库
@@ -27,7 +27,7 @@ pgbench 是一个简单的测试PostgreSQL性能的程序。它可以运行在�
 	#createdb pgbench
 初始化测试数据
 	#pgbench -i pgbench
-![2016-02-11_14-18-41](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-11_14-18-41.jpg)
+![2016-02-11_14-18-41](/uploads/2016/02/2016-02-11_14-18-41.jpg)
 
 ## 4. 测试
 ### 4.1 模拟1个客户端

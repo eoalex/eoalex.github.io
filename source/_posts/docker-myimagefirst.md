@@ -12,7 +12,7 @@ date: 2016-01-01 23:58:07
 ## 2. 步骤
 ### 2.1 下拉镜像
 首先从仓库下拉centos7镜像，为了加速下拉，我这里选择国内的daoclould作为代理镜像
-![2015-12-27_10-04-15](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_10-04-15.jpg)
+![2015-12-27_10-04-15](/uploads/2016/01/2015-12-27_10-04-15.jpg)
 
 ### 2.2 制作Dockfile
 Dockfile
@@ -68,24 +68,24 @@ Dockfile
 build 完毕，我们可以看到image
 	
 	#docker images
-![2016-01-01_23-36-21](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-01_23-36-21.jpg)
+![2016-01-01_23-36-21](/uploads/2016/01/2016-01-01_23-36-21.jpg)
 
 ### 2.5 启动容器
 	docker create --name mycontainer01 -p 8080:8080 -p 8066:8066 -p 9066:9066 myimage/first
 	docker start mycontainer01
 	docker exec -it mycontainer01 /bin/bash
-![2015-12-27_20-31-33](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-31-33.jpg)
+![2015-12-27_20-31-33](/uploads/2016/01/2015-12-27_20-31-33.jpg)
 
 我们可以看到容器已经起来。
-![2016-01-01_23-51-43](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-01_23-51-43.jpg)
+![2016-01-01_23-51-43](/uploads/2016/01/2016-01-01_23-51-43.jpg)
 ## 3. 验证
 ### 3.1 访问8080端口
-![2015-12-27_20-43-03](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-43-03.jpg)
+![2015-12-27_20-43-03](/uploads/2016/01/2015-12-27_20-43-03.jpg)
 
 ### 3.2 其他主机mysql访问8066，9066端口
 	
 	mysql -umycatuser -pmycatpass -h192.168.199.111 –P8066
-![2015-12-27_20-44-27](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-44-27.jpg)
+![2015-12-27_20-44-27](/uploads/2016/01/2015-12-27_20-44-27.jpg)
 
 	mysql -umycatuser -pmycatpass -h192.168.199.111 –P9066
-![2015-12-27_20-45-51](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2015-12-27_20-45-51.jpg)
+![2015-12-27_20-45-51](/uploads/2016/01/2015-12-27_20-45-51.jpg)

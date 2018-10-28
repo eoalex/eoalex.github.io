@@ -61,7 +61,7 @@ datanode：存放数据的节点，如果数据在coordinator上是以切片方�
 	#./configure --prefix=/usr/local/pgsql_xc
 	#make
 	#make install
-![2015-12-20_10-08-23](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_10-08-23.jpg)
+![2015-12-20_10-08-23](/uploads/2015/12/2015-12-20_10-08-23.jpg)
 
 ### 3.3 创建存放路径
 	
@@ -71,7 +71,7 @@ datanode：存放数据的节点，如果数据在coordinator上是以切片方�
 	#mkdir -p /pgxc_data/datanode/dn1
 	#mkdir -p /pgxc_data/datanode/dn2
 	#chown -R pgxc:pgxc /pgxc_data
-![2015-12-20_10-15-22](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_10-15-22.jpg)
+![2015-12-20_10-15-22](/uploads/2015/12/2015-12-20_10-15-22.jpg)
 
 ### 3.4 配置环境变量
 	
@@ -193,25 +193,25 @@ gtm + (gtmstandby) + (gtmproxy) + datanode + coordinator
 	#gtm -D /pgxc_data/gtm &amp;	
 	#ps -ef|grep gtm
 
-![2015-12-20_11-47-47](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_11-47-47.jpg)
+![2015-12-20_11-47-47](/uploads/2015/12/2015-12-20_11-47-47.jpg)
 
 	#gtm_ctl status -z gtm -D /pgxc_data/gtm
 
-![2015-12-20_11-50-57](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_11-50-57.jpg)
+![2015-12-20_11-50-57](/uploads/2015/12/2015-12-20_11-50-57.jpg)
 
 启动数据节点
 	
 	#postgres -X -D /pgxc_data/datanode/dn1 &amp;
 	#postgres -X -D /pgxc_data/datanode/dn2 &amp;
 	#ps -ef|grep pgxc
-![2015-12-20_11-56-30](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_11-56-30.jpg)
+![2015-12-20_11-56-30](/uploads/2015/12/2015-12-20_11-56-30.jpg)
 
 启动coordinator节点
 	
 	#postgres -C -D /pgxc_data/coordinator/cd1 &amp;
 	#postgres -C -D /pgxc_data/coordinator/cd2 &amp;
 
-![2015-12-20_11-58-33](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_11-58-33.jpg)
+![2015-12-20_11-58-33](/uploads/2015/12/2015-12-20_11-58-33.jpg)
 
 ### 3.8 注册节点
 在coord1上注册：
@@ -223,7 +223,7 @@ gtm + (gtmstandby) + (gtmproxy) + datanode + coordinator
 		create node db2 with(TYPE=datanode,HOST='192.168.199.151',PORT=15432);
 		alter node coord1 with(TYPE='coordinator',HOST='192.168.199.151',PORT=1921);
 		select pgxc_pool_reload();
-![2015-12-20_14-36-10](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_14-36-10.jpg)
+![2015-12-20_14-36-10](/uploads/2015/12/2015-12-20_14-36-10.jpg)
 
 在coord2上注册：
 	
@@ -235,7 +235,7 @@ gtm + (gtmstandby) + (gtmproxy) + datanode + coordinator
 		alter node coord2 with(TYPE='coordinator',HOST='192.168.199.151',PORT=1925);
 		select pgxc_pool_reload();
 
-![2015-12-20_14-36-36](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_14-36-36.jpg)
+![2015-12-20_14-36-36](/uploads/2015/12/2015-12-20_14-36-36.jpg)
 
 ### 3.9 停止节点
 停止顺序
@@ -256,15 +256,15 @@ coordinator+datanode+(gtmproxy)+(gtmstandby)+gtm
 	\c pgxc_test;
 	create table test_xc (id integer,name varchar(32));
 	insert into test_xc select generate_series(1,100),'pgxc_test';
-![2015-12-20_14-42-14](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_14-42-14.jpg)
+![2015-12-20_14-42-14](/uploads/2015/12/2015-12-20_14-42-14.jpg)
 
 在coord2上查询，看是否能够查询到在coord1上新建的数据库和表
-![2015-12-20_14-46-53](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_14-46-53.jpg)
+![2015-12-20_14-46-53](/uploads/2015/12/2015-12-20_14-46-53.jpg)
 
 在db1上查看
-![2015-12-20_14-48-01](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_14-48-01.jpg)
+![2015-12-20_14-48-01](/uploads/2015/12/2015-12-20_14-48-01.jpg)
 
 在db2上查看
-![2015-12-20_14-48-35](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/2015-12-20_14-48-35.jpg)
+![2015-12-20_14-48-35](/uploads/2015/12/2015-12-20_14-48-35.jpg)
 
 这说明我们在coordinator上是以distribute切片方式建的表，数据分别放在datanode上。

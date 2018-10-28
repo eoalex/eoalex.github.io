@@ -21,7 +21,7 @@ Channel 连接 sources 和 sinks ，这个有点像一个队列。
 Events 可以是日志记录、 avro 对象等。
 
 基本的数据流模型，如图
-![flume_UserGuide_image00](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/flume_UserGuide_image00.png)
+![flume_UserGuide_image00](/uploads/2015/11/flume_UserGuide_image00.png)
 
 ## 2.环境
 
@@ -40,7 +40,7 @@ Hadoop 1.2.1 ,配置见下表，Hadoop 1.2.1 的安装参见 [hadoop-1-2-1-完�
 	
 	#wget http://mirrors.aliyun.com/apache/flume/1.6.0/apache-flume-1.6.0-bin.tar.gz
 	#tar -xzvf apache-flume-1.6.0-bin.tar.gz
-![2015-11-14_15-29-56](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-14_15-29-56.jpg)
+![2015-11-14_15-29-56](/uploads/2015/11/2015-11-14_15-29-56.jpg)
 	
 	#vim /etc/profile
 		export FLUME_HOME=/home/grid/apache-flume-1.6.0-bin
@@ -50,12 +50,12 @@ Hadoop 1.2.1 ,配置见下表，Hadoop 1.2.1 的安装参见 [hadoop-1-2-1-完�
 	#cd conf
 	#cp flume-env-template.sh flume-env.sh
 	#vim flume-env.sh
-![2015-11-14_15-36-35](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-14_15-36-35.jpg)
+![2015-11-14_15-36-35](/uploads/2015/11/2015-11-14_15-36-35.jpg)
 
 ## 4.测试
 
 	#flume-ng version
-![2015-11-14_15-37-42](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-14_15-37-42.jpg)
+![2015-11-14_15-37-42](/uploads/2015/11/2015-11-14_15-37-42.jpg)
 出现上面的信息表示安装成功了。
 
 ## 5.示例
@@ -92,10 +92,10 @@ Hadoop 1.2.1 ,配置见下表，Hadoop 1.2.1 的安装参见 [hadoop-1-2-1-完�
 	
 	#telnet localhost 44444
 然后输入hello word
-![2015-11-14_15-50-57](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-14_15-50-57.jpg)
+![2015-11-14_15-50-57](/uploads/2015/11/2015-11-14_15-50-57.jpg)
 
 回到原来的终端，我们看到hello world被flume的agent收集了。
-![2015-11-14_15-51-12](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-14_15-51-12.jpg)
+![2015-11-14_15-51-12](/uploads/2015/11/2015-11-14_15-51-12.jpg)
 
 ### 5.2 收集日志到HDFS示列
 
@@ -127,9 +127,9 @@ Hadoop 1.2.1 ,配置见下表，Hadoop 1.2.1 的安装参见 [hadoop-1-2-1-完�
 	
 	#bin/flume-ng agent --conf conf --conf-file conf/flume-exec --name a1 -Dflume.root.logger=INFO,console
 
-![2015-11-14_15-56-33](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-14_15-56-33.jpg)
+![2015-11-14_15-56-33](/uploads/2015/11/2015-11-14_15-56-33.jpg)
 
-![2015-11-14_16-31-29](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-14_16-31-29.jpg)
+![2015-11-14_16-31-29](/uploads/2015/11/2015-11-14_16-31-29.jpg)
 
 我们看到flume不断收集hadoop-grid-namenode-hadoop11.log的数据写入HDFS中。
 以上只是简单演示了flume的功能，进一步研究可以查看[官方的用户指南](http://flume.apache.org/FlumeUserGuide.html)

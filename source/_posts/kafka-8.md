@@ -166,4 +166,4 @@ for (int i = 0; i < consumerThreads.length; ++i) {
 	consumerThreads[i].start();
 }
 ```
-![2016-12-03_12-50-49](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-03_12-50-49.png)
+![2016-12-03_12-50-49](/uploads/2016/12/2016-12-03_12-50-49.png)

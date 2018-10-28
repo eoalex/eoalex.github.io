@@ -14,7 +14,7 @@ date: 2016-03-11 22:20:49
 ## 1. 简介
 Mycat是一个彻底开源的新颖的数据库中间件产品。它的出现将彻底结束数据库的瓶颈问题，从而使数据库的高可用，高负载成为可能。在
 [基于Mycat的MySQL主从读写分离及自动切换的docker实现](/2016/01/17/mycat-mysql-docker-sample1/)一文中，我们已经实现基于Mycat的Mysql高可用，但是Mycat本身也存在稳定性和单点问题，所以本文我们通过HAproxy实现MyCat的高可用。架构图如下：
-![2016-03-08_20-27-59](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-08_20-27-59.jpg)
+![2016-03-08_20-27-59](/uploads/2016/03/2016-03-08_20-27-59.jpg)
 本文所有组件都采用docker镜像和容器，为简单起见，都运行在一台宿主机上，系统为centos 7
 ## 2. Mysql配置
 创建并启动容器
@@ -112,7 +112,7 @@ mycat的配置文件参见[基于Mycat的MySQL主从读写分离及自动切换�
     mysql>
     
 查看haproxy的监控端口8888，我们看到mycat的两台容器都正常运行。
-![2016-03-11_21-43-44](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-11_21-43-44.jpg)
+![2016-03-11_21-43-44](/uploads/2016/03/2016-03-11_21-43-44.jpg)
 接下来我们模拟其中一台mycat突然宕机，数据连接情况。
     
     [root@localhost ~]# docker stop mycat02
@@ -145,4 +145,4 @@ mycat的配置文件参见[基于Mycat的MySQL主从读写分离及自动切换�
 
 我们看到虽然刚才停掉了mycat02,但是mysql还是正常连接，并且返回查询数据。
 查看haproxy的监控端口8888，我们看到mycat服务器一台正常，一台宕机。
-![2016-03-11_21-46-49](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-11_21-46-49.jpg)
+![2016-03-11_21-46-49](/uploads/2016/03/2016-03-11_21-46-49.jpg)

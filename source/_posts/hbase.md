@@ -20,7 +20,7 @@ date: 2015-11-06 11:17:16
 
 ### 2.1	下载HBase
 从镜像站点下载HBase，Hadoop 1.2.1目前对应的Hbase版本是0.98.15，如图。
-![2015-10-30_20-26-35](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-10-30_20-26-35.png)
+![2015-10-30_20-26-35](/uploads/2015/11/2015-10-30_20-26-35.png)
 
 ### 2.2	修改/etc/profile
 
@@ -66,7 +66,7 @@ Zookeepr我们用自己安装的，所以改为false
 
 ### 2.5 修改regionservers
 
-![2015-10-30_22-15-02](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-10-30_22-15-02.png)
+![2015-10-30_22-15-02](/uploads/2015/11/2015-10-30_22-15-02.png)
 
 ### 2.6 分发Hbase
 复制hbase至其他两节点
@@ -82,21 +82,21 @@ Zookeepr我们用自己安装的，所以改为false
 
 	#start-all.sh
 
-![2015-10-30_22-23-54](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-10-30_22-23-54.png)
+![2015-10-30_22-23-54](/uploads/2015/11/2015-10-30_22-23-54.png)
 
 ### 3.2 启动Zookeeper
 然后启动zookeeper，分别在三台机器上执行。
 
 	#~/zookeeper-3.4.6/bin/zkServer.sh start
 
-![2015-10-30_22-23-33](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-10-30_22-23-33.png)
+![2015-10-30_22-23-33](/uploads/2015/11/2015-10-30_22-23-33.png)
 
 ### 3.3 启动HBase
 最后在hadoop11上启动hbase集群
 
 	#start-hbase.sh
 
-![2015-10-30_21-55-48](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-10-30_21-55-48.png)
+![2015-10-30_21-55-48](/uploads/2015/11/2015-10-30_21-55-48.png)
 
 至此Hbase集群启动成功。
 
@@ -105,14 +105,14 @@ Zookeepr我们用自己安装的，所以改为false
 ### 4.1 检查jps
 运行jps命令，我们看到hbase服务起来了。
 
-![2015-10-30_21-56-49](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-10-30_21-56-49.png)
+![2015-10-30_21-56-49](/uploads/2015/11/2015-10-30_21-56-49.png)
 
 ### 4.2 Hbase shell操作
 
-![2015-10-30_22-10-03](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-10-30_22-10-03.png)
+![2015-10-30_22-10-03](/uploads/2015/11/2015-10-30_22-10-03.png)
 
-![2015-10-30_22-10-20](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-10-30_22-10-20.png)
+![2015-10-30_22-10-20](/uploads/2015/11/2015-10-30_22-10-20.png)
 
 ### 4.3 web监控
 
-![2015-10-30_22-31-27](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-10-30_22-31-27.png)
+![2015-10-30_22-31-27](/uploads/2015/11/2015-10-30_22-31-27.png)

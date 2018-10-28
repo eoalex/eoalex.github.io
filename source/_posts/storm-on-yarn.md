@@ -38,7 +38,7 @@ zookeeper安装参见[hadoop-2-7-1-实现ha集群部署](/2015/10/27/hadoop-2-7-
 从GitHub上下载Storm on Yarn
 	
 	#wget https://github.com/yahoo/storm-yarn/archive/master.zip
-![2015-11-28_22-31-20](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-28_22-31-20.jpg)
+![2015-11-28_22-31-20](/uploads/2015/11/2015-11-28_22-31-20.jpg)
 
 	unzip master.zip
 修改hadoop版本
@@ -55,7 +55,7 @@ zookeeper安装参见[hadoop-2-7-1-实现ha集群部署](/2015/10/27/hadoop-2-7-
 使用maven编译
 	
 	#/home/grid/apache-maven-3.3.9/bin/mvn package -DskipTests
-![2015-11-29_8-44-16](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-29_8-44-16.jpg)
+![2015-11-29_8-44-16](/uploads/2015/11/2015-11-29_8-44-16.jpg)
 
 解压storm.zip至/home/grid/storm下
 	
@@ -64,7 +64,7 @@ zookeeper安装参见[hadoop-2-7-1-实现ha集群部署](/2015/10/27/hadoop-2-7-
 ### 3.3 配置Storm on Yarn
 
 	#vim ./bashrc
-![2015-11-29_13-41-05](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-29_13-41-05.jpg)
+![2015-11-29_13-41-05](/uploads/2015/11/2015-11-29_13-41-05.jpg)
 	
 	#source ./bashrc
 将编译好后的storm-yarn-master/lib/storm.zip 添加进hdfs
@@ -88,7 +88,7 @@ zookeeper安装参见[hadoop-2-7-1-实现ha集群部署](/2015/10/27/hadoop-2-7-
 	#storm-yarn launch $STORM_HOME/storm-0.9.0-wip21/conf/storm.yaml
 访问http://192.168.199.21:8088/cluster，我们看到storm on yarn已启动。
 注：因为storm是作为一个yarn程序运行在集群上的，所以会有一个AppId，如下图所示
-![2015-11-29_11-34-13](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-29_11-34-13.jpg)
+![2015-11-29_11-34-13](/uploads/2015/11/2015-11-29_11-34-13.jpg)
 
 通过以下命令我们可以获取Nimbus host
 	
@@ -96,7 +96,7 @@ zookeeper安装参见[hadoop-2-7-1-实现ha集群部署](/2015/10/27/hadoop-2-7-
 	#cat ~/storm/storm.yaml | grep nimbus.host
 访问Nimbus host http://192.168.199.22:7070/可以看到Storm UI
 
-![2015-11-29_12-49-24](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-29_12-49-24.jpg)
+![2015-11-29_12-49-24](/uploads/2015/11/2015-11-29_12-49-24.jpg)
 
 ### 4.2 Storm on Yarn测试
 
@@ -104,18 +104,18 @@ zookeeper安装参见[hadoop-2-7-1-实现ha集群部署](/2015/10/27/hadoop-2-7-
 	
 	storm jar /home/grid/storm/storm-yarn-master/lib/storm-starter-0.0.1-SNAPSHOT.jar storm.starter.WordCountTopology wordCountTopology -c nimbus.host=192.168.199.22
 
-![2015-11-29_12-56-08](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-29_12-56-08.jpg)
+![2015-11-29_12-56-08](/uploads/2015/11/2015-11-29_12-56-08.jpg)
 
 2)监控Topology
 
-![2015-11-29_12-56-24](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-29_12-56-24.jpg)
+![2015-11-29_12-56-24](/uploads/2015/11/2015-11-29_12-56-24.jpg)
 
 3)关闭Topology
 	
 	storm kill wordCountTopology
-![2015-11-29_14-06-03](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-29_14-06-03.jpg)
+![2015-11-29_14-06-03](/uploads/2015/11/2015-11-29_14-06-03.jpg)
 
 4)关闭Storm on yarn
 	
 	storm-yarn shutdown –appId [applicationId]
-![2015-11-29_14-11-51](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-29_14-11-51.jpg)
+![2015-11-29_14-11-51](/uploads/2015/11/2015-11-29_14-11-51.jpg)

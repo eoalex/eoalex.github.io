@@ -12,7 +12,7 @@ date: 2016-01-17 16:32:21
 ---
 ## 1. 简介
 Mycat是一个彻底开源的新颖的数据库中间件产品。它的出现将彻底结束数据库的瓶颈问题，从而使数据库的高可用，高负载成为可能。本文将用Docker实现MySQL在主从配置（1主1从）情况下的读写分离及自动切换。
-![2016-01-17_18-54-27](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-17_18-54-27.jpg)
+![2016-01-17_18-54-27](/uploads/2016/01/2016-01-17_18-54-27.jpg)
 ## 2. MySQL主从配置
 ### 2.1 下拉Image
 从Docker官方下拉MySQL的image
@@ -28,7 +28,7 @@ Mycat是一个彻底开源的新颖的数据库中间件产品。它的出现将
 建立从服务器的配置目录
 	
 	#mkdir -pv /mysql/102
-![2016-01-16_22-55-07](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_22-55-07.jpg)
+![2016-01-16_22-55-07](/uploads/2016/01/2016-01-16_22-55-07.jpg)
 ### 2.3 设置主从服务器配置
 编辑101.cnf	
 	
@@ -52,7 +52,7 @@ Mycat是一个彻底开源的新颖的数据库中间件产品。它的出现将
     
     #docker start mysqlsrv101
     #docker start mysqlsrv102
-![2016-01-17_19-07-02](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-17_19-07-02.jpg)
+![2016-01-17_19-07-02](/uploads/2016/01/2016-01-17_19-07-02.jpg)
 
 ### 2.5 主服务器状态
 登录主服务器的mysql，查询master的状态
@@ -73,7 +73,7 @@ master_host='172.17.0.2',master_user='root',master_password='123456',master_log_
     bin.000003',master_log_pos=154;
     start slave;
 ```
-![2016-01-16_23-08-54](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_23-08-54.jpg)
+![2016-01-16_23-08-54](/uploads/2016/01/2016-01-16_23-08-54.jpg)
 检查从服务器复制功能状态。
 
     mysql> show slave status\G
@@ -144,9 +144,9 @@ master_host='172.17.0.2',master_user='root',master_password='123456',master_log_
 	    create database db1;
 	    create database db2;
 	    create database db3;
-![2016-01-16_23-14-36](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_23-14-36.jpg)
+![2016-01-16_23-14-36](/uploads/2016/01/2016-01-16_23-14-36.jpg)
 进入从服务器(容器mysqlsrv102),可查看到刚才主服务器创建的数据库。
-![2016-01-16_23-14-08](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_23-14-08.jpg)
+![2016-01-16_23-14-08](/uploads/2016/01/2016-01-16_23-14-08.jpg)
 
 至此MySQL主从服务器配置成功。
 ## 3.安装MyCat
@@ -199,7 +199,7 @@ switchType属性
     - 3 基于MySQL galary cluster的切换机制,心跳语句为show status like ‘wsrep%’
 ```
 按如下修改schema.xml的balance,writeType,switchType的值。
-![2016-01-17_16-18-45](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-17_16-18-45.jpg)
+![2016-01-17_16-18-45](/uploads/2016/01/2016-01-17_16-18-45.jpg)
 
 打开log4j.xml的debug选项，重启mycat容器，进入8066端口
     
@@ -216,7 +216,7 @@ switchType属性
     Query OK, 1 row affected, 1 warning (0.00 sec)
 
 我们看mycat.log文件，看到数据写入了主服务器。
-![2016-01-17_16-04-27](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-17_16-04-27.jpg)
+![2016-01-17_16-04-27](/uploads/2016/01/2016-01-17_16-04-27.jpg)
     我们再使用查询语句查询。
 
     mysql> select * from travelrecord;
@@ -229,19 +229,19 @@ switchType属性
     +----------+---------+------------+------+------+
     3 rows in set (0.18 sec)
 
-![2016-01-17_16-17-42](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-17_16-17-42.jpg)
+![2016-01-17_16-17-42](/uploads/2016/01/2016-01-17_16-17-42.jpg)
 我们看到数据是从服务器读取的，这证明了读写分离的配置是成功的。
 ### 4.2 测试自动切换
 在MySQL主服务器突然宕机时，通过配置，Mycat会自动将连接转到MySQL从服务器上，在从服务器上读写数据。（此时MySQL主从服务器最好配置成主从互备)
 按如下修改schema.xml的balance,writeType,switchType的值。
-![2016-01-18_21-21-03](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-18_21-21-03.jpg)
+![2016-01-18_21-21-03](/uploads/2016/01/2016-01-18_21-21-03.jpg)
 重启mycat容器，进入9066管理端口。
     
     mysql -utest -p -h127.0.0.1 -P9066 ,我们看到心跳检测正常。
-![2016-01-18_20-56-41](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-18_20-56-41.jpg)
+![2016-01-18_20-56-41](/uploads/2016/01/2016-01-18_20-56-41.jpg)
 
 此时，我们模拟宕机，停止MySQL主服务器的容器。再从9066端口查看心跳，主服务器出现异常。
-![2016-01-18_21-09-14](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-18_21-09-14.jpg)
+![2016-01-18_21-09-14](/uploads/2016/01/2016-01-18_21-09-14.jpg)
 进入8066端口。
     
     mysql -utest -p -h127.0.0.1 -P8066 -DTESTDB,我们先清空数据，然后再插入三条记录。
@@ -256,9 +256,9 @@ switchType属性
     Query OK, 1 row affected, 1 warning (0.00 sec)
 
 我们看mycat.log文件，看到数据写入了从服务器。
-![2016-01-18_21-08-08](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-18_21-08-08.jpg)
+![2016-01-18_21-08-08](/uploads/2016/01/2016-01-18_21-08-08.jpg)
 我们再使用查询语句查询。看到查询也是从服务器读取的。
-![2016-01-18_21-11-11](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-18_21-11-11.jpg)
+![2016-01-18_21-11-11](/uploads/2016/01/2016-01-18_21-11-11.jpg)
 查看dnindex.properties,看到localhost1值为1，也就是从服务器。
 
     [root@8872a66b639d conf]# cat dnindex.properties

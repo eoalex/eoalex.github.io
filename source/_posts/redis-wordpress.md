@@ -61,7 +61,7 @@ Redis是一个开源的内存存储的数据结构服务器，可用作数据库
     sudo service redis-server restart
 ## 6. Redis验证
 
-![redis-test1](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/redis-test1.jpg)
+![redis-test1](/uploads/2016/10/redis-test1.jpg)
 
 ## 7. 安装Redis的PHP客户端
 为了使WordPress的PHP与Redis通信，必须安装Redis的PHP客户端，主要有三种predis，phpredis和Rediska。这里采用predis。 下载[predis.php](https://uploads.staticjw.com/ji/jim/predis.php)并上传至网站wordpress的根目录。并且使用[index-with-redis.php](index-with-redis.php)替换index.php文件
@@ -80,8 +80,8 @@ Redis是一个开源的内存存储的数据结构服务器，可用作数据库
 
 ## 8. 测试效果
 所有工作完成，你可以刷新你的网页，查看一下效果。如果你想在页面上看到脚本执行时间和缓存加载时间，请设置$debug = 1; 浏览器最下方第一次会显示cache is set:0.23617,接下来访问你会看到速度明显快了，浏览器最下方会显示this is a cache:0.00418,如果你用F5刷新，cache会清除。浏览器最下方会显示cache of page deleted:0.24268， 如果再访问会重新cache。
-![2016-10-10_8-43-46](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-10_8-43-46.jpg)
+![2016-10-10_8-43-46](/uploads/2016/10/2016-10-10_8-43-46.jpg)
 
-![2016-10-10_8-40-29](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-10_8-40-29.jpg)
+![2016-10-10_8-40-29](/uploads/2016/10/2016-10-10_8-40-29.jpg)
 
-![2016-10-10_8-42-38](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-10_8-42-38.jpg)
+![2016-10-10_8-42-38](/uploads/2016/10/2016-10-10_8-42-38.jpg)

@@ -42,24 +42,24 @@ date: 2016-06-21 09:14:22
 ## 4. 迁移
 ### 4.1 创建虚拟机
 为了更清楚的演示，我们将之前的虚拟机删除，重新创建一个新的虚拟机。
-![2016-06-20_0-45-06](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-20_0-45-06.jpg)
+![2016-06-20_0-45-06](/uploads/2016/06/2016-06-20_0-45-06.jpg)
 
 按照[上文](/2016/06/openstack-scheduler-live-migration/)的定义，我们看到新的虚拟机安装在compute-node-02上。
-![2016-06-20_0-46-25](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-20_0-46-25.jpg)
+![2016-06-20_0-46-25](/uploads/2016/06/2016-06-20_0-46-25.jpg)
 
 ### 4.2 开始热迁移
-![2016-06-20_0-47-05](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-20_0-47-05.jpg)
+![2016-06-20_0-47-05](/uploads/2016/06/2016-06-20_0-47-05.jpg)
 
-![2016-06-20_0-47-24](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-20_0-47-24.jpg)
+![2016-06-20_0-47-24](/uploads/2016/06/2016-06-20_0-47-24.jpg)
 
 ### 4.3 迁移完成（很快）
-![2016-06-20_0-47-58](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-20_0-47-58.jpg)
+![2016-06-20_0-47-58](/uploads/2016/06/2016-06-20_0-47-58.jpg)
 看目录文件，compute-node-01和compute-node-02迁移前后没有变化。
 
-![2016-06-20_0-48-54](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-20_0-48-54.jpg)
+![2016-06-20_0-48-54](/uploads/2016/06/2016-06-20_0-48-54.jpg)
 
-![2016-06-20_0-49-06](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-20_0-49-06.jpg)
+![2016-06-20_0-49-06](/uploads/2016/06/2016-06-20_0-49-06.jpg)
 
 其实他们都共享了nfs server 的data目录，这也是迁移速度很快的原因，也是使用NFS的好处
 
-![2016-06-20_0-54-23](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-20_0-54-23.jpg)
+![2016-06-20_0-54-23](/uploads/2016/06/2016-06-20_0-54-23.jpg)

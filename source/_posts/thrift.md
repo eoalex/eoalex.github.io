@@ -28,56 +28,56 @@ Thrift是一个软件框架，用来进行可扩展且跨语言的服务的开�
 ### 3.1 安装开发工具
 	
 	#yum -y groupinstall "Development Tools"
-![2015-11-22_18-34-31](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-22_18-34-31.jpg)
+![2015-11-22_18-34-31](/uploads/2015/11/2015-11-22_18-34-31.jpg)
 
 ### 3.2 更新autoconf
 
 	#wget http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz
-![2015-11-22_18-45-14](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-22_18-45-14.jpg)
+![2015-11-22_18-45-14](/uploads/2015/11/2015-11-22_18-45-14.jpg)
 	
 	#tar xvf autoconf-2.69.tar.gz
 	#cd autoconf-2.69
 	#./configure --prefix=/usr
 	#make
 	#make install
-![2015-11-22_18-47-06](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-22_18-47-06.jpg)
+![2015-11-22_18-47-06](/uploads/2015/11/2015-11-22_18-47-06.jpg)
 	
 ### 3.3 更新automake
 	
 	#cd ..
 	#wget http://ftp.gnu.org/gnu/automake/automake-1.14.tar.gz
-![2015-11-22_18-52-21](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-22_18-52-21.jpg)
+![2015-11-22_18-52-21](/uploads/2015/11/2015-11-22_18-52-21.jpg)
 
 	#tar xvf automake-1.14.tar.gz
 	#cd automake-1.14
 	#./configure --prefix=/usr
 	#make
 	#make install
-![2015-11-22_18-53-41](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-22_18-53-41.jpg)
+![2015-11-22_18-53-41](/uploads/2015/11/2015-11-22_18-53-41.jpg)
 
 ### 3.4 更新bison
 	
 	#cd ..
 	#wget http://ftp.gnu.org/gnu/bison/bison-2.5.1.tar.gz
-![2015-11-22_18-56-13](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-22_18-56-13.jpg)
+![2015-11-22_18-56-13](/uploads/2015/11/2015-11-22_18-56-13.jpg)
 
 	#tar xvf bison-2.5.1.tar.gz
 	#cd bison-2.5.1
 	#./configure --prefix=/usr
 	#make
 	#make install
-![2015-11-22_18-57-54](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-22_18-57-54.jpg)
+![2015-11-22_18-57-54](/uploads/2015/11/2015-11-22_18-57-54.jpg)
 
 ### 3.5 安装C++ lib
 	
 	#cd ..
 	#yum -y install libevent-devel zlib-devel openssl-devel
-![2015-11-22_18-59-06](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-22_18-59-06.jpg)
+![2015-11-22_18-59-06](/uploads/2015/11/2015-11-22_18-59-06.jpg)
 
 ### 3.6 安装boost 1.53.0
 	
 	#wget http://sourceforge.net/projects/boost/files/boost/1.53.0/boost_1_53_0.tar.gz
-![2015-11-22_19-07-20](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-22_19-07-20.jpg)
+![2015-11-22_19-07-20](/uploads/2015/11/2015-11-22_19-07-20.jpg)
 	
 	#tar xvf boost_1_53_0.tar.gz
 	#cd boost_1_53_0
@@ -87,7 +87,7 @@ Thrift是一个软件框架，用来进行可扩展且跨语言的服务的开�
 ### 3.7 安装Thrift
 	
 	#git clone https://git-wip-us.apache.org/repos/asf/thrift.git
-![2015-11-22_19-28-54](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-22_19-28-54.jpg)
+![2015-11-22_19-28-54](/uploads/2015/11/2015-11-22_19-28-54.jpg)
 
 	#cd thrift
 	#git checkout -b thrift-0.9.1 0.9.1
@@ -95,7 +95,7 @@ Thrift是一个软件框架，用来进行可扩展且跨语言的服务的开�
 	#./configure
 	#make
 	#make install
-![2015-11-22_20-27-10](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-22_20-27-10.jpg)
+![2015-11-22_20-27-10](/uploads/2015/11/2015-11-22_20-27-10.jpg)
 
 ## 4.示例
 
@@ -115,7 +115,7 @@ Thrift是一个软件框架，用来进行可扩展且跨语言的服务的开�
 2)启动Hbase thrift接口
 	
 	#hbase thrift -p 9090 start
-![2015-11-22_21-05-16](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-22_21-05-16.jpg)
+![2015-11-22_21-05-16](/uploads/2015/11/2015-11-22_21-05-16.jpg)
 
 3)生成Hbase.py
 下载源码
@@ -124,7 +124,7 @@ Thrift是一个软件框架，用来进行可扩展且跨语言的服务的开�
 	#thrift -gen py /home/grid/hbase-0.98.16/hbase-thrift/src/main/resources/org/apache/hadoop/hbase/thrift/Hbase.thrift
 	#cp -r /home/grid/gen-py/hbase/ /usr/lib64/python2.6/site-packages/
 
-![2015-11-22_20-55-05](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-22_20-55-05.jpg)
+![2015-11-22_20-55-05](/uploads/2015/11/2015-11-22_20-55-05.jpg)
 
 4)Python代码测试
 
@@ -148,4 +148,4 @@ print(client.getTableNames())
 ```
 
 执行这段代码，我们看到Python代码正确获取了Hbase的表名
-![2015-11-22_21-26-25](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-22_21-26-25.jpg)
+![2015-11-22_21-26-25](/uploads/2015/11/2015-11-22_21-26-25.jpg)

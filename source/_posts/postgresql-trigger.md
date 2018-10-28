@@ -23,7 +23,7 @@ postgresql 的一个触发器是一种声明，告诉数据库应该在执行特
         x integer
     );
    
-![2016-01-09_9-39-44](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-09_9-39-44.jpg)
+![2016-01-09_9-39-44](/uploads/2016/01/2016-01-09_9-39-44.jpg)
 ## 3. 步骤
 ### 3.1 函数编译
 编写C函数并编译，代码如下:
@@ -124,12 +124,12 @@ return PointerGetDatum(rettuple);
     CREATE TRIGGER tafter AFTER INSERT OR UPDATE OR DELETE ON ttest
         FOR EACH ROW EXECUTE PROCEDURE trigf();
 
-![2016-01-09_10-06-43](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-09_10-06-43.jpg)
+![2016-01-09_10-06-43](/uploads/2016/01/2016-01-09_10-06-43.jpg)
 ## 4. 测试
 1) 插入空值
 	
 	INSERT INTO ttest VALUES (NULL);
-![2016-01-09_10-09-38](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-09_10-09-38.jpg)
+![2016-01-09_10-09-38](/uploads/2016/01/2016-01-09_10-09-38.jpg)
 
 2)插入第一条记录
 	
@@ -138,17 +138,17 @@ return PointerGetDatum(rettuple);
 3)插入第二条记录
 	
 	INSERT INTO ttest SELECT x * 2 FROM ttest;
-![2016-01-09_10-11-15](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-09_10-11-15.jpg)
+![2016-01-09_10-11-15](/uploads/2016/01/2016-01-09_10-11-15.jpg)
 
 4)更新第二条记录
 	
 	UPDATE ttest SET x = NULL WHERE x = 2;
 	UPDATE ttest SET x = 4 WHERE x = 2;
-![2016-01-09_10-13-10](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-09_10-13-10.jpg)
+![2016-01-09_10-13-10](/uploads/2016/01/2016-01-09_10-13-10.jpg)
 
 5)删除记录
 	
 	DELETE FROM ttest;
-![2016-01-09_10-14-03](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-09_10-14-03.jpg)
+![2016-01-09_10-14-03](/uploads/2016/01/2016-01-09_10-14-03.jpg)
 
 [参考官网](http://www.postgresql.org/docs/9.4/interactive/triggers.html)

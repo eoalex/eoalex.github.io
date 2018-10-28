@@ -52,15 +52,15 @@ while status == 'BUILD':
 print "status: %s" % status
 ```    
 nova-createvm文件如下，
-![2016-06-26_12-29-37](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-26_12-29-37.jpg)
+![2016-06-26_12-29-37](/uploads/2016/06/2016-06-26_12-29-37.jpg)
 
 ## 2. 运行验证
 ### 2.1 运行
 右键文件名-->Run As--> Python Run，等待几秒钟，我们看到运行结果的状态为acvtive
-![2016-06-26_12-08-50](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-26_12-08-50.jpg)
+![2016-06-26_12-08-50](/uploads/2016/06/2016-06-26_12-08-50.jpg)
 ### 2.2 验证
 进入网站http://192.168.199.20.使用用户名demo/passw0rd登录，点击instance，我们看到test的instance已经运行中。
-![2016-06-26_12-06-37](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-26_12-06-37.jpg)
+![2016-06-26_12-06-37](/uploads/2016/06/2016-06-26_12-06-37.jpg)
 以上的例子还可以使用 Client.keypairs.create 方法创建ssh key来验证，有兴趣的同学可以试验一下。
 
 ```python

@@ -32,12 +32,12 @@ Hadoop 1.2.1 ,Hive 1.2.1,Mysql 5.1.73,配置见下表，Hadoop/Hive/Mysql的安�
 
 在Hadoop11上从镜像地址下载Sqoop,并解压
 http://mirrors.aliyun.com/apache/sqoop/1.4.6/
-![2015-11-14_9-04-40](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-14_9-04-40.jpg)
+![2015-11-14_9-04-40](/uploads/2015/11/2015-11-14_9-04-40.jpg)
 
 	#wget http://mirrors.aliyun.com/apache/sqoop/1.4.6/sqoop-1.4.6.bin__hadoop-1.0.0.tar.gz
 	#tar -xzvf sqoop-1.4.6.bin__hadoop-1.0.0.tar.gz
 
-![2015-11-14_10-24-25](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-14_10-24-25.jpg)
+![2015-11-14_10-24-25](/uploads/2015/11/2015-11-14_10-24-25.jpg)
 
 	#mv sqoop-1.4.6.bin__hadoop-1.0.0 sqoop-1.4.6
 
@@ -84,7 +84,7 @@ http://mirrors.aliyun.com/apache/sqoop/1.4.6/
 	mysql>create table tab2 as select * from tab1 limit 0;
 	mysql>select * from tab2;
 
-![2015-11-14_12-33-48](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-14_12-33-48.jpg)
+![2015-11-14_12-33-48](/uploads/2015/11/2015-11-14_12-33-48.jpg)
 
 同样创建空白表用于从hive导入数据
 	
@@ -104,14 +104,14 @@ http://mirrors.aliyun.com/apache/sqoop/1.4.6/
 	#hadoop fs -ls /user/grid/tab1
 	#hadoop fs -cat /user/grid/tab1/part-m-00000
 	
-![2015-11-14_12-26-56](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-14_12-26-56.jpg)
+![2015-11-14_12-26-56](/uploads/2015/11/2015-11-14_12-26-56.jpg)
 
 导出HDFS数据至mysql tab2
 	
 	#sqoop export --connect jdbc:mysql://hadoop13:3306/sqoop --table tab2 --username hive --password hive@Hadoop --export-dir hdfs://hadoop11:9000/user/grid/tab1/part-m-00000 -m 1
 
 我们看到mysql tab2表已经有数据了
-![2015-11-14_12-37-25](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-14_12-37-25.jpg)
+![2015-11-14_12-37-25](/uploads/2015/11/2015-11-14_12-37-25.jpg)
 
 ### 4.2 mysql与hive互转
 
@@ -125,16 +125,16 @@ http://mirrors.aliyun.com/apache/sqoop/1.4.6/
 	#sqoop import --connect jdbc:mysql://hadoop13:3306/sqoop --username hive --password hive@Hadoop --table tab2 --hive-table tab2 --hive-import -m 1
 
 进入hive我们看到hive里多了tab2表
-![2015-11-14_12-51-15](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-14_12-51-15.jpg)
+![2015-11-14_12-51-15](/uploads/2015/11/2015-11-14_12-51-15.jpg)
 
 进入warehouse我们看到多了一个目录
-![2015-11-14_12-55-59](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-14_12-55-59.jpg)
+![2015-11-14_12-55-59](/uploads/2015/11/2015-11-14_12-55-59.jpg)
 
 导出hive数据至mysql tab3
 
 	#sqoop export --connect jdbc:mysql://hadoop13:3306/sqoop --table tab3 --username hive --password hive@Hadoop --export-dir /user/hive/warehouse/tab2/part-m-00000 --input-fields-terminated-by '\001'
 
 到mysql可以看到tab3表有数据了.
-![2015-11-14_13-11-11](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/11/2015-11-14_13-11-11.jpg)
+![2015-11-14_13-11-11](/uploads/2015/11/2015-11-14_13-11-11.jpg)
 
 至此演示数据结束。

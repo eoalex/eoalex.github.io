@@ -7,4 +7,4 @@ date: 2016-09-28 20:37:26
 tags:
 ---
 
-![img_0608](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/09/IMG_0608.png)
+![img_0608](/uploads/2016/09/IMG_0608.png)

@@ -145,6 +145,6 @@ KStreamBuilder streamBuilder = new KStreamBuilder();
 ```
 
 最终结果如下。
-![2016-12-09_22-43-20](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/12/2016-12-09_22-43-20.png)
+![2016-12-09_22-43-20](/uploads/2016/12/2016-12-09_22-43-20.png)
 
 >注：此示例基于[harben的GitHub](https://github.com/habren/KafkaExample)上的Purchase Analysis示例修改。

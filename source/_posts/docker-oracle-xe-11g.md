@@ -57,5 +57,5 @@ oracle连接参数
     password: admin
 
 登陆后，你可以sqlplus登录oracle
-![2016-10-29_17-21-21](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-29_17-21-21.jpg)
+![2016-10-29_17-21-21](/uploads/2016/10/2016-10-29_17-21-21.jpg)
 你可以随时去[github](https://github.com/wnameless/docker-oracle-xe-11g)检查有无更新。

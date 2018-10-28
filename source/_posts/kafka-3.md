@@ -267,7 +267,7 @@ date: 2016-10-22 23:49:09
     bin/kafka-topics.sh --zookeeper zookeeper:2181 --topic topic1 --create --replication-factor 2 --partitions 3
     bin/kafka-topics.sh --zookeeper zookeeper:2181 --topic topic1 --describe
     
-![2016-10-22_21-17-05](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-17-05.jpg)
+![2016-10-22_21-17-05](/uploads/2016/10/2016-10-22_21-17-05.jpg)
 启动consumer
     
     bin/kafka-console-consumer.sh --zookeeper zookeeper:2181 --topic topic1
@@ -275,10 +275,10 @@ date: 2016-10-22 23:49:09
     
     bin/kafka-console-producer.sh --broker-list kafka2:9092 --topic topic1`</pre>
 
-![2016-10-22_21-16-06](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-16-06.jpg)
+![2016-10-22_21-16-06](/uploads/2016/10/2016-10-22_21-16-06.jpg)
 
 发送一些消息，我看到consumer端正常接收。
-![2016-10-22_21-16-26](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_21-16-26.jpg)
+![2016-10-22_21-16-26](/uploads/2016/10/2016-10-22_21-16-26.jpg)
 
 这就说明集群配置成功。
 
@@ -288,7 +288,7 @@ date: 2016-10-22 23:49:09
     bin/kafka-topics.sh --zookeeper zookeeper:2181 --topic topic2 --create --config min.insync.replicas=2 --replication-factor 2 --partitions 1
     bin/kafka-topics.sh --zookeeper zookeeper:2181 --topic topic2 --describe
     
-![2016-10-22_23-26-17](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_23-26-17.jpg)
+![2016-10-22_23-26-17](/uploads/2016/10/2016-10-22_23-26-17.jpg)
 
 我们看到topic2分配在了kafka2上，并且kafka0是备份，ISR是0和2,现在我们将kafka1和kafka2的broker关闭。我们看到leader已自动转为broker0。然后启动consumer
 
@@ -298,9 +298,9 @@ date: 2016-10-22 23:49:09
 
 	bin/kafka-console-producer.sh --broker-list kafka0:9092 --topic topic2 --request-required-acks -1
 
-![2016-10-22_23-35-05](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_23-35-05.jpg)
+![2016-10-22_23-35-05](/uploads/2016/10/2016-10-22_23-35-05.jpg)
 
 我们看到此时发送消息，kafka出现错误。原因是我们在producer发送时设置了检查replicas是否都收到数据的确认，但是因为我们已经关闭broker2, 所以尝试发送3次未果后，producer返回错误。
 显然，我们将producer以默认设置发送消息时，consumer马上收到消息了。
 
-![2016-10-22_22-02-59](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-22_22-02-59.jpg)
+![2016-10-22_22-02-59](/uploads/2016/10/2016-10-22_22-02-59.jpg)

@@ -40,21 +40,21 @@ date: 2016-06-21 08:03:49
     #systemctl restart neutron-server.service
 ### 1.3 Dashboard配置及验证
 #### 1.3.1 添加资源池
-![2016-06-11_9-11-13](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-11_9-11-13.jpg)
+![2016-06-11_9-11-13](/uploads/2016/06/2016-06-11_9-11-13.jpg)
 #### 1.3.2 添加成员
-![2016-06-11_9-15-48](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-11_9-15-48.jpg)
+![2016-06-11_9-15-48](/uploads/2016/06/2016-06-11_9-15-48.jpg)
 #### 1.3.3 设置vip ip
-![2016-06-11_9-13-03](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-11_9-13-03.jpg)
+![2016-06-11_9-13-03](/uploads/2016/06/2016-06-11_9-13-03.jpg)
 
-![2016-06-11_9-14-17](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-11_9-14-17.jpg)
+![2016-06-11_9-14-17](/uploads/2016/06/2016-06-11_9-14-17.jpg)
 
 #### 1.3.4 验证
 SSH连接VIP 192.168.2.5我们看到实际连接的是192.168.2.3
-![2016-06-11_20-08-47](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-11_20-08-47.jpg)
+![2016-06-11_20-08-47](/uploads/2016/06/2016-06-11_20-08-47.jpg)
 我们停止实例192.168.2.3.再去连接192.168.2.5,看到连接到了192.168.2.4去了，这证明负载均衡是起作用了。
-![2016-06-11_20-13-58](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-11_20-13-58.jpg)
+![2016-06-11_20-13-58](/uploads/2016/06/2016-06-11_20-13-58.jpg)
 
-![2016-06-11_20-13-44](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-11_20-13-44.jpg)
+![2016-06-11_20-13-44](/uploads/2016/06/2016-06-11_20-13-44.jpg)
 
 ## 2. 防火墙设置
 ### 2.1 控制节点安装配置
@@ -99,10 +99,10 @@ SSH连接VIP 192.168.2.5我们看到实际连接的是192.168.2.3
 	#systemctl restart neutron-openvswitch-agent.service neutron-l3-agent.service
 ### 2.3 Dashboard配置及验证
 #### 2.3.1 设置规则
-![2016-06-11_20-32-06](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-11_20-32-06.jpg)
+![2016-06-11_20-32-06](/uploads/2016/06/2016-06-11_20-32-06.jpg)
 
 #### 2.3.2 设置策略
-![2016-06-11_20-32-44](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-11_20-32-44.jpg)
+![2016-06-11_20-32-44](/uploads/2016/06/2016-06-11_20-32-44.jpg)
 
 #### 2.3.3 设置防火墙并关联路由
-![2016-06-11_20-33-25](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-11_20-33-25.jpg)
+![2016-06-11_20-33-25](/uploads/2016/06/2016-06-11_20-33-25.jpg)

@@ -17,7 +17,7 @@ Open vSwitch的目标，是做一个具有产品级质量的多层虚拟交换�
 * 流量监控，Netflow，sFlow
 * 数据包分析，Packet Mirror。
 本文我们使用Open vSwitch的GRE通道简单实现下图的网络结构，并用tshark或tcpdump等工具分析网络的流向。
-![2016-01-16_15-07-57](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_15-07-57.jpg)
+![2016-01-16_15-07-57](/uploads/2016/01/2016-01-16_15-07-57.jpg)
 
 ## 2. Open vSwitch安装
 ### 2.1 环境准备 
@@ -38,23 +38,23 @@ centos 7 + docker 1.9.1(准备两台)
 ### 2.4 编译
 	#cd openvswitch-2.4.0
 	#rpmbuild -bb --without check rhel/openvswitch.spec
-![2016-01-16_10-09-01](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_10-09-01.jpg)
+![2016-01-16_10-09-01](/uploads/2016/01/2016-01-16_10-09-01.jpg)
 编译完成，文件存放位置`/root/rpmbuild/RPMS/x86_64`
-![2016-01-16_15-35-17](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_15-35-17.jpg)
+![2016-01-16_15-35-17](/uploads/2016/01/2016-01-16_15-35-17.jpg)
 ### 2.5 安装
 	#cd /root/rpmbuild/RPMS/x86_64
 	#yum install openvswitch-2.4.0-1.x86_64.rpm
-![2016-01-16_10-11-32](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_10-11-32.jpg)
+![2016-01-16_10-11-32](/uploads/2016/01/2016-01-16_10-11-32.jpg)
 
 	#systemctl start openvswitch.service 
 	#systemctl status openvswitch.service 
-![2016-01-16_16-11-43](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_16-11-43.jpg)
+![2016-01-16_16-11-43](/uploads/2016/01/2016-01-16_16-11-43.jpg)
 
 ### 2.6 复制
 复制安装文件至另一台主机docker42，并启动服务
 	
 	#scp openvswitch-2.4.0-1.x86_64.rpm root@192.168.199.42:/root/
-![2016-01-16_10-56-53](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_10-56-53.jpg)
+![2016-01-16_10-56-53](/uploads/2016/01/2016-01-16_10-56-53.jpg)
 
 ## 3. 配置脚本
 在主机docker41上,编辑`41-ovs-docker.sh`
@@ -141,22 +141,22 @@ systemctl restart docker.service
 在docker41主机执行
 	
 	#./41-ovs-docker.sh
-![2016-01-16_15-48-12](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_15-48-12.jpg)
+![2016-01-16_15-48-12](/uploads/2016/01/2016-01-16_15-48-12.jpg)
 
 在docker42主机执行
 	
 	#./42-ovs-docker.sh
-![2016-01-16_15-48-33](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_15-48-33.jpg)
+![2016-01-16_15-48-33](/uploads/2016/01/2016-01-16_15-48-33.jpg)
 
 ### 4.1 docker0互ping
 在docker41主机ping主机docker42的docker0
 	
 	#ping 172.17.42.1
-![2016-01-16_15-50-04](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_15-50-04.jpg)
+![2016-01-16_15-50-04](/uploads/2016/01/2016-01-16_15-50-04.jpg)
 在docker42主机ping主机docker41的docker0
 	
 	#ping 172.17.41.1
-![2016-01-16_15-50-36](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_15-50-36.jpg)
+![2016-01-16_15-50-36](/uploads/2016/01/2016-01-16_15-50-36.jpg)
 
 ### 4.2 不同主机容器互ping
 我们测试一下在主机docker41的一个容器内ping主机docker42的一个容器。
@@ -167,23 +167,23 @@ systemctl restart docker.service
 	
 	#docker run -it --rm=true java:latest /bin/bash
 在容器172.17.41.2内ping172.17.42.2
-![2016-01-16_15-55-44](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_15-55-44.jpg)
+![2016-01-16_15-55-44](/uploads/2016/01/2016-01-16_15-55-44.jpg)
 
 tshark分析
 	
 	#tshark -i br0 -R ip proto gre
-![2016-01-16_16-07-32](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_16-07-32.jpg)
+![2016-01-16_16-07-32](/uploads/2016/01/2016-01-16_16-07-32.jpg)
 
 	#tshark -i eno16777736 ip proto gre
-![2016-01-16_16-05-43](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_16-05-43.jpg)
+![2016-01-16_16-05-43](/uploads/2016/01/2016-01-16_16-05-43.jpg)
 
 在容器172.17.42.2内ping172.17.41.2
-![2016-01-16_15-56-29](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_15-56-29.jpg)
+![2016-01-16_15-56-29](/uploads/2016/01/2016-01-16_15-56-29.jpg)
 
 tshark分析
 	
 	#tshark -i br0 -R ip proto gre
-![2016-01-16_16-07-32](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_16-07-32.jpg)
+![2016-01-16_16-07-32](/uploads/2016/01/2016-01-16_16-07-32.jpg)
 	
 	#tshark -i eno16777736 ip proto gre
-![2016-01-16_16-04-52](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/01/2016-01-16_16-04-52.jpg)
+![2016-01-16_16-04-52](/uploads/2016/01/2016-01-16_16-04-52.jpg)

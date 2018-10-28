@@ -57,7 +57,7 @@ http://mirror.bit.edu.cn/apache/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-
 打开Eclipse，选择Help->Install New SoftWare
 Add new repo
 http://m2eclipse.sonatype.org/sites/m2e,
-![%e5%b1%8f%e5%b9%95%e5%bf%ab%e7%85%a7-2016-11-05-%e4%b8%8b%e5%8d%889-32-42](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/11/屏幕快照-2016-11-05-下午9.32.42.png)
+![%e5%b1%8f%e5%b9%95%e5%bf%ab%e7%85%a7-2016-11-05-%e4%b8%8b%e5%8d%889-32-42](/uploads/2016/11/屏幕快照-2016-11-05-下午9.32.42.png)
 
 点击OK，等待安装完成.
 

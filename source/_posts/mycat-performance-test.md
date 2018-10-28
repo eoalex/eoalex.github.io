@@ -33,7 +33,7 @@ score，得分，0-100分
 
 ### 2.2 测试工具下载
 我们从Mycat的github[下载](https://github.com/MyCATApache/Mycat-download),目前最新版1.5
-![2016-02-25_22-00-04](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-25_22-00-04.jpg)
+![2016-02-25_22-00-04](/uploads/2016/02/2016-02-25_22-00-04.jpg)
 
 ### 2.3 定义表
 person表按要求定义如下
@@ -61,15 +61,15 @@ mycat_sequence表定义如下，mycat_sequence表是用来存放全局序列号�
 在mycat容器conf目录下
 ### 3.1 修改schema.xml
 修改schema.xml,增加person表，自动增长设为true，增加mycat_sequence表为存放全局序列号.
-![2016-02-25_22-41-21](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-25_22-41-21.jpg)
+![2016-02-25_22-41-21](/uploads/2016/02/2016-02-25_22-41-21.jpg)
 ### 3.2 修改rule.xml
 修改rule.xml ，这里我们对addr使用一致性hash算法分区。
-![2016-02-25_22-42-59](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-25_22-42-59.jpg)
+![2016-02-25_22-42-59](/uploads/2016/02/2016-02-25_22-42-59.jpg)
 
-![2016-02-25_22-43-40](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-25_22-43-40.jpg)
+![2016-02-25_22-43-40](/uploads/2016/02/2016-02-25_22-43-40.jpg)
 ### 3.3 修改server.xml
 修改server.xml,在system下添加,1表示使用数据库方式，0表示本地文件方式。这里我们采用数据库方式。
-![2016-02-25_22-45-42](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-25_22-45-42.jpg)
+![2016-02-25_22-45-42](/uploads/2016/02/2016-02-25_22-45-42.jpg)
 ### 3.4 修改 sequnence_db_conf.properties
 修改sequence_db_conf.properties,添加要给序号的表, 并指定分区。
 
@@ -82,10 +82,10 @@ mycat_sequence表定义如下，mycat_sequence表是用来存放全局序列号�
     total=100000
     sql=insert into person(Id,name,school,age,addr,zcode,birth,score) values(next value for MYCATSEQ_PERSON,'${char([a-f,0-9]8:16)}','${int(1-1000)}','${int(18-60)}','${enum(gz-tianhe,sh-huangpu,sz-baoan)}','${int(100000-90000)}','${date(yyyyMMdd-[1980-2010]y)}','${int(0-100)}')
     
-![2016-02-25_22-18-19](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-25_22-18-19.jpg)
+![2016-02-25_22-18-19](/uploads/2016/02/2016-02-25_22-18-19.jpg)
 
 以上工作完成，我们进入mycat 9066管理端，做 reload @@config_all;使刚才配置生效。
-![2016-02-24_16-19-35](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-24_16-19-35.jpg)
+![2016-02-24_16-19-35](/uploads/2016/02/2016-02-24_16-19-35.jpg)
 ## 4. 其他设置
 ### 4.1 创建表
 进入mycat 8066 端口，执行2.3 步骤语句创建person表及mycat_sequence表.
@@ -138,7 +138,7 @@ mycat_sequence表定义如下，mycat_sequence表是用来存放全局序列号�
     ./test_stand_insert_perf.sh jdbc:mysql://localhost:8066/TESTDB test test 50  "file=person-insert.sql"
 
 最后结果如下
-![2016-02-25_20-44-29](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-25_20-44-29.jpg)
+![2016-02-25_20-44-29](/uploads/2016/02/2016-02-25_20-44-29.jpg)
 
 我们看到10万笔记录，失败了300笔，时间耗时很长，tps很差。
 ### 5.2 测试步长100
@@ -162,14 +162,14 @@ mycat_sequence表定义如下，mycat_sequence表是用来存放全局序列号�
     score int
     ) AUTO_INCREMENT = 1;
 
-![2016-02-25_20-20-31](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-25_20-20-31.jpg)
+![2016-02-25_20-20-31](/uploads/2016/02/2016-02-25_20-20-31.jpg)
 
 在mycat测试工具bin目录,执行
 
     ./test_stand_insert_perf.sh jdbc:mysql://localhost:8066/TESTDB test test 50  "file=person-insert.sql"
 
 最后结果如下
-![2016-02-25_20-50-59](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-25_20-50-59.jpg)
+![2016-02-25_20-50-59](/uploads/2016/02/2016-02-25_20-50-59.jpg)
 我们看到10万笔记录，失败了200笔，耗时缩短了，tps增加了。
 ### 5.3 测试步长10000
 接下来我们先开始测试步长10000，进入mycat 8066 端口, 执行下面语句
@@ -197,7 +197,7 @@ mycat_sequence表定义如下，mycat_sequence表是用来存放全局序列号�
     ./test_stand_insert_perf.sh jdbc:mysql://localhost:8066/TESTDB test test 50  "file=person-insert.sql"
 
 最后结果如下
-![2016-02-25_20-59-09](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/02/2016-02-25_20-59-09.jpg)
+![2016-02-25_20-59-09](/uploads/2016/02/2016-02-25_20-59-09.jpg)
 
 我们看到10万笔记录，全部成功插入，耗时很短，tps显著增加。
 结论，从以上三种步长测试结果看，明显步长越大，成功率越高，效果越佳。

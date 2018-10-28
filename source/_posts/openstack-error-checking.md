@@ -97,7 +97,7 @@ TRACE:记录代码执行的方法和属性
 
 最初通过dashboard遇到的是这样的问题。
 
-![2016-05-07_23-42-54](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-05-07_23-42-54.jpg)
+![2016-05-07_23-42-54](/uploads/2016/06/2016-05-07_23-42-54.jpg)
 
 这样的信息我们只知道是服务器内部错误，无法知道具体是哪里的问题。
 所以我们通过命令行加入debug选项
@@ -215,7 +215,7 @@ TRACE:记录代码执行的方法和属性
 	
 	systemctl restart openstack-glance-api.service openstack-glance-registry.service
 最后我们看到实例最终创建成功。
-![2016-06-12_14-15-48](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/06/2016-06-12_14-15-48.jpg)
+![2016-06-12_14-15-48](/uploads/2016/06/2016-06-12_14-15-48.jpg)
 
 当然有的可能不一定是这个原因引起的，如果升级了还是没有解决这个问题，我们还要再尝试其他办法。
 像https://review.openstack.org/#/c/244899/这个帖子里说要替换http.py和images.py两个文件。如果还是不行，可能要考虑重新安装组件了。总之，时间允许的情况下，多尝试几次总是没错了，通过几次折腾，也会进一步了解openstack组件间的关系了。

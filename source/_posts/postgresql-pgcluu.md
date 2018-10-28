@@ -141,12 +141,12 @@ total 1760
 ```
 ## 4. 结果展示
 ### 4.1 index 网页
-![2016-03-04_9-39-39](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-04_9-39-39.jpg)
+![2016-03-04_9-39-39](/uploads/2016/03/2016-03-04_9-39-39.jpg)
 ### 4.2 系统信息
-![2016-03-04_9-41-46](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-04_9-41-46.jpg)
+![2016-03-04_9-41-46](/uploads/2016/03/2016-03-04_9-41-46.jpg)
 
 ### 4.3 数据库信息
-![2016-03-04_9-43-44](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/03/2016-03-04_9-43-44.jpg)
+![2016-03-04_9-43-44](/uploads/2016/03/2016-03-04_9-43-44.jpg)
 
 更多结果参见pgCluu官网[Example](http://pgcluu.darold.net/example/index.html)
 

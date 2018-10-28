@@ -8,7 +8,7 @@ categories:
 date: 2015-12-12 01:56:25
 ---
 
-![the-inevitable](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2015/12/the-inevitable.jpg)
+![the-inevitable](/uploads/2015/12/the-inevitable.jpg)
 
 ## 1. 简介
 有幸成为了逻辑思维第一批五万本预定凯文·凯利的新书《必然》的读者。拿到书到现在也差不多四个礼拜了，觉得非常有必要做一下笔记。

@@ -86,12 +86,12 @@ step3 启动Storm UI
     docker run -d -p 8080:8080 --restart always --name ui --link nimbus storm:1.0.2 storm ui
 此时进入127.0.0.1:8080,我们看到nimbus已启动。
 
-![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_09-26-09.png)
+![](/uploads/2017/02/2017-02-23_09-26-09.png)
 step4 启动Supervisor
 	
 	docker run -d --restart always --name supervisor1 --link zookeeper --link nimbus storm:1.0.2 storm supervisor
 
-![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_09-29-34.png)
+![](/uploads/2017/02/2017-02-23_09-29-34.png)
 
 我们看到Supervisor1已正常启动，如果需要我们可以启动多个Supervisor，至此简单Storm集群环境安装完毕。
 ## 3. 提交Topology
@@ -102,7 +102,7 @@ step4 启动Supervisor
     storm jar storm-starter-topologies-1.0.2.jar org.apache.storm.starter.WordCountTopology first-topology
 
 运行情况
-![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_10-16-42.png)
+![](/uploads/2017/02/2017-02-23_10-16-42.png)
 
 详细信息
-![](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2017/02/2017-02-23_11-01-19.png)
+![](/uploads/2017/02/2017-02-23_11-01-19.png)

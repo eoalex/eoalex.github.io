@@ -20,7 +20,7 @@ date: 2016-10-30 23:43:20
     curl -L "https://github.com/docker/compose/releases/download/1.8.1/docker-compose-$(uname -s)-$(uname -m)" >    /usr/local/bin/docker-compose
     chmod +x /usr/local/bin/docker-compose
     exit
-![2016-10-30_9-07-18](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_9-07-18.jpg)
+![2016-10-30_9-07-18](/uploads/2016/10/2016-10-30_9-07-18.jpg)
 
 ## 3. zookeeper镜像制作
 在之前的基础上增加ZOOK>EEPER_ID，ZOOKEEPER_PORT，ZOOKEEPER_SERVERS参数使之动态配置。
@@ -221,17 +221,17 @@ date: 2016-10-30 23:43:20
     
     docker-compose -f mykafka-compose.yml up -d
 正常情况下，3个kafka容器，3个zookeeper容器启动。
-![2016-10-30_23-23-15](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_23-23-15.jpg)
+![2016-10-30_23-23-15](/uploads/2016/10/2016-10-30_23-23-15.jpg)
 
 ## 7. 验证zookeeper及目录结构
 进入一个zookeeper容器使用zkCli.sh客户端命令查看。所有broker信息在kafka目录下
     
     docker exec -it zookeeper0 bash
     bin/zkCli.sh -server zookeeper0:2181
-![2016-10-30_22-50-58](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_22-50-58.jpg)
+![2016-10-30_22-50-58](/uploads/2016/10/2016-10-30_22-50-58.jpg)
 
 如果不设置/kakfa，一般目录结构如下。
-![2016-10-30_22-26-55](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_22-26-55.jpg)
+![2016-10-30_22-26-55](/uploads/2016/10/2016-10-30_22-26-55.jpg)
 
 ## 8. 验证kafka消息发送
 进入一个kafka容器
@@ -276,7 +276,7 @@ date: 2016-10-30 23:43:20
     
     bin/kafka-console-producer.sh --broker-list kafka0:9092 --topic topic1
 
-![2016-10-30_22-55-11](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_22-55-11.jpg)
+![2016-10-30_22-55-11](/uploads/2016/10/2016-10-30_22-55-11.jpg)
 
 再看zookeeper的topic目录，看到有新的topic1的目录结构生成。
-![2016-10-30_22-56-39](http://orufryv17.bkt.clouddn.com/wp-content/uploads/2016/10/2016-10-30_22-56-39.jpg)
+![2016-10-30_22-56-39](/uploads/2016/10/2016-10-30_22-56-39.jpg)
