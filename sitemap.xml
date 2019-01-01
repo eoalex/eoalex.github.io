@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://blog.yaodataking.com/2019/01/01/reading-2018/</loc>
+    
+    <lastmod>2019-01-01T11:06:28.574Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://blog.yaodataking.com/2015/11/22/thrift/</loc>
     
     <lastmod>2018-10-28T06:12:55.443Z</lastmod>
@@ -282,14 +289,14 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/10/22/kafka-3/</loc>
+    <loc>http://blog.yaodataking.com/2016/10/30/kafka-4/</loc>
     
     <lastmod>2018-10-28T06:12:55.397Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/10/30/kafka-4/</loc>
+    <loc>http://blog.yaodataking.com/2016/10/22/kafka-3/</loc>
     
     <lastmod>2018-10-28T06:12:55.397Z</lastmod>
     
@@ -352,14 +359,14 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2015/10/26/hadoop1-2-1/</loc>
+    <loc>http://blog.yaodataking.com/2015/10/27/hadoop2-7-1/</loc>
     
     <lastmod>2018-10-28T06:12:55.386Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2015/10/27/hadoop2-7-1/</loc>
+    <loc>http://blog.yaodataking.com/2015/10/26/hadoop1-2-1/</loc>
     
     <lastmod>2018-10-28T06:12:55.386Z</lastmod>
     
@@ -604,14 +611,14 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/08/07/rome-story-7/</loc>
+    <loc>http://blog.yaodataking.com/2017/02/23/homo-tommorrow/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/07/21/rome-story-6/</loc>
+    <loc>http://blog.yaodataking.com/2016/04/17/rome-story-1/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
@@ -625,14 +632,7 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/08/14/rome-story-8/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2016/08/21/rome-story-9/</loc>
+    <loc>http://blog.yaodataking.com/2016/09/28/rome-story-11/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
@@ -653,20 +653,6 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/04/17/rome-story-1/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.yaodataking.com/2017/02/23/homo-tommorrow/</loc>
-    
-    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://blog.yaodataking.com/2016/11/30/rome-story-15/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
@@ -681,7 +667,7 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/09/28/rome-story-11/</loc>
+    <loc>http://blog.yaodataking.com/2016/05/14/rome-story-3/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
@@ -702,7 +688,28 @@
   </url>
   
   <url>
-    <loc>http://blog.yaodataking.com/2016/05/14/rome-story-3/</loc>
+    <loc>http://blog.yaodataking.com/2016/07/21/rome-story-6/</loc>
+    
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/08/07/rome-story-7/</loc>
+    
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/08/14/rome-story-8/</loc>
+    
+    <lastmod>2017-06-21T14:55:20.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.yaodataking.com/2016/08/21/rome-story-9/</loc>
     
     <lastmod>2017-06-21T14:55:20.000Z</lastmod>
     
